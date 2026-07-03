@@ -9,8 +9,8 @@ NOT_REGISTER → ACTIVE → IN_LESSON → ACTIVE → ...
 | State | Контекст | Допустимые команды |
 |-------|----------|-------------------|
 | `NOT_REGISTER` | — | `/start`, `/register`, `/help` |
-| `ACTIVE` | — | `/start`, `/newstudent`, `/startlesson`, `/help` |
-| `IN_LESSON` | `context["lessonId"] = UUID` | `/add`, `/endlesson`, `/help` |
+| `ACTIVE` | — | `/start`, `/newstudent`, `/startlesson`, `/students`, `/student`, `/exercise`, `/help` |
+| `IN_LESSON` | `context["lessonId"] = UUID` | `/add`, `/endlesson`, `/students`, `/student`, `/exercise`, `/help` |
 
 ## Двухфазный ввод (через pendingCommand)
 
@@ -178,3 +178,77 @@ flowchart TB
     SM -->|context| CTX
     MOD -->|creates bean| SVC
 ```
+
+---
+
+## Callback-запросы (inline-кнопки)
+
+С версии, добавившей фичи 3 и 4, бот поддерживает inline-кнопки и callback-запросы:
+
+```mermaid
+sequenceDiagram
+    participant U as Пользователь
+    participant B as EnglishTutorBot
+    participant SVC as StateMachineAppService
+    participant CMD as StudentCmd
+
+    U->>B: /students
+    B->>SVC: handle("/students", chatId)
+    SVC-->>B: BotResponse(text + inlineKeyboard)
+    B-->>U: список учеников + кнопки
+
+    U->>B: клик "Иван"
+    B->>B: callback "student:Иван" → "/student Иван"
+    B->>SVC: handle("/student Иван", chatId)
+    SVC->>CMD: execute(sm, "/student Иван")
+    CMD-->>SVC: Result.stay("👤 Иван\n📚 Dictionary: ...")
+    B-->>U: детали ученика
+```
+
+Callback конвертируется в текстовую команду и проходит через общий `service.handle()` — бот остаётся тонким адаптером.
+
+## Inline-клавиатура в Result
+
+```java
+// Result record с опциональной inline-клавиатурой
+public record Result(String message, CommandType commandType, State state,
+                     Optional<Context> context, List<List<String>> inlineKeyboard) {
+
+    public static Result stay(String message, CommandType type) { ... }
+
+    // Новый метод: stay с inline-кнопками
+    public static Result stay(String message, CommandType type,
+                              List<List<String>> inlineKeyboard) { ... }
+}
+```
+
+`BotExecuteResult` передаёт inlineKeyboard из StateMachine в StateMachineAppService,
+который возвращает `BotResponse` с текстом и кнопками.
+
+## Context — новые методы
+
+```java
+public class Context {
+    public void put(String key, Object value) { ... }
+    public Object get(String key) { ... }
+    public void remove(String key) { ... }          // NEW
+    public <T> T get(String key, Class<T> type) { ... }
+}
+```
+
+## ExerciseCmd — двухфазная работа
+
+```
+/exercise FILL_IN_THE_BLANK Animals  →  генерация + "Reply with your answer:"
+  user types answer                   →  CheckExercise → ✅/❌ + результат
+```
+
+В context сохраняется `exerciseId` для проверки ответа. После проверки — очистка.
+
+## Новые команды (v1.0.0)
+
+| Команда | Класс | Назначение |
+|---------|-------|-----------|
+| `/students` | `StudentsCmd` | Список учеников с inline-кнопками |
+| `/student <name>` | `StudentCmd` | Детали ученика: словарь, статус урока |
+| `/exercise` | `ExerciseCmd` | Генерация и проверка упражнений |
