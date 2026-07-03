@@ -6,8 +6,8 @@
 |---|------|--------|-------------|----------------------|
 | 1 | **Регистрация учителя** | ✅ | `/start`, `/register` | StartCmd (приветствие), RegisterCmd (chatId + имя) |
 | 2 | **Добавление учеников** | ✅ | `/newstudent` | NewStudentCmd → CreateStudentWithDictionary (оркестрация Dictionary + Student) |
-| 3 | **Список учеников** | ❌ | `/students` | Нет команды. Нужен FindTeacher.getStudents(chatId) + вывод списка |
-| 4 | **Детали ученика** | ❌ | `/student <name>` | Нет команды. Нужен выбор ученика (кнопки / inline-клавиатура) + показ словаря |
+| 3 | **Список учеников** | ✅ | `/students` | StudentsCmd + inline-кнопки с именами учеников |
+| 4 | **Детали ученика** | ✅ | click по кнопке | Inline-кнопка → callback → FindTeacher + StudentQuery → карточка: имя, статистика словаря, статус урока |
 | 5 | **Начало урока** | ✅ | `/startlesson` | StartLessonCmd → StartLesson. Но выбор ученика — первый из списка, а не через кнопку ⚠️ |
 | 6 | **Добавление слов на уроке** | ✅ | `/addword` | AddWordCmd: трёхшаговый ввод (word → POS → translation). Слово идёт и в Dictionary, и в Lesson |
 | 7 | **Завершение урока** | ✅ | `/endlesson` | EndLessonCmd → EndLesson. Выводит список слов урока ⚠️ (проверить вывод) |
@@ -33,7 +33,7 @@
 | D6 | InMemoryExerciseRepository → JPA | ❌ |
 | D7 | InMemoryStateMachineRepository → persistent | ❌ |
 | D8 | Рефакторинг команд чат-бота (расширяемость) | ❌ |
-| D9 | Выбор ученика через кнопки (фичи 3, 4, 5) | ❌ | InlineKeyboard / ReplyKeyboard в Telegram |
+| D9 | Выбор ученика через кнопки для startlesson | ❌ | Сейчас берёт первого. Нужно переделать на inline-кнопки выбора |
 
 ## История (done)
 

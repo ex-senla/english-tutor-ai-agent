@@ -6,6 +6,8 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.student.api.student.CreateStudent;
 import com.hydroyura.eta.student.api.student.CreateStudentCommand;
 import com.hydroyura.eta.student.api.student.StudentId;
+import com.hydroyura.eta.student.api.student.StudentDetails;
+import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
@@ -49,6 +51,16 @@ class CreateStudentWithDictionaryUseCaseTest {
             }
             public Optional<com.hydroyura.eta.dictionary.api.dictionary.DictionaryId> getDictionaryId(StudentId sid) {
                 return studentRepository.findById(sid).map(Student::getDictionaryId);
+            }
+            public java.util.List<StudentInfo> findStudentsByIds(Set<StudentId> ids) {
+                return ids.stream()
+                    .map(studentRepository::findById)
+                    .flatMap(Optional::stream)
+                    .map(s -> new StudentInfo(s.getId(), s.getName()))
+                    .toList();
+            }
+            public Optional<StudentDetails> findStudentDetails(StudentId studentId) {
+                return Optional.empty();
             }
         };
 

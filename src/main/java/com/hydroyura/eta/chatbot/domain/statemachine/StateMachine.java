@@ -1,10 +1,10 @@
 package com.hydroyura.eta.chatbot.domain.statemachine;
 
 import com.hydroyura.eta.chatbot.domain.command.Command;
+import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Optional;
 
 @Getter
 public final class StateMachine {
@@ -29,12 +29,25 @@ public final class StateMachine {
             return "Command not available in state: " + state + ". /help";
         }
         var result = command.execute(this, userMessage);
+        applyResult(result);
+        return result.message();
+    }
+
+    public BotExecuteResult executeFull(Command command, String userMessage) {
+        if (!state.allows(command.type())) {
+            return new BotExecuteResult("Command not available in state: " + state + ". /help", List.of());
+        }
+        var result = command.execute(this, userMessage);
+        applyResult(result);
+        return new BotExecuteResult(result.message(), result.inlineKeyboard());
+    }
+
+    private void applyResult(com.hydroyura.eta.chatbot.domain.command.Result result) {
         var newState = result.state();
         if (newState != null && newState != this.state) {
             this.state = newState;
         }
         result.context().ifPresent(ctx -> this.context = ctx);
-        return result.message();
     }
 
     public Optional<Class<? extends Command>> getPendingCommandSafely() {

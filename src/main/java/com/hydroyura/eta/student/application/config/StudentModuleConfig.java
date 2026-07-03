@@ -1,5 +1,6 @@
 package com.hydroyura.eta.student.application.config;
 
+import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.student.CreateStudent;
@@ -41,8 +42,10 @@ public class StudentModuleConfig {
     }
 
     @Bean
-    StudentQuery studentQuery(StudentRepository studentRepository) {
-        return new StudentQueryService(studentRepository);
+    StudentQuery studentQuery(StudentRepository studentRepository,
+                              FindWords findWords,
+                              FindActiveLesson findActiveLesson) {
+        return new StudentQueryService(studentRepository, findWords, findActiveLesson);
     }
 
     @Bean

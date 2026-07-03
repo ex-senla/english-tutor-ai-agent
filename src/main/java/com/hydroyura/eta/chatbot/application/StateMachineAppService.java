@@ -13,22 +13,21 @@ public class StateMachineAppService {
     private final StateMachineRepository repository;
     private final CommandDispatcher dispatcher;
 
-    public String handle(String message, Long chatId) {
+    public BotResponse handle(String message, Long chatId) {
         var id = new StateMachineId(chatId);
         var sm = repository.findById(id).orElse(StateMachine.ofDefaults(id));
 
-        // If pending command exists, use it; otherwise dispatch
         var command = sm.getPendingCommandSafely()
             .map(dispatcher::get)
             .orElseGet(() -> dispatcher.dispatch(message));
 
         if (command == null) {
-            return "Unknown command. /help";
+            return new BotResponse("Unknown command. /help");
         }
 
-        var response = sm.execute(command, message);
+        var result = sm.executeFull(command, message);
         repository.save(sm);
-        return response;
+        return new BotResponse(result.message(), result.inlineKeyboard());
     }
 
     public State getState(Long chatId) {

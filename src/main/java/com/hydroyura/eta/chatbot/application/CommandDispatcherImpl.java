@@ -21,6 +21,8 @@ public class CommandDispatcherImpl implements CommandDispatcher {
             new AddWordCmd(config.addWordToDictionary(), config.addWordToLesson(), config.studentQuery(), config.findTeacher()),
             new EndLessonCmd(config.endLesson()),
             new ExerciseCmd(config.findTeacher(), config.studentQuery(), config.generateExercise(), config.checkExercise()),
+            new StudentsCmd(config.findTeacher(), config.studentQuery()),
+            new StudentCmd(config.findTeacher(), config.studentQuery()),
             new HelpCmd()
         );
     }
