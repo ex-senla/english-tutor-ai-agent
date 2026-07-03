@@ -4,17 +4,27 @@
 
 ## Составляющие
 
-### Exercise (Entity)
-- `id` — пока скелет.
+### Exercise (@Entity)
+- `id` (@Identity, ExerciseId) — пока скелет.
+- Статическая фабрика: `Exercise.create(id)`.
 
-## Use Cases
+## API (публичные интерфейсы)
 
-Пока нет. Нужен: `GenerateExercise`.
+| Интерфейс | Метод |
+|-----------|-------|
+| (пока нет) | |
 
-## Зависимости (Spring Modulith)
+## Use Cases (Application)
+
+Пока нет. Планируется: `GenerateExercise`.
+
+## Зависимости
 ```java
-@ApplicationModule(allowedDependencies = "dictionary")
+@ApplicationModule(allowedDependencies = "dictionary :: dictionary")
 ```
 
+## Инфраструктура
+- `InMemoryExerciseRepository` — `ConcurrentHashMap<ExerciseId, Exercise>`
+
 ## Статус
-⚠️ Старая структура (api/ в корне, domain/model/). Нужна миграция.
+⚠️ Скелет. Требуется наполнение: API, use cases, типы упражнений.

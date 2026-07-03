@@ -3,40 +3,56 @@
 ## Состояния
 
 ```
-UNREGISTERED → ACTIVE → IN_LESSON → ACTIVE → ...
+NOT_REGISTER → ACTIVE → IN_LESSON → ACTIVE → ...
 ```
 
 | State | Контекст | Допустимые команды |
 |-------|----------|-------------------|
-| `UNREGISTERED` | — | `/start`, `/register`, `/help` |
-| `ACTIVE` | `ActiveContext(teacherId)` | `/newstudent`, `/startlesson`, `/help` |
-| `IN_LESSON` | `LessonContext(teacherId, studentId, lessonId)` | `/add`, `/endlesson`, `/help` |
+| `NOT_REGISTER` | — | `/start`, `/register`, `/help` |
+| `ACTIVE` | — | `/start`, `/newstudent`, `/startlesson`, `/help` |
+| `IN_LESSON` | `context["lessonId"] = UUID` | `/add`, `/endlesson`, `/help` |
 
-## Двухфазный ввод
+## Двухфазный ввод (через pendingCommand)
 
 Команды с аргументами (`/register`, `/newstudent`, `/startlesson`, `/add`) работают в два шага:
 
 ```mermaid
 sequenceDiagram
+    participant SM as StateMachine
+    participant SVC as StateMachineAppService
+    participant DISP as CommandDispatcher
+    participant CMD as Command
+
     U->>B: нажимает /register (кнопка)
-    B->>SM: process("/register")
-    SM->>SM: pendingCommand = "/register"
+    B->>SVC: handle("/register", chatId)
+    SVC->>DISP: dispatch("/register")
+    DISP-->>SVC: RegisterCmd
+    SVC->>CMD: execute(sm, "/register")
+    CMD->>SM: setPendingCommand(RegisterCmd.class)
+    CMD-->>SVC: Result.stay("Enter your name:")
     B-->>U: "Enter your name:"
+
     U->>B: Yury
-    B->>SM: process("Yury")
-    SM->>SM: text = "/register Yury", clearPending
+    B->>SVC: handle("Yury", chatId)
+    SVC->>SM: getPendingCommandSafely() → RegisterCmd.class
+    SVC->>DISP: get(RegisterCmd.class)
+    DISP-->>SVC: RegisterCmd
+    SVC->>CMD: execute(sm, "Yury")
+    CMD->>CMD: registerTeacher.execute(...)
+    CMD->>SM: clearPendingCommand()
+    CMD-->>SVC: Result.transition("✅ Registered!", ACTIVE)
     B-->>U: "✅ Registered!" + кнопки ACTIVE
 ```
 
-1. **Кнопка** — бот сохраняет `pendingCommand` и просит ввод
-2. **Текст** — бот подставляет `pendingCommand + " " + текст` и выполняет
+1. **Кнопка** — команда сохраняет `pendingCommand` (класс) и просит ввод
+2. **Текст** — `StateMachineAppService` видит pending, получает команду по классу, выполняет с текстом
 
 ## Граф переходов
 
 ```mermaid
 stateDiagram-v2
-    [*] --> UNREGISTERED
-    UNREGISTERED --> ACTIVE: /register <name>
+    [*] --> NOT_REGISTER
+    NOT_REGISTER --> ACTIVE: /register <name>
     ACTIVE --> IN_LESSON: /startlesson <name>
     IN_LESSON --> ACTIVE: /endlesson
 ```
@@ -47,7 +63,7 @@ stateDiagram-v2
 sequenceDiagram
     participant TG as Telegram
     participant B as EnglishTutorBot
-    participant SVC as StateMachineService
+    participant SVC as StateMachineAppService
     participant R as StateMachineRepository
     participant D as CommandDispatcher
     participant C as Command
@@ -55,35 +71,48 @@ sequenceDiagram
     participant API as Business API
 
     TG->>B: Update (chatId, text)
-    B->>SVC: process(chatId, text)
-    SVC->>R: findByChatId(chatId)
-    R-->>SVC: StateMachine (state, context, pending)
-    
-    alt pendingCommand != null & text не команда
-        SVC->>SVC: text = pendingCommand + " " + text
-        SVC->>SM: clearPendingCommand()
+    B->>SVC: handle(text, chatId)
+    SVC->>R: findById(chatId)
+    R-->>SVC: StateMachine (state, context, pendingCommand)
+
+    alt pendingCommand != null
+        SVC->>D: get(pendingCommand)
+    else
+        SVC->>D: dispatch(text)
     end
-    
-    SVC->>D: dispatch(text)
     D-->>SVC: Command
-    SVC->>SM: applyCommand(command)
-    
-    alt state.allows(command.type)
-        SM->>C: execute(this)
+
+    SVC->>SM: execute(command, text)
+    alt state.allows(command.type())
+        SM->>C: execute(this, text)
         C->>API: use case call
         API-->>C: result
-        C-->>SM: ExecutionResult(state, context, message)
-        SM->>SM: updateState + updateContext
-    else not allowed
-        SM-->>SVC: "Not available"
+        C-->>SM: Result(state, context, message)
+        SM->>SM: state = result.state()
+        SM->>SM: context = result.context()
+    else
+        SM-->>SVC: "Command not available"
     end
-    
+
     SVC->>R: save(stateMachine)
     SVC-->>B: response text
     B->>SM: getState()
     SM-->>B: current state
     B->>TG: SendMessage(text + keyboard(state))
 ```
+
+## Многошаговый ввод AddWordCmd
+
+`/add` использует context как временное хранилище для трёхшагового ввода:
+
+```
+/add → "Enter word:"       (step=0, pending=AddWordCmd)
+  apple → "Enter POS:"      (step=1, word=apple)
+  NOUN → "Enter translation:" (step=2, pos=NOUN)
+  яблоко → "✅ added"      (done, clearPending)
+```
+
+Альтернативно: `/add apple NOUN яблоко` — все три шага в одном сообщении.
 
 ## Архитектура взаимодействия
 
@@ -99,15 +128,23 @@ flowchart TB
         end
 
         subgraph Application
-            SVC[StateMachineService]
-            DISP[CommandDispatcher]
+            SVC[StateMachineAppService]
+            CFG[CommandDispatcherConfig]
+            DISP[CommandDispatcherImpl]
+            MOD[ChatbotModuleConfig]
         end
 
-        subgraph Domain
+        subgraph "Domain - StateMachine"
             SM[StateMachine]
             ST[State]
             CTX[Context]
             REPO[StateMachineRepository]
+        end
+
+        subgraph "Domain - Command"
+            CMD[Command]
+            RES[Result]
+            CDISP[CommandDispatcher]
         end
 
         subgraph Commands
@@ -128,12 +165,16 @@ flowchart TB
     end
 
     U -->|"/register"| B
-    B -->|process| SVC
+    B -->|handle| SVC
     SVC -->|load/save| REPO
-    SVC -->|dispatch| DISP
-    DISP -->|create| C2
+    SVC -->|dispatch/get| DISP
+    DISP -->|create via| CFG
+    CFG -->|injects| TEACHER
+    CFG -->|injects| STUDENT
+    CFG -->|injects| DICT
     C2 -->|execute| SM
     C2 -->|calls| TEACHER
-    SM -->|state + context| ST
+    SM -->|state| ST
     SM -->|context| CTX
+    MOD -->|creates bean| SVC
 ```
