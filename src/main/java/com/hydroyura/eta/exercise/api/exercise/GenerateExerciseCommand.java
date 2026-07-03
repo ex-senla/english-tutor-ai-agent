@@ -1,7 +1,6 @@
 package com.hydroyura.eta.exercise.api.exercise;
 
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
-import com.hydroyura.eta.exercise.domain.exercise.ExerciseType;
 import java.util.Objects;
 
 public record GenerateExerciseCommand(

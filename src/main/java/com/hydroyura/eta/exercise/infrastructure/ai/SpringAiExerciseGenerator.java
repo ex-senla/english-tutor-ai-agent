@@ -32,11 +32,19 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
             (AI-generated content will appear here)
             """.formatted(command.type(), command.topic(), wordList);
 
+        var expectedAnswer = switch (command.type()) {
+            case FILL_IN_THE_BLANK -> "(expected word)";
+            case TRANSLATION -> "(expected translation)";
+            case MATCHING -> "(expected matches)";
+            case MULTIPLE_CHOICE -> "A";
+        };
+
         return new ExerciseDto(
             ExerciseId.generate(),
             command.type(),
             command.topic(),
             placeholder,
+            expectedAnswer,
             ExerciseStatus.GENERATED
         );
     }

@@ -1,6 +1,7 @@
 package com.hydroyura.eta.chatbot.application;
 
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
@@ -21,5 +22,6 @@ public record CommandDispatcherConfig(
     EndLesson endLesson,
     FindTeacher findTeacher,
     StudentQuery studentQuery,
-    GenerateExercise generateExercise
+    GenerateExercise generateExercise,
+    CheckExercise checkExercise
 ) {}

@@ -2,6 +2,7 @@ package com.hydroyura.eta.exercise.domain.exercise;
 
 import com.hydroyura.eta.dictionary.api.word.WordId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -22,6 +23,7 @@ public class Exercise {
     @Association
     private Set<WordId> wordIds = new HashSet<>();
     private String content;
+    private String expectedAnswer;
     private ExerciseStatus status;
 
     private Exercise() {}
@@ -44,6 +46,19 @@ public class Exercise {
     public void setContent(String content) {
         Objects.requireNonNull(content, "content must not be null");
         this.content = content;
+    }
+
+    public void setExpectedAnswer(String expectedAnswer) {
+        Objects.requireNonNull(expectedAnswer, "expectedAnswer must not be null");
+        this.expectedAnswer = expectedAnswer;
+    }
+
+    public void markAnswered() {
+        this.status = ExerciseStatus.ANSWERED;
+    }
+
+    public void markChecked() {
+        this.status = ExerciseStatus.CHECKED;
     }
 
     public Set<WordId> getWordIds() {
