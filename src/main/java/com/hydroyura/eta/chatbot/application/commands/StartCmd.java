@@ -17,7 +17,7 @@ public class StartCmd implements Command {
     @Override
     public Result execute(StateMachine sm, String userMessage) {
         if (findTeacher.findByTelegramChatId(sm.getId().chatId()).isPresent())
-            return Result.stay("Welcome back!", type());
+            return Result.transition("Welcome back!", type(), State.ACTIVE, new Context());
         return Result.stay("Welcome! /register <name>", type());
     }
 }

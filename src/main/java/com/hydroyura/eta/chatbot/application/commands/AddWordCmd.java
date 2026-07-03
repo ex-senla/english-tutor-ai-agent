@@ -9,6 +9,7 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import java.util.*;
 
 public class AddWordCmd implements Command {
@@ -16,32 +17,30 @@ public class AddWordCmd implements Command {
     private static final String STEP = "addWord.step";
     private static final String WORD = "addWord.word";
     private static final String POS = "addWord.pos";
+    private static final String LESSON_ID = "lessonId";
 
     private final AddWordToDictionary addWordToDictionary;
     private final AddWordToLesson addWordToLesson;
     private final StudentQuery studentQuery;
+    private final FindTeacher findTeacher;
 
-    public AddWordCmd(AddWordToDictionary awd, AddWordToLesson awl, StudentQuery sq) {
-        this.addWordToDictionary = awd; this.addWordToLesson = awl; this.studentQuery = sq;
+    public AddWordCmd(AddWordToDictionary awd, AddWordToLesson awl, StudentQuery sq, FindTeacher ft) {
+        this.addWordToDictionary = awd; this.addWordToLesson = awl; this.studentQuery = sq; this.findTeacher = ft;
     }
-
-    public AddWordCmd(String text, AddWordToDictionary awd, AddWordToLesson awl, StudentQuery sq) { this(awd, awl, sq); }
 
     @Override public CommandType type() { return CommandType.ADD_WORD; }
     @Override public boolean matches(String text) { return text.startsWith("/add"); }
 
     @Override
     public Result execute(StateMachine sm, String userMessage) {
-        // If pending already set — continue multi-step
         if (sm.getPendingCommandSafely().isPresent())
             return handleStep(sm, userMessage);
 
-        // If /add with data — parse it directly
-        if (userMessage.startsWith("/add "))
-            return handleStep(sm, userMessage.substring(5).trim());
-
-        // Button click: /add without args — start multi-step
         sm.setPendingCommand(AddWordCmd.class);
+        if (userMessage.startsWith("/add ")) {
+            resetContext(sm);
+            return handleStep(sm, userMessage.substring(5).trim());
+        }
         resetContext(sm);
         return Result.stay("Enter word:", type());
     }
@@ -77,20 +76,42 @@ public class AddWordCmd implements Command {
     private Result stepTranslation(StateMachine sm, String input) {
         if (input.isBlank()) return Result.stay("Enter translation:", type());
 
-        String word = (String) sm.getContext().get(WORD);
-        String posStr = (String) sm.getContext().get(POS);
-        PartOfSpeech pos = PartOfSpeech.valueOf(posStr);
+        var word = (String) sm.getContext().get(WORD);
+        var posStr = (String) sm.getContext().get(POS);
+        var pos = PartOfSpeech.valueOf(posStr);
 
         var translations = new HashSet<>(Arrays.asList(input.split(";")));
         translations.removeIf(String::isBlank);
 
-        // TODO: integrate with student's dictionary + lesson
-        // var dictId = studentQuery.getDictionaryId(...).orElseThrow();
-        // var wid = addWordToDictionary.execute(new AddWordCommand(dictId, word, translations, pos));
+        // Find student and dictionary
+        var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
+        var studentId = findActiveLessonStudent(sm, studentIds);
+        if (studentId.isEmpty()) {
+            resetContext(sm); sm.clearPendingCommand();
+            return Result.stay("No active lesson — word not saved", type());
+        }
+        var dictId = studentQuery.getDictionaryId(studentId.get()).orElseThrow();
+        var wid = addWordToDictionary.execute(new AddWordCommand(dictId, word, translations, pos));
+
+        // Add to lesson if one is active
+        var lessonId = (java.util.UUID) sm.getContext().get(LESSON_ID);
+        if (lessonId != null) {
+            addWordToLesson.execute(new AddWordToLessonCommand(
+                new com.hydroyura.eta.student.api.lesson.LessonId(lessonId), wid));
+        }
 
         resetContext(sm);
         sm.clearPendingCommand();
         return Result.stay("✅ \"" + word + "\" (" + pos + ") added", type());
+    }
+
+    private java.util.Optional<com.hydroyura.eta.student.api.student.StudentId> findActiveLessonStudent(
+        StateMachine sm, java.util.Set<com.hydroyura.eta.student.api.student.StudentId> studentIds) {
+        for (var sid : studentIds) {
+            var dictId = studentQuery.getDictionaryId(sid);
+            if (dictId.isPresent()) return java.util.Optional.of(sid);
+        }
+        return java.util.Optional.empty();
     }
 
     private int getStep(StateMachine sm) {

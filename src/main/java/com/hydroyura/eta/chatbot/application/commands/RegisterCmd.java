@@ -3,20 +3,18 @@ package com.hydroyura.eta.chatbot.application.commands;
 import com.hydroyura.eta.chatbot.domain.command.Command;
 import com.hydroyura.eta.chatbot.domain.command.Result;
 import com.hydroyura.eta.chatbot.domain.statemachine.*;
+import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
 
 public class RegisterCmd implements Command {
 
     private final RegisterTeacher registerTeacher;
+    private final FindTeacher findTeacher;
 
-    public RegisterCmd(RegisterTeacher registerTeacher) {
+    public RegisterCmd(RegisterTeacher registerTeacher, FindTeacher findTeacher) {
         this.registerTeacher = registerTeacher;
-    }
-
-    // For initial dispatch with text
-    public RegisterCmd(String text, RegisterTeacher registerTeacher) {
-        this(registerTeacher);
+        this.findTeacher = findTeacher;
     }
 
     @Override public CommandType type() { return CommandType.REGISTER; }
@@ -40,6 +38,11 @@ public class RegisterCmd implements Command {
         if (name.isBlank()) {
             sm.setPendingCommand(RegisterCmd.class);
             return Result.stay("Enter your name:", type());
+        }
+        // Check if already registered
+        if (findTeacher.findByTelegramChatId(sm.getId().chatId()).isPresent()) {
+            sm.clearPendingCommand();
+            return Result.transition("Already registered!", type(), State.ACTIVE, new Context());
         }
         registerTeacher.execute(new RegisterTeacherCommand(sm.getId().chatId(), name));
         sm.clearPendingCommand();

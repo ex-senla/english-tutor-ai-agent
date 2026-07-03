@@ -15,10 +15,10 @@ public class CommandDispatcherImpl implements CommandDispatcher {
     public CommandDispatcherImpl(CommandDispatcherConfig config) {
         this.templates = List.of(
             new StartCmd(config.findTeacher()),
-            new RegisterCmd(config.registerTeacher()),
+            new RegisterCmd(config.registerTeacher(), config.findTeacher()),
             new NewStudentCmd(config.createStudentWithDictionary(), config.findTeacher()),
             new StartLessonCmd(config.startLesson(), config.findTeacher(), config.studentQuery()),
-            new AddWordCmd(config.addWordToDictionary(), config.addWordToLesson(), config.studentQuery()),
+            new AddWordCmd(config.addWordToDictionary(), config.addWordToLesson(), config.studentQuery(), config.findTeacher()),
             new EndLessonCmd(config.endLesson()),
             new HelpCmd()
         );
@@ -40,8 +40,4 @@ public class CommandDispatcherImpl implements CommandDispatcher {
             .orElse(null);
     }
 
-    @Override
-    public String getCommandPrefix(Class<? extends Command> clazz) {
-        return null; // deprecated, kept for interface compatibility
-    }
 }

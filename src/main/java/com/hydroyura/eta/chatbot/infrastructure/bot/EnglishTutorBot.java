@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Slf4j
@@ -19,14 +20,14 @@ import java.util.Objects;
 public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final String botUsername;
-    private final StateMachineAppService stateMachineAppService;
+    private final StateMachineAppService service;
 
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
                            @Value("${telegram.bot.username}") String botUsername,
                            StateMachineAppService service) {
         super(botToken);
         this.botUsername = botUsername;
-        this.stateMachineAppService = service;
+        this.service = service;
     }
 
     @Override public String getBotUsername() { return botUsername; }
@@ -40,12 +41,10 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         log.info("[{}] {}", chatId, text);
 
         try {
-            var response = stateMachineAppService.handle(text, chatId);
+            var response = service.handle(text, chatId);
             if (Objects.nonNull(response)) {
-                var state = stateMachineAppService.getState(chatId);
-                var buttons = state != null
-                    ? java.util.Arrays.asList(keyboardFor(state))
-                    : new ArrayList<String>();
+                var state = service.getState(chatId);
+                var buttons = state != null ? Arrays.asList(state.keyboardButtons()) : new ArrayList<String>();
                 sendMessage(chatId, response, buttons);
             }
         } catch (Exception e) {
@@ -68,15 +67,5 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) { log.error("Send failed", e); }
     }
 
-    private String[] keyboardFor(com.hydroyura.eta.chatbot.domain.statemachine.State state) {
-        return switch (state) {
-            case NOT_REGISTER -> new String[]{"/start", "/register", "/help"};
-            case ACTIVE -> new String[]{"/newstudent", "/startlesson", "/help"};
-            case IN_LESSON -> new String[]{"/add", "/endlesson", "/help"};
-        };
-    }
-
-    private void sendMessage(Long chatId, String text) {
-        sendMessage(chatId, text, new ArrayList<>());
-    }
+    private void sendMessage(Long chatId, String text) { sendMessage(chatId, text, new ArrayList<>()); }
 }

@@ -18,4 +18,12 @@ public enum State {
     public boolean allows(CommandType type) {
         return allowedCommands.contains(type);
     }
+
+    public String[] keyboardButtons() {
+        return switch (this) {
+            case NOT_REGISTER -> new String[]{"/start", "/register", "/help"};
+            case ACTIVE -> new String[]{"/newstudent", "/startlesson", "/help"};
+            case IN_LESSON -> new String[]{"/add", "/endlesson", "/help"};
+        };
+    }
 }

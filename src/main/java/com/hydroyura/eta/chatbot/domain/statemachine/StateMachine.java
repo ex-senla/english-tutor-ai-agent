@@ -45,11 +45,4 @@ public final class StateMachine {
         this.pendingCommand = null;
     }
 
-    public String[] keyboardButtons() {
-        return switch (state) {
-            case NOT_REGISTER -> new String[]{"/start", "/register", "/help"};
-            case ACTIVE -> new String[]{"/newstudent", "/startlesson", "/help"};
-            case IN_LESSON -> new String[]{"/add", "/endlesson", "/help"};
-        };
-    }
 }
