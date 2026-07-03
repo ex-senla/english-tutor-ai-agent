@@ -13,8 +13,8 @@ public class HelpCmd implements Command {
     public Result execute(StateMachine sm, String userMessage) {
         var msg = switch (sm.getState()) {
             case NOT_REGISTER -> "/register <name>";
-            case ACTIVE -> "/newstudent <name> | /startlesson <name>";
-            case IN_LESSON -> "/add <word> <POS> <tr> | /endlesson";
+            case ACTIVE -> "/newstudent <name> | /startlesson <name> | /exercise <type> <topic>";
+            case IN_LESSON -> "/add <word> <POS> <tr> | /endlesson | /exercise <type> <topic>";
         };
         return Result.stay(msg, type());
     }

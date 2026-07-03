@@ -6,6 +6,7 @@
  */
 @org.springframework.modulith.ApplicationModule(
     allowedDependencies = {"teacher :: teacher", "student :: student",
-        "student :: lesson", "dictionary :: dictionary", "dictionary :: word"}
+        "student :: lesson", "dictionary :: dictionary", "dictionary :: word",
+        "exercise :: exercise"}
 )
 package com.hydroyura.eta.chatbot;
