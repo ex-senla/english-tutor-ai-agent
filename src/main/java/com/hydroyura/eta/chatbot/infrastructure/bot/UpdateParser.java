@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+import java.util.Optional;
+
 import static java.lang.Boolean.FALSE;
 
 @RequiredArgsConstructor
@@ -24,8 +27,9 @@ public final class UpdateParser {
 
         // check if command or input param
         if (update.hasMessage()) {
-            var isCommand = update.getMessage().getEntities()
+            var isCommand = Optional.ofNullable(update.getMessage().getEntities())
                     .stream()
+                    .flatMap(List::stream)
                     .findFirst()
                     .map(MessageEntity::getType)
                     .map("BOT_COMMAND"::equalsIgnoreCase)
