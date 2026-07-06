@@ -45,5 +45,3 @@
 - [x] Teacher — CreateStudentWithDictionary (оркестрация Dictionary → Student)
 - [x] Lesson — Entity внутри агрегата Student
 - [x] Exercise — GenerateExercise + CheckExercise API/use cases, ExerciseType (4 типа), ExerciseStatus (3 статуса)
-- [x] StateMachine: pendingCommand, Context key-value, CommandDispatcher, двухфазный/трёхшаговый ввод, Result.stay/transition
-- [x] ExerciseCmd: двухфазная работа (генерация → проверка ответа)
