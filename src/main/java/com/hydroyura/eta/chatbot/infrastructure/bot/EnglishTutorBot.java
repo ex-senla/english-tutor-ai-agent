@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Slf4j
@@ -60,10 +63,15 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         service.save(sm);
 
         // 5. prepare response
-        var sendMessage = converter.convert(result, chatId);
+        var response = converter.convert(result, chatId);
 
-        // 6. send response message
-        execute(sendMessage);
+        // 6. send/edit/delete message
+        switch (response) {
+            case SendMessage msg -> execute(msg);
+            case EditMessageText edit -> execute(edit);
+            case DeleteMessage delete -> execute(delete);
+            default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
+        }
     }
 
     private Long extractChatId(Update update) {

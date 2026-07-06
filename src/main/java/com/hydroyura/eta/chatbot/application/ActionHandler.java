@@ -166,12 +166,12 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentsList(StateMachine sm, Action action) {
-        if (action instanceof Action.Callback(var data)) {
+        if (action instanceof Action.Callback(var data, var messageId)) {
             if (data.startsWith("student:")) {
                 var studentId = data.substring("student:".length());
                 sm.getContext().put("selectedStudentId", studentId);
                 sm.updateState(State.STUDENT_OPTIONS);
-                return studentOptionsMenu(sm, studentId);
+                return studentOptionsEdit(sm, studentId, messageId);
             }
             return new ActionResult.TextResponse("Выберите ученика кнопками ниже");
         }
@@ -208,25 +208,25 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentOptions(StateMachine sm, Action action) {
-        if (action instanceof Action.Callback(var data)) {
+        if (action instanceof Action.Callback(var data, var messageId)) {
             var studentId = (String) sm.getContext().get("selectedStudentId");
             return switch (data) {
                 case "action:startlesson" -> {
-                    // TODO: StartLesson use case, store lessonId in context
                     sm.updateState(State.IN_LESSON);
-                    yield new ActionResult.TextResponse("Урок начат! /addword — добавить слово, /finishlesson — завершить");
+                    yield new ActionResult.EditMessageText(messageId, "Урок начат! /addword — добавить слово, /finishlesson — завершить", List.of());
                 }
                 case "action:details" -> {
                     sm.updateState(State.STUDENT_DETAILS);
-                    yield new ActionResult.TextResponse("Детали ученика (TODO)");
+                    yield new ActionResult.EditMessageText(messageId, "Детали ученика (TODO)",
+                            List.of(List.of(new ActionResult.InlineButton("◀ Back", "details:back"))));
                 }
                 case "action:exercise" -> {
                     sm.updateState(State.AWAITING_EXERCISE_TYPE);
-                    yield exerciseTypeMenu();
+                    yield exerciseTypeEdit(messageId);
                 }
                 case "action:back" -> {
                     sm.updateState(State.STUDENTS_LIST);
-                    yield studentsListMenu(sm);
+                    yield studentsListEdit(sm, messageId);
                 }
                 default -> new ActionResult.TextResponse("Используйте кнопки ниже");
             };
@@ -237,7 +237,7 @@ public class ActionHandler {
     private ActionResult studentOptionsMenu(StateMachine sm, String studentId) {
         var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
         var name = studentQuery.findStudentsByIds(studentIds).stream()
-                .filter(s -> s.id().value().equals(studentId))
+                .filter(s -> s.id().value().toString().equals(studentId))
                 .map(StudentInfo::name)
                 .findFirst()
                 .orElse("?");
@@ -258,11 +258,11 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentDetails(StateMachine sm, Action action) {
-        if (action instanceof Action.Callback(var data)) {
+        if (action instanceof Action.Callback(var data, var messageId)) {
             if ("details:back".equals(data)) {
                 sm.updateState(State.STUDENT_OPTIONS);
                 var studentId = (String) sm.getContext().get("selectedStudentId");
-                return studentOptionsMenu(sm, studentId);
+                return studentOptionsEdit(sm, studentId, messageId);
             }
         }
         return new ActionResult.TextResponse("Используйте кнопки ниже");
@@ -298,7 +298,7 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleAwaitingExerciseType(StateMachine sm, Action action) {
-        if (action instanceof Action.Callback(var data)) {
+        if (action instanceof Action.Callback(var data, var messageId)) {
             if (data.equals("exercise:FILL_IN_THE_BLANK") || data.equals("exercise:MULTIPLE_CHOICE")) {
                 sm.getContext().put("exerciseType", data);
                 sm.updateState(State.AWAITING_EXERCISE_TOPIC);
@@ -322,5 +322,52 @@ public class ActionHandler {
 
     private ActionResult handleAwaitingExerciseAnswer(StateMachine sm, Action action) {
         return new ActionResult.TextResponse("Проверка ответа (TODO)");
+    }
+
+    // ========================================================================
+    // EDIT message helpers (replace existing inline keyboard message)
+    // ========================================================================
+
+    private ActionResult studentOptionsEdit(StateMachine sm, String studentId, int messageId) {
+        var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
+        var name = studentQuery.findStudentsByIds(studentIds).stream()
+                .filter(s -> s.id().value().toString().equals(studentId))
+                .map(StudentInfo::name)
+                .findFirst()
+                .orElse("?");
+
+        sm.getContext().put("selectedStudentName", name);
+
+        var keyboard = List.of(
+                List.of(new InlineButton("▶ Start Lesson", "action:startlesson")),
+                List.of(new InlineButton("📋 Details", "action:details")),
+                List.of(new InlineButton("🎯 Exercise", "action:exercise")),
+                List.of(new InlineButton("◀ Back", "action:back"))
+        );
+        return new ActionResult.EditMessageText(messageId, "Ученик: " + name, keyboard);
+    }
+
+    private ActionResult studentsListEdit(StateMachine sm, int messageId) {
+        var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
+
+        if (studentIds.isEmpty()) {
+            return new ActionResult.EditMessageText(messageId,
+                    "У вас пока нет учеников.\n/newstudent — добавить ученика", List.of());
+        }
+
+        var students = studentQuery.findStudentsByIds(studentIds);
+        var keyboard = students.stream()
+                .map(s -> List.of(new InlineButton(s.name(), "student:" + s.id().value())))
+                .toList();
+
+        return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
+    }
+
+    private ActionResult exerciseTypeEdit(int messageId) {
+        var keyboard = List.of(
+                List.of(new InlineButton("✏️ Fill in the blank", "exercise:FILL_IN_THE_BLANK")),
+                List.of(new InlineButton("🔤 Multiple choice", "exercise:MULTIPLE_CHOICE"))
+        );
+        return new ActionResult.EditMessageText(messageId, "Выберите тип упражнения:", keyboard);
     }
 }

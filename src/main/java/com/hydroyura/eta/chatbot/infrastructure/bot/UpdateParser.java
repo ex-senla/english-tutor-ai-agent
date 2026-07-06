@@ -22,7 +22,10 @@ public final class UpdateParser {
 
         // check if callBack
         if (update.hasCallbackQuery()) {
-            return new Action.Callback(update.getCallbackQuery().getData());
+            var callbackQuery = update.getCallbackQuery();
+            var data = callbackQuery.getData();
+            var messageId = callbackQuery.getMessage().getMessageId();
+            return new Action.Callback(data, messageId);
         }
 
         // check if command or input param

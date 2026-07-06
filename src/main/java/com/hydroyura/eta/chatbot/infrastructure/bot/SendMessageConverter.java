@@ -4,6 +4,8 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -11,15 +13,16 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 
 import java.util.List;
 
-// TODO: check convert logic, implemented via llm
 @Component
 public final class SendMessageConverter {
 
-    public SendMessage convert(ActionResult result, Long chatId) {
+    public Object convert(ActionResult result, Long chatId) {
         return switch (result) {
             case ActionResult.TextResponse(var text) -> buildText(chatId, text);
             case ActionResult.TextWithInlineKeyboard(var text, var keyboard) -> buildInline(chatId, text, keyboard);
             case ActionResult.TextWithReplyKeyboard(var text, var keyboard) -> buildReply(chatId, text, keyboard);
+            case ActionResult.EditMessageText(var messageId, var text, var keyboard) -> buildEdit(chatId, messageId, text, keyboard);
+            case ActionResult.DeleteMessage(var messageId) -> buildDelete(chatId, messageId);
         };
     }
 
@@ -61,6 +64,32 @@ public final class SendMessageConverter {
                 .chatId(chatId.toString())
                 .text(text)
                 .replyMarkup(new ReplyKeyboardMarkup(telegramKeyboard))
+                .build();
+    }
+
+    private EditMessageText buildEdit(Long chatId, int messageId, String text, List<List<InlineButton>> keyboard) {
+        var telegramKeyboard = keyboard.stream()
+                .map(row -> row.stream()
+                        .map(btn -> InlineKeyboardButton.builder()
+                                .text(btn.text())
+                                .callbackData(btn.callbackData())
+                                .build())
+                        .toList())
+                .map(row -> (List<InlineKeyboardButton>) row)
+                .toList();
+
+        return EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text(text)
+                .replyMarkup(new InlineKeyboardMarkup(telegramKeyboard))
+                .build();
+    }
+
+    private DeleteMessage buildDelete(Long chatId, int messageId) {
+        return DeleteMessage.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
                 .build();
     }
 }

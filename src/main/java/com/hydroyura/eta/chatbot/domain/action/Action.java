@@ -7,6 +7,6 @@ public sealed interface Action permits Action.Command, Action.InputParam, Action
 
     record InputParam(String text) implements Action {}
 
-    record Callback(String data) implements Action {}
+    record Callback(String data, int messageId) implements Action {}
 
 }
