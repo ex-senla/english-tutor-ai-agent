@@ -37,6 +37,14 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     @Override
     @SneakyThrows // TODO: create exception handler
     public void onUpdateReceived(Update update) {
+        // skip non-actionable updates (bot kicked, chat member changes, etc.)
+        if (update.hasMyChatMember()) {
+            var status = update.getMyChatMember().getNewChatMember().getStatus();
+            var chatId = update.getMyChatMember().getChat().getId();
+            log.info("my_chat_member update: chatId={}, status={}", chatId, status);
+            return;
+        }
+
         // 0. get chatId
         var chatId = extractChatId(update);
         // 1. get stateMachine
