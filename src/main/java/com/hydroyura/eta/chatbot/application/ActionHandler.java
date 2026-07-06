@@ -5,6 +5,12 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
+import com.hydroyura.eta.student.api.lesson.EndLesson;
+import com.hydroyura.eta.student.api.lesson.EndLessonCommand;
+import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
+import com.hydroyura.eta.student.api.lesson.StartLesson;
+import com.hydroyura.eta.student.api.lesson.StartLessonCommand;
+import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
@@ -12,6 +18,7 @@ import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,6 +34,9 @@ public class ActionHandler {
     private final RegisterTeacher registerTeacher;
     private final CreateStudentWithDictionary createStudentWithDictionary;
     private final StudentQuery studentQuery;
+    private final FindActiveLesson findActiveLesson;
+    private final StartLesson startLesson;
+    private final EndLesson endLesson;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -209,14 +219,8 @@ public class ActionHandler {
 
     private ActionResult handleStudentOptions(StateMachine sm, Action action) {
         if (action instanceof Action.Callback(var data, var messageId)) {
-            var studentId = (String) sm.getContext().get("selectedStudentId");
             return switch (data) {
-                case "action:startlesson" -> {
-                    sm.updateState(State.IN_LESSON);
-                    var name = (String) sm.getContext().getOrDefault("selectedStudentName", "?");
-                    yield new ActionResult.EditMessageText(messageId,
-                            "Урок начат для " + name + "! /addword — добавить слово, /finishlesson — завершить", List.of());
-                }
+                case "action:startlesson" -> doStartLesson(sm, messageId);
                 case "action:details" -> {
                     sm.updateState(State.STUDENT_DETAILS);
                     yield new ActionResult.EditMessageText(messageId, "Детали ученика (TODO)",
@@ -234,6 +238,20 @@ public class ActionHandler {
             };
         }
         return new ActionResult.TextResponse("Используйте кнопки ниже");
+    }
+
+    private ActionResult doStartLesson(StateMachine sm, int messageId) {
+        var studentId = (String) sm.getContext().get("selectedStudentId");
+        var sid = new StudentId(UUID.fromString(studentId));
+        var name = (String) sm.getContext().getOrDefault("selectedStudentName", "?");
+
+        var lessonId = startLesson.execute(new StartLessonCommand(sid, "Урок " + name));
+        sm.getContext().put("activeLessonId", lessonId.value().toString());
+        sm.updateState(State.IN_LESSON);
+        log.info("Lesson {} started for student {}", lessonId, studentId);
+
+        return new ActionResult.EditMessageText(messageId,
+                "Урок начат для " + name + "! /addword — добавить слово, /finishlesson — завершить", List.of());
     }
 
     private ActionResult studentOptionsMenu(StateMachine sm, String studentId) {
@@ -275,8 +293,31 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleInLesson(StateMachine sm, Action action) {
-        // TODO: implement
-        return new ActionResult.TextResponse("Идёт урок (TODO)");
+        if (action instanceof Action.Command(var cmd, var userName)) {
+            if ("/finishlesson".equals(cmd)) {
+                var studentIdStr = (String) sm.getContext().get("selectedStudentId");
+                var studentId = new StudentId(UUID.fromString(studentIdStr));
+
+                var lessonId = findActiveLesson.findByStudentId(studentId)
+                        .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
+
+                endLesson.execute(new EndLessonCommand(lessonId));
+                log.info("Lesson {} ended for student {}", lessonId, studentIdStr);
+
+                sm.updateState(State.STUDENT_OPTIONS);
+                return activeMenuWithMessage("✅ Урок завершён!", userName);
+            }
+            if ("/addword".equals(cmd)) {
+                sm.updateState(State.AWAITING_WORD);
+                return new ActionResult.TextResponse("Введите слово на английском");
+            }
+            if ("/help".equals(cmd)) {
+                return new ActionResult.TextResponse(
+                        "/addword — добавить слово\n/finishlesson — завершить урок");
+            }
+        }
+        return new ActionResult.TextResponse(
+                "/addword — добавить слово\n/finishlesson — завершить урок");
     }
 
     // ========================================================================
