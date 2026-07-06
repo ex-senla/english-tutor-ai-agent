@@ -5,6 +5,11 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
+import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
+import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
+import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.EndLessonCommand;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
@@ -18,6 +23,7 @@ import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +43,8 @@ public class ActionHandler {
     private final FindActiveLesson findActiveLesson;
     private final StartLesson startLesson;
     private final EndLesson endLesson;
+    private final AddWordToDictionary addWordToDictionary;
+    private final AddWordToLesson addWordToLesson;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -333,15 +341,62 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleAwaitingWord(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Ввод слова (TODO)");
+        if (action instanceof Action.InputParam(var text)) {
+            sm.getContext().put("wordValue", text);
+            sm.updateState(State.AWAITING_POS);
+            return posMenu();
+        }
+        return new ActionResult.TextResponse("Введите слово на английском");
     }
 
     private ActionResult handleAwaitingPos(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Выбор части речи (TODO)");
+        if (action instanceof Action.Callback(var data, var messageId)) {
+            if (data.startsWith("pos:")) {
+                var pos = PartOfSpeech.valueOf(data.substring("pos:".length()));
+                sm.getContext().put("wordPos", pos);
+                sm.updateState(State.AWAITING_TRANSLATION);
+                return new ActionResult.EditMessageText(messageId,
+                        "Введите переводы через запятую (например: дом, здание, строение)", List.of());
+            }
+        }
+        return new ActionResult.TextResponse("Выберите часть речи кнопками ниже");
     }
 
     private ActionResult handleAwaitingTranslation(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Ввод перевода (TODO)");
+        if (action instanceof Action.InputParam(var text)) {
+            var studentIdStr = (String) sm.getContext().get("selectedStudentId");
+            var studentId = new StudentId(UUID.fromString(studentIdStr));
+            var wordValue = (String) sm.getContext().get("wordValue");
+            var pos = (PartOfSpeech) sm.getContext().get("wordPos");
+
+            var translations = Set.of(text.split("\\s*,\\s*"));
+
+            var dictionaryId = studentQuery.getDictionaryId(studentId)
+                    .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
+
+            var wordId = addWordToDictionary.execute(
+                    new AddWordCommand(dictionaryId, wordValue, translations, pos));
+
+            var lessonId = findActiveLesson.findByStudentId(studentId)
+                    .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
+
+            addWordToLesson.execute(new AddWordToLessonCommand(lessonId, wordId));
+            log.info("Word '{}' added to lesson {} for student {}", wordValue, lessonId, studentIdStr);
+
+            sm.updateState(State.IN_LESSON);
+            return new ActionResult.TextResponse(
+                    "✅ Слово '" + wordValue + "' добавлено!\n/addword — добавить ещё слово\n/finishlesson — завершить урок");
+        }
+        return new ActionResult.TextResponse("Введите переводы через запятую");
+    }
+
+    private ActionResult posMenu() {
+        var keyboard = List.of(
+                List.of(new InlineButton("📛 Noun", "pos:NOUN")),
+                List.of(new InlineButton("🏃 Verb", "pos:VERB")),
+                List.of(new InlineButton("🎨 Adjective", "pos:ADJECTIVE"))
+        );
+        return new ActionResult.TextWithInlineKeyboard("Выберите часть речи:", keyboard);
     }
 
     // ========================================================================
