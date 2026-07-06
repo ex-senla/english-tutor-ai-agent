@@ -5,6 +5,8 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
+import com.hydroyura.eta.student.api.student.StudentInfo;
+import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
@@ -24,6 +26,7 @@ public class ActionHandler {
     private final FindTeacher findTeacher;
     private final RegisterTeacher registerTeacher;
     private final CreateStudentWithDictionary createStudentWithDictionary;
+    private final StudentQuery studentQuery;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -163,13 +166,41 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentsList(StateMachine sm, Action action) {
-        // TODO: implement
-        return new ActionResult.TextResponse("Список учеников (TODO)");
+        if (action instanceof Action.Callback(var data)) {
+            if (data.startsWith("student:")) {
+                var studentId = data.substring("student:".length());
+                sm.getContext().put("selectedStudentId", studentId);
+                sm.updateState(State.STUDENT_OPTIONS);
+                return studentOptionsMenu(sm, studentId);
+            }
+            return new ActionResult.TextResponse("Выберите ученика кнопками ниже");
+        }
+        if (action instanceof Action.Command(var cmd, var userName)) {
+            if ("/newstudent".equals(cmd)) {
+                sm.updateState(State.AWAITING_STUDENT_NAME);
+                return new ActionResult.TextResponse("Введите имя нового ученика");
+            }
+            if ("/students".equals(cmd) || "/help".equals(cmd)) {
+                return studentsListMenu(sm);
+            }
+        }
+        return new ActionResult.TextResponse("Выберите ученика кнопками ниже");
     }
 
     private ActionResult studentsListMenu(StateMachine sm) {
-        // TODO: load students from FindTeacher, render inline buttons
-        return new ActionResult.TextResponse("Список учеников (TODO)");
+        var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
+
+        if (studentIds.isEmpty()) {
+            return new ActionResult.TextResponse(
+                    "У вас пока нет учеников.\n/newstudent — добавить ученика");
+        }
+
+        var students = studentQuery.findStudentsByIds(studentIds);
+        var keyboard = students.stream()
+                .map(s -> List.of(new InlineButton(s.name(), "student:" + s.id().value())))
+                .toList();
+
+        return new ActionResult.TextWithInlineKeyboard("Ваши ученики:", keyboard);
     }
 
     // ========================================================================
@@ -177,8 +208,49 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentOptions(StateMachine sm, Action action) {
-        // TODO: implement
-        return new ActionResult.TextResponse("Меню ученика (TODO)");
+        if (action instanceof Action.Callback(var data)) {
+            var studentId = (String) sm.getContext().get("selectedStudentId");
+            return switch (data) {
+                case "action:startlesson" -> {
+                    // TODO: StartLesson use case, store lessonId in context
+                    sm.updateState(State.IN_LESSON);
+                    yield new ActionResult.TextResponse("Урок начат! /addword — добавить слово, /finishlesson — завершить");
+                }
+                case "action:details" -> {
+                    sm.updateState(State.STUDENT_DETAILS);
+                    yield new ActionResult.TextResponse("Детали ученика (TODO)");
+                }
+                case "action:exercise" -> {
+                    sm.updateState(State.AWAITING_EXERCISE_TYPE);
+                    yield exerciseTypeMenu();
+                }
+                case "action:back" -> {
+                    sm.updateState(State.STUDENTS_LIST);
+                    yield studentsListMenu(sm);
+                }
+                default -> new ActionResult.TextResponse("Используйте кнопки ниже");
+            };
+        }
+        return new ActionResult.TextResponse("Используйте кнопки ниже");
+    }
+
+    private ActionResult studentOptionsMenu(StateMachine sm, String studentId) {
+        var studentIds = findTeacher.getStudentIds(sm.getId().chatId());
+        var name = studentQuery.findStudentsByIds(studentIds).stream()
+                .filter(s -> s.id().value().equals(studentId))
+                .map(StudentInfo::name)
+                .findFirst()
+                .orElse("?");
+
+        sm.getContext().put("selectedStudentName", name);
+
+        var keyboard = List.of(
+                List.of(new InlineButton("▶ Start Lesson", "action:startlesson")),
+                List.of(new InlineButton("📋 Details", "action:details")),
+                List.of(new InlineButton("🎯 Exercise", "action:exercise")),
+                List.of(new InlineButton("◀ Back", "action:back"))
+        );
+        return new ActionResult.TextWithInlineKeyboard("Ученик: " + name, keyboard);
     }
 
     // ========================================================================
@@ -186,8 +258,14 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleStudentDetails(StateMachine sm, Action action) {
-        // TODO: implement
-        return new ActionResult.TextResponse("Детали ученика (TODO)");
+        if (action instanceof Action.Callback(var data)) {
+            if ("details:back".equals(data)) {
+                sm.updateState(State.STUDENT_OPTIONS);
+                var studentId = (String) sm.getContext().get("selectedStudentId");
+                return studentOptionsMenu(sm, studentId);
+            }
+        }
+        return new ActionResult.TextResponse("Используйте кнопки ниже");
     }
 
     // ========================================================================
@@ -216,11 +294,26 @@ public class ActionHandler {
     }
 
     // ========================================================================
-    // S12-S14: Exercise
+    // S12: AWAITING_EXERCISE_TYPE
     // ========================================================================
 
     private ActionResult handleAwaitingExerciseType(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Выбор типа упражнения (TODO)");
+        if (action instanceof Action.Callback(var data)) {
+            if (data.equals("exercise:FILL_IN_THE_BLANK") || data.equals("exercise:MULTIPLE_CHOICE")) {
+                sm.getContext().put("exerciseType", data);
+                sm.updateState(State.AWAITING_EXERCISE_TOPIC);
+                return new ActionResult.TextResponse("Введите тему упражнения (например, 'Animals')");
+            }
+        }
+        return new ActionResult.TextResponse("Выберите тип упражнения кнопками ниже");
+    }
+
+    private ActionResult exerciseTypeMenu() {
+        var keyboard = List.of(
+                List.of(new InlineButton("✏️ Fill in the blank", "exercise:FILL_IN_THE_BLANK")),
+                List.of(new InlineButton("🔤 Multiple choice", "exercise:MULTIPLE_CHOICE"))
+        );
+        return new ActionResult.TextWithInlineKeyboard("Выберите тип упражнения:", keyboard);
     }
 
     private ActionResult handleAwaitingExerciseTopic(StateMachine sm, Action action) {
