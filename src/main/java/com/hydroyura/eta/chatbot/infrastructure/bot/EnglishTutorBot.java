@@ -2,6 +2,7 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 
 import com.hydroyura.eta.chatbot.application.ActionHandler;
 import com.hydroyura.eta.chatbot.application.StateMachineAppService;
+import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 @Slf4j
 @Component
@@ -57,7 +59,9 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         var action = updateParser.parseUpdate(update);
 
         // 3. perform action in sm
+        var oldState = sm.getState();
         var result = actionHandler.handle(sm, action);
+        var newState = sm.getState();
 
         // 4. save sm
         service.save(sm);
@@ -66,6 +70,15 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         var response = converter.convert(result, chatId);
 
         // 6. send/edit/delete message
+        // remove reply keyboard when leaving ACTIVE state
+        if (oldState == State.ACTIVE && newState != State.ACTIVE) {
+            var remove = SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .text("\u200B")
+                    .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
+                    .build();
+            execute(remove);
+        }
         switch (response) {
             case SendMessage msg -> execute(msg);
             case EditMessageText edit -> execute(edit);

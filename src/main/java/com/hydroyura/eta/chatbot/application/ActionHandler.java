@@ -313,7 +313,7 @@ public class ActionHandler {
                 log.info("Lesson {} ended for student {}", lessonId, studentIdStr);
 
                 sm.updateState(State.STUDENT_OPTIONS);
-                return activeMenuWithMessage("✅ Урок завершён!", userName);
+                return studentOptionsMenu(sm, studentIdStr);
             }
             if ("/addword".equals(cmd)) {
                 sm.updateState(State.AWAITING_WORD);
