@@ -24,99 +24,182 @@ public class ActionHandler {
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
-            case INITIAL -> handleInitial(sm, action);
-            case ACTIVE -> handleActive(sm, action);
+            case INITIAL                    -> handleInitial(sm, action);
             case AWAITING_REGISTRATION_NAME -> handleAwaitingRegistrationName(sm, action);
-            case IN_LESSON -> handleInLesson(sm, action);
-            default -> new ActionResult.TextResponse("Unknown state: " + sm.getState());
+            case ACTIVE                     -> handleActive(sm, action);
+            case AWAITING_STUDENT_NAME      -> handleAwaitingStudentName(sm, action);
+            case STUDENTS_LIST              -> handleStudentsList(sm, action);
+            case STUDENT_OPTIONS            -> handleStudentOptions(sm, action);
+            case STUDENT_DETAILS            -> handleStudentDetails(sm, action);
+            case IN_LESSON                  -> handleInLesson(sm, action);
+            case AWAITING_WORD              -> handleAwaitingWord(sm, action);
+            case AWAITING_POS               -> handleAwaitingPos(sm, action);
+            case AWAITING_TRANSLATION       -> handleAwaitingTranslation(sm, action);
+            case AWAITING_EXERCISE_TYPE     -> handleAwaitingExerciseType(sm, action);
+            case AWAITING_EXERCISE_TOPIC    -> handleAwaitingExerciseTopic(sm, action);
+            case AWAITING_EXERCISE_ANSWER   -> handleAwaitingExerciseAnswer(sm, action);
         };
     }
 
-    // ==================== INITIAL ====================
+    // ========================================================================
+    // S1: INITIAL
+    // ========================================================================
 
     private ActionResult handleInitial(StateMachine sm, Action action) {
         if (action instanceof Action.Command(var cmd, var userName)) {
-
-            // /start — auto-register or welcome back
-            if ("/start".equals(cmd)) {
-                return findTeacher.findByTelegramChatId(sm.getId().chatId())
-                        .map(teacherId -> {
-                            log.info("Teacher already registered: chatId={}, teacherId={}", sm.getId().chatId(), teacherId);
-                            sm.updateState(State.ACTIVE);
-                            return welcomeBackMessage(userName);
-                        })
-                        .orElseGet(() -> {
-                            log.info("Registering new teacher: chatId={}, userName={}", sm.getId().chatId(), userName);
-                            registerTeacher.execute(new RegisterTeacherCommand(sm.getId().chatId(), userName));
-                            sm.updateState(State.ACTIVE);
-                            return welcomeMessage(userName);
-                        });
+            if ("/register".equals(cmd)) {
+                sm.updateState(State.AWAITING_REGISTRATION_NAME);
+                return new ActionResult.TextResponse("Введите ваше имя");
+            }
+            if ("/start".equals(cmd) || "/help".equals(cmd)) {
+                return new ActionResult.TextResponse(
+                        "Добро пожаловать! Для начала зарегистрируйтесь: /register");
             }
         }
-
-        // Any other input in INITIAL — prompt to use /start
-        return new ActionResult.TextResponse("👋 Please use /start to begin.");
+        return new ActionResult.TextResponse(
+                "Добро пожаловать! Для начала зарегистрируйтесь: /register");
     }
 
-    // ==================== ACTIVE ====================
-
-    private ActionResult handleActive(StateMachine sm, Action action) {
-        if (action instanceof Action.Command(var cmd, var userName)) {
-            return switch (cmd) {
-                case "/start" -> welcomeBackMessage(userName);
-                default -> new ActionResult.TextResponse("Unknown command: " + cmd);
-            };
-        }
-        return new ActionResult.TextResponse("Use a command or the menu below.");
-    }
-
-    // ==================== AWAITING_REGISTRATION_NAME ====================
+    // ========================================================================
+    // S2: AWAITING_REGISTRATION_NAME
+    // ========================================================================
 
     private ActionResult handleAwaitingRegistrationName(StateMachine sm, Action action) {
         if (action instanceof Action.InputParam(var name)) {
             registerTeacher.execute(new RegisterTeacherCommand(sm.getId().chatId(), name));
             sm.updateState(State.ACTIVE);
-            return welcomeMessage(name);
+            log.info("Teacher registered: chatId={}, name={}", sm.getId().chatId(), name);
+            return activeMenu(name);
         }
-        return new ActionResult.TextResponse("Please enter your name to register.");
+        if (action instanceof Action.Command) {
+            return new ActionResult.TextResponse("Введите ваше имя");
+        }
+        return new ActionResult.TextResponse("Введите ваше имя");
     }
 
-    // ==================== IN_LESSON ====================
+    // ========================================================================
+    // S3: ACTIVE — главное меню
+    // ========================================================================
+
+    private ActionResult handleActive(StateMachine sm, Action action) {
+        if (action instanceof Action.Command(var cmd, var userName)) {
+            return switch (cmd) {
+                case "/newstudent" -> {
+                    sm.updateState(State.AWAITING_STUDENT_NAME);
+                    yield new ActionResult.TextResponse("Введите имя нового ученика");
+                }
+                case "/students" -> {
+                    sm.updateState(State.STUDENTS_LIST);
+                    yield studentsListMenu(sm);
+                }
+                case "/help", "/start" -> activeMenu(userName);
+                default -> new ActionResult.TextResponse(
+                        "Неизвестная команда. /help — список команд");
+            };
+        }
+        // input param or callback in ACTIVE is an error
+        if (action instanceof Action.InputParam) {
+            return new ActionResult.TextResponse("/help для списка команд");
+        }
+        return new ActionResult.TextResponse("Неизвестная команда. /help — список команд");
+    }
+
+    private ActionResult activeMenu(String userName) {
+        var text = "Главное меню\n\n" +
+                "/newstudent — добавить ученика\n" +
+                "/students — список учеников";
+        var keyboard = List.of(
+                List.of("/newstudent", "/students")
+        );
+        return new ActionResult.TextWithReplyKeyboard(text, keyboard);
+    }
+
+    // ========================================================================
+    // S4: AWAITING_STUDENT_NAME
+    // ========================================================================
+
+    private ActionResult handleAwaitingStudentName(StateMachine sm, Action action) {
+        if (action instanceof Action.InputParam) {
+            // TODO: call CreateStudentWithDictionary use case
+            sm.updateState(State.ACTIVE);
+            return activeMenu(""); // TODO: pass actual teacher name
+        }
+        if (action instanceof Action.Command) {
+            return new ActionResult.TextResponse("Введите имя ученика");
+        }
+        return new ActionResult.TextResponse("Введите имя ученика");
+    }
+
+    // ========================================================================
+    // S5: STUDENTS_LIST
+    // ========================================================================
+
+    private ActionResult handleStudentsList(StateMachine sm, Action action) {
+        // TODO: implement
+        return new ActionResult.TextResponse("Список учеников (TODO)");
+    }
+
+    private ActionResult studentsListMenu(StateMachine sm) {
+        // TODO: load students from FindTeacher, render inline buttons
+        return new ActionResult.TextResponse("Список учеников (TODO)");
+    }
+
+    // ========================================================================
+    // S6: STUDENT_OPTIONS
+    // ========================================================================
+
+    private ActionResult handleStudentOptions(StateMachine sm, Action action) {
+        // TODO: implement
+        return new ActionResult.TextResponse("Меню ученика (TODO)");
+    }
+
+    // ========================================================================
+    // S7: STUDENT_DETAILS
+    // ========================================================================
+
+    private ActionResult handleStudentDetails(StateMachine sm, Action action) {
+        // TODO: implement
+        return new ActionResult.TextResponse("Детали ученика (TODO)");
+    }
+
+    // ========================================================================
+    // S8: IN_LESSON
+    // ========================================================================
 
     private ActionResult handleInLesson(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("You are in a lesson. Use /end to finish.");
+        // TODO: implement
+        return new ActionResult.TextResponse("Идёт урок (TODO)");
     }
 
-    // ==================== helpers ====================
+    // ========================================================================
+    // S9-S11: Word input
+    // ========================================================================
 
-    private ActionResult welcomeMessage(String userName) {
-        var text = "🎉 Welcome, " + userName + "! I'm your English tutor.\n\n" +
-                "What would you like to do?";
-        var keyboard = List.of(
-                List.of(
-                        new InlineButton("📚 My Students", "students:list"),
-                        new InlineButton("📝 New Lesson", "lesson:new")
-                ),
-                List.of(
-                        new InlineButton("📖 Dictionary", "dictionary:list"),
-                        new InlineButton("🎯 Exercises", "exercise:menu")
-                )
-        );
-        return new ActionResult.TextWithInlineKeyboard(text, keyboard);
+    private ActionResult handleAwaitingWord(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Ввод слова (TODO)");
     }
 
-    private ActionResult welcomeBackMessage(String userName) {
-        var text = "👋 Welcome back, " + userName + "!\n\nWhat would you like to do?";
-        var keyboard = List.of(
-                List.of(
-                        new InlineButton("📚 My Students", "students:list"),
-                        new InlineButton("📝 New Lesson", "lesson:new")
-                ),
-                List.of(
-                        new InlineButton("📖 Dictionary", "dictionary:list"),
-                        new InlineButton("🎯 Exercises", "exercise:menu")
-                )
-        );
-        return new ActionResult.TextWithInlineKeyboard(text, keyboard);
+    private ActionResult handleAwaitingPos(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Выбор части речи (TODO)");
+    }
+
+    private ActionResult handleAwaitingTranslation(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Ввод перевода (TODO)");
+    }
+
+    // ========================================================================
+    // S12-S14: Exercise
+    // ========================================================================
+
+    private ActionResult handleAwaitingExerciseType(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Выбор типа упражнения (TODO)");
+    }
+
+    private ActionResult handleAwaitingExerciseTopic(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Ввод темы упражнения (TODO)");
+    }
+
+    private ActionResult handleAwaitingExerciseAnswer(StateMachine sm, Action action) {
+        return new ActionResult.TextResponse("Проверка ответа (TODO)");
     }
 }
