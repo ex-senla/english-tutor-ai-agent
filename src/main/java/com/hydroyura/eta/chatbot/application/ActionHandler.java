@@ -5,6 +5,8 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
+import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
+import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
@@ -21,6 +23,7 @@ public class ActionHandler {
 
     private final FindTeacher findTeacher;
     private final RegisterTeacher registerTeacher;
+    private final CreateStudentWithDictionary createStudentWithDictionary;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -67,6 +70,7 @@ public class ActionHandler {
     private ActionResult handleAwaitingRegistrationName(StateMachine sm, Action action) {
         if (action instanceof Action.InputParam(var name)) {
             registerTeacher.execute(new RegisterTeacherCommand(sm.getId().chatId(), name));
+            sm.getContext().put("teacherName", name);
             sm.updateState(State.ACTIVE);
             log.info("Teacher registered: chatId={}, name={}", sm.getId().chatId(), name);
             return activeMenu(name);
@@ -105,9 +109,21 @@ public class ActionHandler {
     }
 
     private ActionResult activeMenu(String userName) {
-        var text = "Главное меню\n\n" +
+        var text = activeMenuText(userName);
+        var keyboard = List.of(
+                List.of("/newstudent", "/students")
+        );
+        return new ActionResult.TextWithReplyKeyboard(text, keyboard);
+    }
+
+    private String activeMenuText(String userName) {
+        return "Главное меню\n\n" +
                 "/newstudent — добавить ученика\n" +
                 "/students — список учеников";
+    }
+
+    private ActionResult activeMenuWithMessage(String message, String userName) {
+        var text = message + "\n\n" + activeMenuText(userName);
         var keyboard = List.of(
                 List.of("/newstudent", "/students")
         );
@@ -119,10 +135,22 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleAwaitingStudentName(StateMachine sm, Action action) {
-        if (action instanceof Action.InputParam) {
-            // TODO: call CreateStudentWithDictionary use case
-            sm.updateState(State.ACTIVE);
-            return activeMenu(""); // TODO: pass actual teacher name
+        if (action instanceof Action.InputParam(var name)) {
+            var teacherId = findTeacher.findByTelegramChatId(sm.getId().chatId())
+                    .orElseThrow(() -> new IllegalStateException("Teacher not found for chatId=" + sm.getId().chatId()));
+
+            try {
+                var dictionaryName = "Словарь " + name;
+                var studentId = createStudentWithDictionary.execute(
+                        new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName));
+                log.info("Student created: name={}, id={}, teacherId={}", name, studentId, teacherId);
+                sm.updateState(State.ACTIVE);
+                var teacherName = (String) sm.getContext().getOrDefault("teacherName", "");
+                return activeMenuWithMessage("✅ Ученик '" + name + "' добавлен!", teacherName);
+            } catch (IllegalArgumentException e) {
+                log.warn("Failed to create student '{}': {}", name, e.getMessage());
+                return new ActionResult.TextResponse("❌ " + e.getMessage() + ". Введите другое имя:");
+            }
         }
         if (action instanceof Action.Command) {
             return new ActionResult.TextResponse("Введите имя ученика");
