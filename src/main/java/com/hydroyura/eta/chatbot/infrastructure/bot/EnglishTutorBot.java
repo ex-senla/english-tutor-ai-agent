@@ -38,7 +38,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     @SneakyThrows // TODO: create exception handler
     public void onUpdateReceived(Update update) {
         // 0. get chatId
-        var chatId = update.getMessage().getChatId();
+        var chatId = extractChatId(update);
         // 1. get stateMachine
         var sm = service.getOrCreate(chatId);
 
@@ -58,5 +58,13 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         execute(sendMessage);
     }
 
-
+    private Long extractChatId(Update update) {
+        if (update.hasMessage()) {
+            return update.getMessage().getChatId();
+        }
+        if (update.hasCallbackQuery()) {
+            return update.getCallbackQuery().getMessage().getChatId();
+        }
+        throw new IllegalArgumentException("Update has neither message nor callback query");
+    }
 }
