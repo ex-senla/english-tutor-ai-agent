@@ -32,9 +32,12 @@ public final class UpdateParser {
                     .orElse(FALSE);
 
             if (isCommand) {
-                return new Action.Command();
+                var command = update.getMessage().getText();
+                var userName = update.getMessage().getFrom().getFirstName();
+                return new Action.Command(command, userName);
             } else {
-                return new Action.InputParam();
+                var text = update.getMessage().getText();
+                return new Action.InputParam(text);
             }
         }
 

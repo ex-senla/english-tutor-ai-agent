@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
+import com.hydroyura.eta.chatbot.application.ActionHandler;
 import com.hydroyura.eta.chatbot.application.StateMachineAppService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +16,18 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     private final String botUsername;
     private final StateMachineAppService service;
     private final UpdateParser updateParser;
+    private final ActionHandler actionHandler;
     private final SendMessageConverter converter;
 
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
                            @Value("${telegram.bot.username}") String botUsername,
-                           StateMachineAppService service, UpdateParser updateParser, SendMessageConverter converter) {
+                           StateMachineAppService service, UpdateParser updateParser,
+                           ActionHandler actionHandler, SendMessageConverter converter) {
         super(botToken);
         this.botUsername = botUsername;
         this.service = service;
         this.updateParser = updateParser;
+        this.actionHandler = actionHandler;
         this.converter = converter;
     }
 
@@ -42,7 +46,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         var action = updateParser.parseUpdate(update);
 
         // 3. perform action in sm
-        var result = sm.performAction(action);
+        var result = actionHandler.handle(sm, action);
 
         // 4. save sm
         service.save(sm);

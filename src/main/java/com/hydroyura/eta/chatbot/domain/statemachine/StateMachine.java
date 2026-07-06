@@ -1,7 +1,5 @@
 package com.hydroyura.eta.chatbot.domain.statemachine;
 
-import com.hydroyura.eta.chatbot.domain.action.Action;
-import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,15 +19,4 @@ public final class StateMachine {
     public void updateState(State state) {
         this.state = state;
     }
-
-    public ActionResult performAction(Action action) {
-        switch (action) {
-            case Action.Command c -> System.out.println(c);
-            case Action.InputParam ip -> System.out.println(ip);
-            case Action.Callback cb -> System.out.println(cb);
-        }
-
-        return null;
-    }
-
 }
