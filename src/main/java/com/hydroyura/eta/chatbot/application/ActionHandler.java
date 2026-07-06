@@ -213,7 +213,9 @@ public class ActionHandler {
             return switch (data) {
                 case "action:startlesson" -> {
                     sm.updateState(State.IN_LESSON);
-                    yield new ActionResult.EditMessageText(messageId, "Урок начат! /addword — добавить слово, /finishlesson — завершить", List.of());
+                    var name = (String) sm.getContext().getOrDefault("selectedStudentName", "?");
+                    yield new ActionResult.EditMessageText(messageId,
+                            "Урок начат для " + name + "! /addword — добавить слово, /finishlesson — завершить", List.of());
                 }
                 case "action:details" -> {
                     sm.updateState(State.STUDENT_DETAILS);
