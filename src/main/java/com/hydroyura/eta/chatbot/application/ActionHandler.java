@@ -114,8 +114,16 @@ public class ActionHandler {
                         "Неизвестная команда. /help — список команд");
             };
         }
-        // input param or callback in ACTIVE is an error
-        if (action instanceof Action.InputParam) {
+        // input param or callback in ACTIVE - handle button taps
+        if (action instanceof Action.InputParam(var text)) {
+            if ("➕ Новый студент".equals(text)) {
+                sm.updateState(State.AWAITING_STUDENT_NAME);
+                return new ActionResult.TextResponse("Введите имя нового ученика");
+            }
+            if ("👥 Мои студенты".equals(text)) {
+                sm.updateState(State.STUDENTS_LIST);
+                return studentsListMenu(sm);
+            }
             return new ActionResult.TextResponse("/help для списка команд");
         }
         return new ActionResult.TextResponse("Неизвестная команда. /help — список команд");
@@ -124,21 +132,21 @@ public class ActionHandler {
     private ActionResult activeMenu(String userName) {
         var text = activeMenuText(userName);
         var keyboard = List.of(
-                List.of("➕ /new", "👥 /list")
+                List.of("➕ Новый студент", "👥 Мои студенты")
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard);
     }
 
     private String activeMenuText(String userName) {
         return "Главное меню\n\n" +
-                "➕ /new — добавить ученика\n" +
-                "👥 /list — список учеников";
+                "➕ Новый студент — добавить ученика\n" +
+                "👥 Мои студенты — список учеников";
     }
 
     private ActionResult activeMenuWithMessage(String message, String userName) {
         var text = message + "\n\n" + activeMenuText(userName);
         var keyboard = List.of(
-                List.of("➕ /new", "👥 /list")
+                List.of("➕ Новый студент", "👥 Мои студенты")
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard);
     }
@@ -202,7 +210,7 @@ public class ActionHandler {
 
         if (studentIds.isEmpty()) {
             return new ActionResult.TextResponse(
-                    "У вас пока нет учеников.\n➕ /new — добавить ученика");
+                    "У вас пока нет учеников.\n➕ Новый студент — добавить ученика");
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);
@@ -395,7 +403,7 @@ public class ActionHandler {
 
         if (studentIds.isEmpty()) {
             return new ActionResult.EditMessageText(messageId,
-                    "У вас пока нет учеников.\n➕ /new — добавить ученика", List.of());
+                    "У вас пока нет учеников.\n➕ Новый студент — добавить ученика", List.of());
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);

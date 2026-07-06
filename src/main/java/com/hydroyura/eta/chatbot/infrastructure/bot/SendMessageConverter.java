@@ -63,7 +63,10 @@ public final class SendMessageConverter {
         return SendMessage.builder()
                 .chatId(chatId.toString())
                 .text(text)
-                .replyMarkup(new ReplyKeyboardMarkup(telegramKeyboard))
+                .replyMarkup(ReplyKeyboardMarkup.builder()
+                        .keyboard(telegramKeyboard)
+                        .resizeKeyboard(true)
+                        .build())
                 .build();
     }
 
