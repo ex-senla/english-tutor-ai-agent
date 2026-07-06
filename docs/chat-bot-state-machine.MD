@@ -6,14 +6,14 @@
 |---|-----------|------------|--------------|-------------|
 | S1 | `INITIAL` | Пользователь открыл бота, но не зарегистрирован | Автоматически при первом входе | `/register` → S2 |
 | S2 | `AWAITING_REGISTRATION_NAME` | Ожидание имени учителя | Из S1 по `/register` | Ввод имени → S3 |
-| S3 | `ACTIVE` | Зарегистрирован, без активного урока. Idle-состояние | Из S2, S4, S8, S14 | `/newstudent` → S4, `/students` → S5 |
+| S3 | `ACTIVE` | Зарегистрирован, без активного урока. Idle-состояние | Из S2, S4 | Кнопки/команды → S4, S5 |
 | S4 | `AWAITING_STUDENT_NAME` | Ожидание имени нового ученика | Из S3 или S5 по `/newstudent` | Ввод имени → S3 |
 | S5 | `STUDENTS_LIST` | Inline-кнопки со списком учеников | Из S3 по `/students`, из S6 по `action:back` | `student:<id>` → S6, `/newstudent` → S4 |
 | S6 | `STUDENT_OPTIONS` | Меню действий для выбранного ученика | Из S5 по `student:<id>`, из S7 по `details:back` | `action:*` → S7/S8/S12/S5 |
 | S7 | `STUDENT_DETAILS` | Карточка ученика (имя, статистика словаря, статус урока) | Из S6 по `action:details` | `details:back` → S6 |
-| S8 | `IN_LESSON` | Активный урок для выбранного ученика | Из S6 по `action:startlesson` | `/addword` → S9, `/finishlesson` → S3 |
+| S8 | `IN_LESSON` | Активный урок для выбранного ученика | Из S6 по `action:startlesson` | `/addword` → S9, `/finishlesson` → S6 |
 | S9 | `AWAITING_WORD` | Шаг 1: ожидание английского слова | Из S8 по `/addword` | Ввод слова → S10 |
-| S10 | `AWAITING_POS` | Шаг 2: выбор части речи | Из S9 | `NOUN`/`VERB`/`ADJECTIVE` → S11 |
+| S10 | `AWAITING_POS` | Шаг 2: выбор части речи (inline-кнопки) | Из S9 | `pos:NOUN`/`pos:VERB`/`pos:ADJECTIVE` → S11 |
 | S11 | `AWAITING_TRANSLATION` | Шаг 3: ввод перевода | Из S10 | Ввод перевода → S8 |
 | S12 | `AWAITING_EXERCISE_TYPE` | Выбор типа упражнения (inline-кнопки) | Из S6 по `action:exercise` | `exercise:*` → S13 |
 | S13 | `AWAITING_EXERCISE_TOPIC` | Ввод темы упражнения | Из S12 | Ввод темы → S14 |
@@ -29,14 +29,14 @@
 |---|-----------|---------|----------|----------|
 | S1 | `INITIAL` | `/register` → S2, `/help` → S1 | ❌ ошибка | ❌ ошибка |
 | S2 | `AWAITING_REGISTRATION_NAME` | `/help` → S2 | ✅ `RegisterTeacher` → S3 | ❌ ошибка |
-| S3 | `ACTIVE` | `/newstudent` → S4, `/students` → S5, `/help` → S3 | ❌ ошибка | ❌ ошибка |
+| S3 | `ACTIVE` | `/new` → S4, `/list` → S5, `/help` → S3 | ✅ кнопки "➕ Новый студент" → S4, "👥 Мои студенты" → S5 | ❌ ошибка |
 | S4 | `AWAITING_STUDENT_NAME` | `/help` → S4 | ✅ `CreateStudentWithDictionary` → S3 | ❌ ошибка |
 | S5 | `STUDENTS_LIST` | `/newstudent` → S4, `/students` → S5, `/help` → S5 | ❌ ошибка | ✅ `student:<id>` → S6 |
 | S6 | `STUDENT_OPTIONS` | `/help` → S6 | ❌ ошибка | ✅ `action:startlesson` → S8, `action:details` → S7, `action:exercise` → S12, `action:back` → S5 |
 | S7 | `STUDENT_DETAILS` | `/help` → S7 | ❌ ошибка | ✅ `details:back` → S6 |
-| S8 | `IN_LESSON` | `/addword` → S9, `/finishlesson` → S3, `/help` → S8 | ❌ ошибка | ❌ ошибка |
+| S8 | `IN_LESSON` | `/addword` → S9, `/finishlesson` → S6, `/help` → S8 | ❌ ошибка | ❌ ошибка |
 | S9 | `AWAITING_WORD` | `/help` → S9 | ✅ сохранить `word` → S10 | ❌ ошибка |
-| S10 | `AWAITING_POS` | `/help` → S10 | ✅ `NOUN`/`VERB`/`ADJECTIVE` → S11 | ❌ ошибка |
+| S10 | `AWAITING_POS` | `/help` → S10 | ❌ ошибка | ✅ `pos:NOUN`/`pos:VERB`/`pos:ADJECTIVE` → S11 |
 | S11 | `AWAITING_TRANSLATION` | `/help` → S11 | ✅ `AddWordToDict` + `AddWordToLesson` → S8 | ❌ ошибка |
 | S12 | `AWAITING_EXERCISE_TYPE` | `/help` → S12 | ❌ ошибка | ✅ `exercise:FILL_IN_THE_BLANK`, `exercise:MULTIPLE_CHOICE` → S13 |
 | S13 | `AWAITING_EXERCISE_TOPIC` | `/help` → S13 | ✅ `GenerateExercise` → S14 | ❌ ошибка |
@@ -95,12 +95,12 @@ process(update):
 |-----------|----------|
 | S1 `INITIAL` | "Добро пожаловать! Для начала зарегистрируйтесь: /register" |
 | S2 `AWAITING_REGISTRATION_NAME` | "Введите ваше имя" |
-| S3 `ACTIVE` | "Главное меню. /newstudent — добавить ученика, /students — список учеников" |
+| S3 `ACTIVE` | "Главное меню" + Reply-кнопки: [➕ Новый студент] [👥 Мои студенты] |
 | S4 `AWAITING_STUDENT_NAME` | "Введите имя нового ученика" |
-| S5 `STUDENTS_LIST` | "Ваши ученики:" + inline-кнопки с именами |
-| S6 `STUDENT_OPTIONS` | "Ученик: {name}" + inline-кнопки: [Start Lesson] [Details] [Exercise] [◀ Back] |
+| S5 `STUDENTS_LIST` | "Ваши ученики:" + inline-кнопки с именами. При переходе из S3 reply-клавиатура убирается. |
+| S6 `STUDENT_OPTIONS` | "Ученик: {name}" + inline-кнопки: [▶ Start Lesson] [📋 Details] [🎯 Exercise] [◀ Back]. Сообщение редактируется (EditMessageText) при переходе из S5/S7. |
 | S7 `STUDENT_DETAILS` | Карточка: имя, статистика словаря, статус урока + кнопка [◀ Back] |
-| S8 `IN_LESSON` | "Урок с {name}. /addword — добавить слово, /finishlesson — завершить" |
+| S8 `IN_LESSON` | "Урок начат для {name}! /addword — добавить слово, /finishlesson — завершить" |
 | S9 `AWAITING_WORD` | "Введите английское слово" |
 | S10 `AWAITING_POS` | "Выберите часть речи:" + inline-кнопки [NOUN] [VERB] [ADJECTIVE] |
 | S11 `AWAITING_TRANSLATION` | "Введите перевод слова '{word}'" |
@@ -121,11 +121,11 @@ S2: AWAITING_REGISTRATION_NAME
  ▼
 S3: ACTIVE ──────────────────────────────────────────────────────────────┐
  │                                                                       │
- ├── /newstudent ──► S4: AWAITING_STUDENT_NAME ──(текст)──► S3           │
+ ├── кнопка/`/new` ──► S4: AWAITING_STUDENT_NAME ──(текст)──► S3        │
  │                                                                       │
- ├── /students ──► S5: STUDENTS_LIST                                     │
+ ├── кнопка/`/list` ──► S5: STUDENTS_LIST                                │
  │                    │                                                  │
- │                    │ callback: student:<id>                            │
+ │                    │ callback: student:<id> (редактирует сообщение)     │
  │                    ▼                                                  │
  │                 S6: STUDENT_OPTIONS                                   │
  │                    │                                                  │
@@ -135,45 +135,47 @@ S3: ACTIVE ───────────────────────
  │                    │      │                  ▲          │             │
  │                    │      │                  └──────────┘             │
  │                    │      │                                           │
- │                    │      └── /finishlesson ──► S3                    │
+ │                    │      └── /finishlesson ──► S6                    │
  │                    │                                                  │
  │                    ├── action:details ──► S7: STUDENT_DETAILS         │
  │                    │      │                                           │
- │                    │      └── details:back ──► S6                     │
+ │                    │      └── details:back ──► S6 (edit)              │
  │                    │                                                  │
  │                    ├── action:exercise ──► S12 ──► S13 ──► S14        │
  │                    │                                      │           │
  │                    │                              (ответ)──┘           │
  │                    │                                                  │
- │                    └── action:back ──► S5                             │
+ │                    └── action:back ──► S5 (edit)                      │
  │                                                                       │
+ │                    Везде где edit — сообщение редактируется,           │
+ │                    а не создаётся новое                               │
 ```
 
 ## Контекст состояния (Map<String, Object>)
 
 | Состояние | Ключи |
 |-----------|-------|
-| S3 `ACTIVE` | `chatId`, `teacherId`, `teacherName` |
-| S5 `STUDENTS_LIST` | + `messageId` (для редактирования клавиатуры) |
-| S6 `STUDENT_OPTIONS` | + `selectedStudentId`, `selectedDictionaryId`, `selectedStudentName` |
+| S3 `ACTIVE` | `teacherName` |
+| S5 `STUDENTS_LIST` | — |
+| S6 `STUDENT_OPTIONS` | `selectedStudentId`, `selectedStudentName` |
 | S7 `STUDENT_DETAILS` | те же |
-| S8 `IN_LESSON` | + `lessonId` |
-| S9 `AWAITING_WORD` | `lessonId`, `selectedDictionaryId` |
-| S10 `AWAITING_POS` | + `word` |
-| S11 `AWAITING_TRANSLATION` | + `word`, `pos` |
-| S12 `AWAITING_EXERCISE_TYPE` | `selectedStudentId`, `selectedDictionaryId` |
-| S13 `AWAITING_EXERCISE_TOPIC` | + `type` |
+| S8 `IN_LESSON` | `selectedStudentId`, `selectedStudentName`, `activeLessonId` |
+| S9 `AWAITING_WORD` | + `wordValue` (после ввода) |
+| S10 `AWAITING_POS` | + `wordPos` (после выбора) |
+| S11 `AWAITING_TRANSLATION` | + `wordValue`, `wordPos` |
+| S12 `AWAITING_EXERCISE_TYPE` | — |
+| S13 `AWAITING_EXERCISE_TOPIC` | `exerciseType` |
 | S14 `AWAITING_EXERCISE_ANSWER` | + `exerciseId` |
 
 ## Inline-кнопки и callback data
 
 | Экран | Кнопки | Callback data |
 |-------|--------|---------------|
-| S5: список учеников | `[Alice]` `[Bob]` ... | `student:<uuid>` |
-| S6: меню ученика | `[Start Lesson]` `[Details]` `[Exercise]` `[◀ Back]` | `action:startlesson`, `action:details`, `action:exercise`, `action:back` |
+| S5: список учеников | `[имя ученика]` ... | `student:<uuid>` |
+| S6: меню ученика | `[▶ Start Lesson]` `[📋 Details]` `[🎯 Exercise]` `[◀ Back]` | `action:startlesson`, `action:details`, `action:exercise`, `action:back` |
 | S7: детали ученика | `[◀ Back]` | `details:back` |
-| S10: часть речи | `[NOUN]` `[VERB]` `[ADJECTIVE]` | (обычные кнопки, не inline) |
-| S12: тип упражнения | `[Fill in the blank]` `[Multiple choice]` | `exercise:FILL_IN_THE_BLANK`, `exercise:MULTIPLE_CHOICE` |
+| S10: часть речи | `[📛 Noun]` `[🏃 Verb]` `[🎨 Adjective]` | `pos:NOUN`, `pos:VERB`, `pos:ADJECTIVE` |
+| S12: тип упражнения | `[✏️ Fill in the blank]` `[🔤 Multiple choice]` | `exercise:FILL_IN_THE_BLANK`, `exercise:MULTIPLE_CHOICE` |
 
 ## Структура модуля
 

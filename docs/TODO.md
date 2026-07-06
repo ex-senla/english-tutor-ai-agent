@@ -1,27 +1,31 @@
 # TODO — v1.0.0
 
-## Фичи релиза
+## Фичи релиза — бот
 
-| # | Фича | Статус | Команды бота | Что сделано / осталось |
-|---|------|--------|-------------|----------------------|
-| 1 | **Регистрация учителя** | ❌ | `/register` | Переписывается в новом chatbot. Старый код удалён. |
-| 2 | **Добавление учеников** | ❌ | `/newstudent` | Переписывается. |
-| 3 | **Список учеников** | ❌ | `/students` | Inline-кнопки с именами учеников → S5 STUDENTS_LIST. |
-| 4 | **Детали ученика** | ❌ | кнопка Details | S7 STUDENT_DETAILS: карточка (имя, статистика словаря, статус урока) + кнопка Back. |
-| 5 | **Начало урока** | ❌ | кнопка Start Lesson | Выбор ученика через S5 → S6 → `action:startlesson` → S8 IN_LESSON. |
-| 6 | **Добавление слов на уроке** | ❌ | `/addword` | Трёхшаговый ввод: S9 AWAITING_WORD → S10 AWAITING_POS → S11 AWAITING_TRANSLATION. |
-| 7 | **Завершение урока** | ❌ | `/finishlesson` | EndLesson → список слов урока → S3 ACTIVE. |
-| 8 | **Генерация упражнений** | ❌ | кнопка Exercise | S12 тип → S13 тема → S14 ответ. 2 типа: FILL_IN_THE_BLANK + MULTIPLE_CHOICE. |
+| # | Фича | Статус | Как вызвать | Заметки |
+|---|------|--------|-------------|---------|
+| 1 | **Регистрация учителя** | ✅ done | `/register` → ввод имени | |
+| 2 | **Добавление учеников** | ✅ done | кнопка `➕ Новый студент` или `/new` | Создаётся Student + Dictionary |
+| 3 | **Список учеников** | ✅ done | кнопка `👥 Мои студенты` или `/list` | Inline-кнопки, редактирование сообщения |
+| 4 | **Детали ученика** | ❌ stub | кнопка `📋 Details` | Показывает "Детали ученика (TODO)" |
+| 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в InMemoryLessonRepository |
+| 6 | **Добавление слов на уроке** | ✅ done | `/addword` → слово → POS → переводы | 3 шага: AWAITING_WORD → AWAITING_POS → AWAITING_TRANSLATION |
+| 7 | **Завершение урока** | ✅ done | `/finishlesson` | EndLesson, возврат в STUDENT_OPTIONS |
+| 8 | **Генерация упражнений** | ❌ stub | кнопка `🎯 Exercise` | Выбор типа → ввод темы (stub), ответ (stub) |
 
-## Chatbot — новый дизайн (v2)
+## Chatbot — реализация v2
 
 | # | Компонент | Статус | Заметки |
 |---|-----------|--------|---------|
-| C1 | State machine: 14 состояний | ❌ | Документация: [chat-bot-state-machine.MD](chat-bot-state-machine.MD) |
-| C2 | `StateMachineService.process(update)` | ❌ | Определить тип Update → конфиг состояния → действие → render |
-| C3 | `EnglishTutorBot` | ❌ | Тонкий: onUpdateReceived → StateMachineService |
-| C4 | `StateConfig` — конфиг на каждое состояние | ❌ | Разрешённые команды/параметр/КБ + действия + новые состояния |
-| C5 | `InMemoryStateMachineRepository` | ❌ | Хранение StateMachine по chatId |
+| C1 | State machine: 14 состояний | ✅ done | Enum State, все 14 |
+| C2 | StateMachine entity + repository | ✅ done | StateMachineId, InMemoryStateMachineRepository |
+| C3 | `EnglishTutorBot` | ✅ done | Обработка SendMessage / EditMessageText / DeleteMessage / ReplyKeyboardRemove |
+| C4 | `ActionHandler` | ✅ done | Центральный обработчик, switch по состояниям |
+| C5 | `Action` / `ActionResult` sealed types | ✅ done | Command, InputParam, Callback; TextResponse, TextWithInlineKeyboard, TextWithReplyKeyboard, EditMessageText, DeleteMessage |
+| C6 | `UpdateParser` | ✅ done | Парсинг Update → Action |
+| C7 | `SendMessageConverter` | ✅ done | Конвертация ActionResult → Telegram API objects |
+| C8 | Reply-клавиатура | ✅ done | Главное меню: `➕ Новый студент` / `👥 Мои студенты`. Убирается при уходе из ACTIVE |
+| C9 | Inline-клавиатуры + редактирование | ✅ done | EditMessageText при навигации по меню учеников |
 
 ## Инфраструктура
 
@@ -30,6 +34,7 @@
 | I1 | JPA entities + репозитории | ❌ | Замена всех InMemory*Repository |
 | I2 | PostgreSQL + Flyway миграции | ❌ | |
 | I3 | Spring AI интеграция | ❌ | Замена скелета SpringAiExerciseGenerator на реальный LLM |
+| I4 | `/debug` endpoint | ✅ done | DebugController, SnapshotProvider |
 
 ## Технический долг
 
@@ -42,6 +47,7 @@
 | D5 | InMemoryLessonRepository → JPA | ❌ |
 | D6 | InMemoryExerciseRepository → JPA | ❌ |
 | D7 | InMemoryStateMachineRepository → persistent | ❌ |
+| D8 | Команды `/new` и `/list` вместо `/newstudent` и `/students` | ✅ done |
 
 ## История (done)
 
@@ -53,6 +59,8 @@
 - [x] Teacher — CreateStudentWithDictionary (оркестрация Dictionary → Student)
 - [x] Lesson — Entity внутри агрегата Student
 - [x] Exercise — GenerateExercise + CheckExercise API/use cases
-- [x] Старый модуль chatbot удалён. Дизайн v2: state machine, 14 состояний, конфиг-ориентированный
-- [x] Roadmap обновлён: таблица команд и callback'ов
-- [x] Документация chat-bot-state-machine.MD: описание состояний, конфиг, render, граф переходов
+- [x] Старый модуль chatbot удалён. Дизайн v2: state machine, 14 состояний
+- [x] ActionHandler — полная реализация S1-S11, S12-S14 stubs
+- [x] EditMessageText — редактирование сообщений при навигации (inline-меню)
+- [x] ReplyKeyboardRemove — убирание reply-клавиатуры при уходе из ACTIVE
+- [x] Кнопки главного меню: `➕ Новый студент`, `👥 Мои студенты` (без команд на кнопках)
