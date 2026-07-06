@@ -74,7 +74,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         if (oldState == State.ACTIVE && newState != State.ACTIVE) {
             var remove = SendMessage.builder()
                     .chatId(chatId.toString())
-                    .text("\u200B")
+                    .text(".")
                     .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
                     .build();
             execute(remove);
