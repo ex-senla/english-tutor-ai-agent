@@ -101,11 +101,11 @@ public class ActionHandler {
     private ActionResult handleActive(StateMachine sm, Action action) {
         if (action instanceof Action.Command(var cmd, var userName)) {
             return switch (cmd) {
-                case "/newstudent" -> {
+                case "/new" -> {
                     sm.updateState(State.AWAITING_STUDENT_NAME);
                     yield new ActionResult.TextResponse("Введите имя нового ученика");
                 }
-                case "/students" -> {
+                case "/list" -> {
                     sm.updateState(State.STUDENTS_LIST);
                     yield studentsListMenu(sm);
                 }
@@ -124,21 +124,21 @@ public class ActionHandler {
     private ActionResult activeMenu(String userName) {
         var text = activeMenuText(userName);
         var keyboard = List.of(
-                List.of("/newstudent", "/students")
+                List.of("➕ /new", "👥 /list")
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard);
     }
 
     private String activeMenuText(String userName) {
         return "Главное меню\n\n" +
-                "/newstudent — добавить ученика\n" +
-                "/students — список учеников";
+                "➕ /new — добавить ученика\n" +
+                "👥 /list — список учеников";
     }
 
     private ActionResult activeMenuWithMessage(String message, String userName) {
         var text = message + "\n\n" + activeMenuText(userName);
         var keyboard = List.of(
-                List.of("/newstudent", "/students")
+                List.of("➕ /new", "👥 /list")
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard);
     }
@@ -186,11 +186,11 @@ public class ActionHandler {
             return new ActionResult.TextResponse("Выберите ученика кнопками ниже");
         }
         if (action instanceof Action.Command(var cmd, var userName)) {
-            if ("/newstudent".equals(cmd)) {
+            if ("/new".equals(cmd)) {
                 sm.updateState(State.AWAITING_STUDENT_NAME);
                 return new ActionResult.TextResponse("Введите имя нового ученика");
             }
-            if ("/students".equals(cmd) || "/help".equals(cmd)) {
+            if ("/list".equals(cmd) || "/help".equals(cmd)) {
                 return studentsListMenu(sm);
             }
         }
@@ -202,7 +202,7 @@ public class ActionHandler {
 
         if (studentIds.isEmpty()) {
             return new ActionResult.TextResponse(
-                    "У вас пока нет учеников.\n/newstudent — добавить ученика");
+                    "У вас пока нет учеников.\n➕ /new — добавить ученика");
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);
@@ -395,7 +395,7 @@ public class ActionHandler {
 
         if (studentIds.isEmpty()) {
             return new ActionResult.EditMessageText(messageId,
-                    "У вас пока нет учеников.\n/newstudent — добавить ученика", List.of());
+                    "У вас пока нет учеников.\n➕ /new — добавить ученика", List.of());
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);
