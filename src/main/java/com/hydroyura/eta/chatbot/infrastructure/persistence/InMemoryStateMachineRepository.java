@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.infrastructure.persistence;
 
+import com.hydroyura.eta.shared.api.SnapshotProvider;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachineId;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachineRepository;
@@ -12,7 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Repository
-public class InMemoryStateMachineRepository implements StateMachineRepository {
+// TODO: remove SnapshotProvider when switching to JPA/PostgreSQL
+public class InMemoryStateMachineRepository implements StateMachineRepository, SnapshotProvider {
 
     private final Map<StateMachineId, StateMachine> store = new ConcurrentHashMap<>();
 
@@ -29,5 +31,10 @@ public class InMemoryStateMachineRepository implements StateMachineRepository {
     @Override
     public void save(StateMachine stateMachine) {
         store.put(stateMachine.getId(), stateMachine);
+    }
+
+    // TODO: remove when switching to JPA/PostgreSQL
+    public Map<StateMachineId, StateMachine> snapshot() {
+        return Map.copyOf(store);
     }
 }

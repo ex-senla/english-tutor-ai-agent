@@ -1,5 +1,6 @@
 package com.hydroyura.eta.exercise.infrastructure.persistence;
 
+import com.hydroyura.eta.shared.api.SnapshotProvider;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
@@ -10,7 +11,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class InMemoryExerciseRepository implements ExerciseRepository {
+// TODO: remove SnapshotProvider when switching to JPA/PostgreSQL
+public class InMemoryExerciseRepository implements ExerciseRepository, SnapshotProvider {
 
     private final Map<ExerciseId, Exercise> store = new ConcurrentHashMap<>();
 
@@ -23,5 +25,10 @@ public class InMemoryExerciseRepository implements ExerciseRepository {
     @Override
     public Optional<Exercise> findById(ExerciseId id) {
         return Optional.ofNullable(store.get(id));
+    }
+
+    // TODO: remove when switching to JPA/PostgreSQL
+    public Map<ExerciseId, Exercise> snapshot() {
+        return Map.copyOf(store);
     }
 }
