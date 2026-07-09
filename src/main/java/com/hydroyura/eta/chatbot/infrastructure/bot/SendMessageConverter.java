@@ -20,7 +20,7 @@ public final class SendMessageConverter {
         return switch (result) {
             case ActionResult.TextResponse(var text) -> buildText(chatId, text);
             case ActionResult.TextWithInlineKeyboard(var text, var keyboard) -> buildInline(chatId, text, keyboard);
-            case ActionResult.TextWithReplyKeyboard(var text, var keyboard) -> buildReply(chatId, text, keyboard);
+            case ActionResult.TextWithReplyKeyboard(var text, var keyboard, var cleanupMessageId) -> buildReply(chatId, text, keyboard);
             case ActionResult.EditMessageText(var messageId, var text, var keyboard) -> buildEdit(chatId, messageId, text, keyboard);
             case ActionResult.DeleteMessage(var messageId) -> buildDelete(chatId, messageId);
         };

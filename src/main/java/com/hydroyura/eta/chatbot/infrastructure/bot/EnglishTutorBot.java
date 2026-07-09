@@ -2,6 +2,7 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 
 import com.hydroyura.eta.chatbot.application.ActionHandler;
 import com.hydroyura.eta.chatbot.application.StateMachineAppService;
+import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,16 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         // 5. prepare response
         var response = converter.convert(result, chatId);
 
-        // 6. send/edit/delete message
+        // 6. delete old inline-keyboard message if requested
+        if (result instanceof ActionResult.TextWithReplyKeyboard twk && twk.cleanupMessageId() != null) {
+            var delete = DeleteMessage.builder()
+                    .chatId(chatId.toString())
+                    .messageId(twk.cleanupMessageId())
+                    .build();
+            execute(delete);
+        }
+
+        // 7. send/edit/delete message
         // remove reply keyboard when leaving ACTIVE or IN_LESSON state
         if ((oldState == State.ACTIVE && newState != State.ACTIVE)
                 || (oldState == State.IN_LESSON && newState != State.IN_LESSON)) {

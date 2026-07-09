@@ -15,7 +15,7 @@ public sealed interface ActionResult
 
     record TextWithInlineKeyboard(String text, List<List<InlineButton>> keyboard) implements ActionResult {}
 
-    record TextWithReplyKeyboard(String text, List<List<String>> keyboard) implements ActionResult {}
+    record TextWithReplyKeyboard(String text, List<List<String>> keyboard, Integer cleanupMessageId) implements ActionResult {}
 
     record EditMessageText(int messageId, String text, List<List<InlineButton>> keyboard) implements ActionResult {}
 

@@ -138,11 +138,15 @@ public class ActionHandler {
     }
 
     private ActionResult activeMenu(String userName) {
+        return activeMenu(userName, null);
+    }
+
+    private ActionResult activeMenu(String userName, Integer cleanupMessageId) {
         var text = activeMenuText(userName);
         var keyboard = List.of(
                 List.of("➕ Новый студент", "👥 Мои студенты")
         );
-        return new ActionResult.TextWithReplyKeyboard(text, keyboard);
+        return new ActionResult.TextWithReplyKeyboard(text, keyboard, cleanupMessageId);
     }
 
     private String activeMenuText(String userName) {
@@ -156,7 +160,7 @@ public class ActionHandler {
         var keyboard = List.of(
                 List.of("➕ Новый студент", "👥 Мои студенты")
         );
-        return new ActionResult.TextWithReplyKeyboard(text, keyboard);
+        return new ActionResult.TextWithReplyKeyboard(text, keyboard, null);
     }
 
     // ========================================================================
@@ -199,6 +203,11 @@ public class ActionHandler {
                 sm.updateState(State.STUDENT_OPTIONS);
                 return studentOptionsEdit(sm, studentId, messageId);
             }
+            if ("back:main".equals(data)) {
+                sm.updateState(State.ACTIVE);
+                var teacherName = (String) sm.getContext().getOrDefault("teacherName", "");
+                return activeMenu(teacherName, messageId);
+            }
             return new ActionResult.TextResponse("Выберите ученика кнопками ниже");
         }
         if (action instanceof Action.Command(var cmd, var userName)) {
@@ -222,9 +231,10 @@ public class ActionHandler {
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);
-        var keyboard = students.stream()
+        var keyboard = new java.util.ArrayList<>(students.stream()
                 .map(s -> List.of(new InlineButton(s.name(), "student:" + s.id().value())))
-                .toList();
+                .toList());
+        keyboard.add(List.of(new InlineButton("◀ Назад", "back:main")));
 
         return new ActionResult.TextWithInlineKeyboard("Ваши ученики:", keyboard);
     }
@@ -266,14 +276,18 @@ public class ActionHandler {
         sm.updateState(State.IN_LESSON);
         log.info("Lesson {} started for student {}", lessonId, studentId);
 
-        return lessonKeyboard("Урок начат для " + name + "!");
+        return lessonKeyboard("Урок начат для " + name + "!", messageId);
     }
 
     private ActionResult lessonKeyboard(String message) {
+        return lessonKeyboard(message, null);
+    }
+
+    private ActionResult lessonKeyboard(String message, Integer cleanupMessageId) {
         var keyboard = List.of(
                 List.of("➕ Добавить слово", "🏁 Завершить урок")
         );
-        return new ActionResult.TextWithReplyKeyboard(message, keyboard);
+        return new ActionResult.TextWithReplyKeyboard(message, keyboard, cleanupMessageId);
     }
 
     private ActionResult studentOptionsMenu(StateMachine sm, String studentId) {
@@ -362,7 +376,7 @@ public class ActionHandler {
         if (action instanceof Action.InputParam(var text)) {
             sm.getContext().put("wordValue", text);
             sm.updateState(State.AWAITING_POS);
-            return posMenu();
+            return posMenu(text);
         }
         return new ActionResult.TextResponse("Введите слово на английском");
     }
@@ -373,8 +387,13 @@ public class ActionHandler {
                 var pos = PartOfSpeech.valueOf(data.substring("pos:".length()));
                 sm.getContext().put("wordPos", pos);
                 sm.updateState(State.AWAITING_TRANSLATION);
+                var posLabel = switch (pos) {
+                    case NOUN -> "📛 Noun";
+                    case VERB -> "🏃 Verb";
+                    case ADJECTIVE -> "🎨 Adjective";
+                };
                 return new ActionResult.EditMessageText(messageId,
-                        "Введите переводы через запятую (например: дом, здание, строение)", List.of());
+                        posLabel + "\n\nВведите переводы через запятую (например: дом, здание, строение)", List.of());
             }
         }
         return new ActionResult.TextResponse("Выберите часть речи кнопками ниже");
@@ -407,13 +426,13 @@ public class ActionHandler {
         return new ActionResult.TextResponse("Введите переводы через запятую");
     }
 
-    private ActionResult posMenu() {
+    private ActionResult posMenu(String word) {
         var keyboard = List.of(
                 List.of(new InlineButton("📛 Noun", "pos:NOUN")),
                 List.of(new InlineButton("🏃 Verb", "pos:VERB")),
                 List.of(new InlineButton("🎨 Adjective", "pos:ADJECTIVE"))
         );
-        return new ActionResult.TextWithInlineKeyboard("Выберите часть речи:", keyboard);
+        return new ActionResult.TextWithInlineKeyboard("Слово: " + word + "\n\nВыберите часть речи:", keyboard);
     }
 
     // ========================================================================
@@ -479,9 +498,10 @@ public class ActionHandler {
         }
 
         var students = studentQuery.findStudentsByIds(studentIds);
-        var keyboard = students.stream()
+        var keyboard = new java.util.ArrayList<>(students.stream()
                 .map(s -> List.of(new InlineButton(s.name(), "student:" + s.id().value())))
-                .toList();
+                .toList());
+        keyboard.add(List.of(new InlineButton("◀ Назад", "back:main")));
 
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
