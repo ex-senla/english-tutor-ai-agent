@@ -266,8 +266,14 @@ public class ActionHandler {
         sm.updateState(State.IN_LESSON);
         log.info("Lesson {} started for student {}", lessonId, studentId);
 
-        return new ActionResult.EditMessageText(messageId,
-                "Урок начат для " + name + "! /addword — добавить слово, /finishlesson — завершить", List.of());
+        return lessonKeyboard("Урок начат для " + name + "!");
+    }
+
+    private ActionResult lessonKeyboard(String message) {
+        var keyboard = List.of(
+                List.of("➕ Добавить слово", "🏁 Завершить урок")
+        );
+        return new ActionResult.TextWithReplyKeyboard(message, keyboard);
     }
 
     private ActionResult studentOptionsMenu(StateMachine sm, String studentId) {
@@ -309,31 +315,43 @@ public class ActionHandler {
     // ========================================================================
 
     private ActionResult handleInLesson(StateMachine sm, Action action) {
+        if (action instanceof Action.InputParam(var text)) {
+            if ("➕ Добавить слово".equals(text)) {
+                sm.updateState(State.AWAITING_WORD);
+                return new ActionResult.TextResponse("Введите слово на английском");
+            }
+            if ("🏁 Завершить урок".equals(text)) {
+                return finishLesson(sm);
+            }
+        }
+        // backward compatibility: commands still work
         if (action instanceof Action.Command(var cmd, var userName)) {
             if ("/finishlesson".equals(cmd)) {
-                var studentIdStr = (String) sm.getContext().get("selectedStudentId");
-                var studentId = new StudentId(UUID.fromString(studentIdStr));
-
-                var lessonId = findActiveLesson.findByStudentId(studentId)
-                        .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
-
-                endLesson.execute(new EndLessonCommand(lessonId));
-                log.info("Lesson {} ended for student {}", lessonId, studentIdStr);
-
-                sm.updateState(State.STUDENT_OPTIONS);
-                return studentOptionsMenu(sm, studentIdStr);
+                return finishLesson(sm);
             }
             if ("/addword".equals(cmd)) {
                 sm.updateState(State.AWAITING_WORD);
                 return new ActionResult.TextResponse("Введите слово на английском");
             }
             if ("/help".equals(cmd)) {
-                return new ActionResult.TextResponse(
-                        "/addword — добавить слово\n/finishlesson — завершить урок");
+                return lessonKeyboard("➕ Добавить слово — добавить слово\n🏁 Завершить урок — завершить урок");
             }
         }
-        return new ActionResult.TextResponse(
-                "/addword — добавить слово\n/finishlesson — завершить урок");
+        return lessonKeyboard("Используйте кнопки ниже");
+    }
+
+    private ActionResult finishLesson(StateMachine sm) {
+        var studentIdStr = (String) sm.getContext().get("selectedStudentId");
+        var studentId = new StudentId(UUID.fromString(studentIdStr));
+
+        var lessonId = findActiveLesson.findByStudentId(studentId)
+                .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
+
+        endLesson.execute(new EndLessonCommand(lessonId));
+        log.info("Lesson {} ended for student {}", lessonId, studentIdStr);
+
+        sm.updateState(State.STUDENT_OPTIONS);
+        return studentOptionsMenu(sm, studentIdStr);
     }
 
     // ========================================================================
@@ -384,8 +402,7 @@ public class ActionHandler {
             log.info("Word '{}' added to lesson {} for student {}", wordValue, lessonId, studentIdStr);
 
             sm.updateState(State.IN_LESSON);
-            return new ActionResult.TextResponse(
-                    "✅ Слово '" + wordValue + "' добавлено!\n/addword — добавить ещё слово\n/finishlesson — завершить урок");
+            return lessonKeyboard("✅ Слово '" + wordValue + "' добавлено!");
         }
         return new ActionResult.TextResponse("Введите переводы через запятую");
     }

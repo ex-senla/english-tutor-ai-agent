@@ -70,8 +70,9 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         var response = converter.convert(result, chatId);
 
         // 6. send/edit/delete message
-        // remove reply keyboard when leaving ACTIVE state
-        if (oldState == State.ACTIVE && newState != State.ACTIVE) {
+        // remove reply keyboard when leaving ACTIVE or IN_LESSON state
+        if ((oldState == State.ACTIVE && newState != State.ACTIVE)
+                || (oldState == State.IN_LESSON && newState != State.IN_LESSON)) {
             var remove = SendMessage.builder()
                     .chatId(chatId.toString())
                     .text(".")
