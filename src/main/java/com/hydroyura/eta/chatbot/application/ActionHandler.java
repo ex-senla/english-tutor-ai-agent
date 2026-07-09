@@ -7,6 +7,7 @@ import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
@@ -45,6 +46,7 @@ public class ActionHandler {
     private final EndLesson endLesson;
     private final AddWordToDictionary addWordToDictionary;
     private final AddWordToLesson addWordToLesson;
+    private final FindWords findWords;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -361,11 +363,39 @@ public class ActionHandler {
         var lessonId = findActiveLesson.findByStudentId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
 
-        endLesson.execute(new EndLessonCommand(lessonId));
+        var result = endLesson.execute(new EndLessonCommand(lessonId));
         log.info("Lesson {} ended for student {}", lessonId, studentIdStr);
 
+        var dictionaryId = studentQuery.getDictionaryId(studentId)
+                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
+
+        var wordValues = findWords.findByDictionaryId(dictionaryId).stream()
+                .filter(wp -> result.wordIds().contains(wp.id()))
+                .map(wp -> wp.value())
+                .toList();
+
+        var dateFormatter = java.time.format.DateTimeFormatter
+                .ofPattern("dd.MM.yyyy")
+                .withZone(java.time.ZoneId.systemDefault());
+        var date = dateFormatter.format(result.startedAt());
+        var duration = java.time.Duration.between(result.startedAt(), result.endedAt()).toMinutes();
+
         sm.updateState(State.STUDENT_OPTIONS);
-        return studentOptionsMenu(sm, studentIdStr);
+
+        var studentName = (String) sm.getContext().getOrDefault("selectedStudentName", "?");
+        var summary = "🏁 Урок завершён!\n" +
+                "📅 Дата: " + date + "\n" +
+                "⏱ Длительность: " + duration + " мин.\n" +
+                "📝 Слова: " + (wordValues.isEmpty() ? "—" : String.join(", ", wordValues)) + "\n" +
+                "👤 Ученик: " + studentName;
+
+        var keyboard = List.of(
+                List.of(new InlineButton("▶ Start Lesson", "action:startlesson")),
+                List.of(new InlineButton("📋 Details", "action:details")),
+                List.of(new InlineButton("🎯 Exercise", "action:exercise")),
+                List.of(new InlineButton("◀ Back", "action:back"))
+        );
+        return new ActionResult.TextWithInlineKeyboard(summary, keyboard);
     }
 
     // ========================================================================
