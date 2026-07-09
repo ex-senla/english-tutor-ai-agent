@@ -387,13 +387,15 @@ public class ActionHandler {
                 var pos = PartOfSpeech.valueOf(data.substring("pos:".length()));
                 sm.getContext().put("wordPos", pos);
                 sm.updateState(State.AWAITING_TRANSLATION);
+                var word = (String) sm.getContext().get("wordValue");
                 var posLabel = switch (pos) {
                     case NOUN -> "📛 Noun";
                     case VERB -> "🏃 Verb";
                     case ADJECTIVE -> "🎨 Adjective";
                 };
                 return new ActionResult.EditMessageText(messageId,
-                        posLabel + "\n\nВведите переводы через запятую (например: дом, здание, строение)", List.of());
+                        "Слово: " + word + "\nЧасть речи: " + posLabel
+                                + "\n\nВведите переводы через запятую (например: дом, здание, строение)", List.of());
             }
         }
         return new ActionResult.TextResponse("Выберите часть речи кнопками ниже");
@@ -421,7 +423,12 @@ public class ActionHandler {
             log.info("Word '{}' added to lesson {} for student {}", wordValue, lessonId, studentIdStr);
 
             sm.updateState(State.IN_LESSON);
-            return lessonKeyboard("✅ Слово '" + wordValue + "' добавлено!");
+            var posLabel = switch (pos) {
+                case NOUN -> "📛 Noun";
+                case VERB -> "🏃 Verb";
+                case ADJECTIVE -> "🎨 Adjective";
+            };
+            return lessonKeyboard("✅ Слово '" + wordValue + "' (" + posLabel + ")\nПереводы: " + String.join(", ", translations));
         }
         return new ActionResult.TextResponse("Введите переводы через запятую");
     }
