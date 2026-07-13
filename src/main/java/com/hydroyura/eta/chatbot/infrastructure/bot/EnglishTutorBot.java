@@ -1,23 +1,19 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
-import com.hydroyura.eta.chatbot.application.BotResponse;
+import com.hydroyura.eta.chatbot.application.ActionHandler;
 import com.hydroyura.eta.chatbot.application.StateMachineAppService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import com.hydroyura.eta.chatbot.domain.action.ActionResult;
+import com.hydroyura.eta.chatbot.domain.statemachine.State;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 @Slf4j
 @Component
@@ -25,105 +21,90 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final String botUsername;
     private final StateMachineAppService service;
+    private final UpdateParser updateParser;
+    private final ActionHandler actionHandler;
+    private final SendMessageConverter converter;
 
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
                            @Value("${telegram.bot.username}") String botUsername,
-                           StateMachineAppService service) {
+                           StateMachineAppService service, UpdateParser updateParser,
+                           ActionHandler actionHandler, SendMessageConverter converter) {
         super(botToken);
         this.botUsername = botUsername;
         this.service = service;
+        this.updateParser = updateParser;
+        this.actionHandler = actionHandler;
+        this.converter = converter;
     }
 
     @Override
     public String getBotUsername() { return botUsername; }
 
     @Override
+    @SneakyThrows // TODO: create exception handler
     public void onUpdateReceived(Update update) {
-        if (update.hasCallbackQuery()) {
-            handleCallback(update);
+        // skip non-actionable updates (bot kicked, chat member changes, etc.)
+        if (update.hasMyChatMember()) {
+            var status = update.getMyChatMember().getNewChatMember().getStatus();
+            var chatId = update.getMyChatMember().getChat().getId();
+            log.info("my_chat_member update: chatId={}, status={}", chatId, status);
             return;
         }
-        if (!update.hasMessage() || !update.getMessage().hasText()) return;
 
-        var msg = update.getMessage();
-        var chatId = msg.getChatId();
-        var text = msg.getText().trim();
-        log.info("[{}] {}", chatId, text);
-        processMessage(chatId, text);
-    }
+        // 0. get chatId
+        var chatId = extractChatId(update);
+        // 1. get stateMachine
+        var sm = service.getOrCreate(chatId);
 
-    private void handleCallback(Update update) {
-        var callback = update.getCallbackQuery();
-        var chatId = callback.getMessage().getChatId();
-        var data = callback.getData();
-        log.info("[{}] callback: {}", chatId, data);
+        // 2. parse update to select action
+        var action = updateParser.parseUpdate(update);
 
-        // Answer callback to remove loading indicator
-        try {
-            execute(new AnswerCallbackQuery(callback.getId()));
-        } catch (TelegramApiException e) {
-            log.error("Callback answer failed", e);
+        // 3. perform action in sm
+        var oldState = sm.getState();
+        var result = actionHandler.handle(sm, action);
+        var newState = sm.getState();
+
+        // 4. save sm
+        service.save(sm);
+
+        // 5. prepare response
+        var response = converter.convert(result, chatId);
+
+        // 6. delete old inline-keyboard message if requested
+        if (result instanceof ActionResult.TextWithReplyKeyboard twk && twk.cleanupMessageId() != null) {
+            var delete = DeleteMessage.builder()
+                    .chatId(chatId.toString())
+                    .messageId(twk.cleanupMessageId())
+                    .build();
+            execute(delete);
         }
 
-        // Convert callback to text command and route through state machine
-        if (data.startsWith("student:")) {
-            var studentName = data.substring("student:".length());
-            processMessage(chatId, "/student " + studentName);
+        // 7. send/edit/delete message
+        // remove reply keyboard when leaving ACTIVE or IN_LESSON state
+        if ((oldState == State.ACTIVE && newState != State.ACTIVE)
+                || (oldState == State.IN_LESSON && newState != State.IN_LESSON)) {
+            var remove = SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .text(".")
+                    .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
+                    .build();
+            execute(remove);
         }
-    }
-
-    private void processMessage(Long chatId, String text) {
-        try {
-            var response = service.handle(text, chatId);
-            if (Objects.nonNull(response)) {
-                sendResponse(chatId, response);
-            }
-        } catch (Exception e) {
-            log.error("Error processing message", e);
-            sendMessage(chatId, "❌ Something went wrong");
-        }
-    }
-
-    private void sendResponse(Long chatId, BotResponse response) {
-        try {
-            var msg = new SendMessage(chatId.toString(), response.text());
-
-            if (response.hasInlineKeyboard()) {
-                var rows = new ArrayList<List<InlineKeyboardButton>>();
-                for (var row : response.inlineKeyboard()) {
-                    var buttons = row.stream()
-                        .map(btnText -> InlineKeyboardButton.builder()
-                            .text(btnText)
-                            .callbackData("student:" + btnText)
-                            .build())
-                        .toList();
-                    rows.add(buttons);
-                }
-                msg.setReplyMarkup(new InlineKeyboardMarkup(rows));
-            } else {
-                var state = service.getState(chatId);
-                var buttons = state != null ? Arrays.asList(state.keyboardButtons()) : new ArrayList<String>();
-                if (!buttons.isEmpty()) {
-                    var keyboardRows = new ArrayList<KeyboardRow>();
-                    var row = new KeyboardRow();
-                    for (var b : buttons) row.add(b);
-                    keyboardRows.add(row);
-                    msg.setReplyMarkup(ReplyKeyboardMarkup.builder()
-                        .keyboard(keyboardRows).resizeKeyboard(true).build());
-                }
-            }
-
-            execute(msg);
-        } catch (TelegramApiException e) {
-            log.error("Send failed", e);
+        switch (response) {
+            case SendMessage msg -> execute(msg);
+            case EditMessageText edit -> execute(edit);
+            case DeleteMessage delete -> execute(delete);
+            default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
         }
     }
 
-    private void sendMessage(Long chatId, String text) {
-        try {
-            execute(new SendMessage(chatId.toString(), text));
-        } catch (TelegramApiException e) {
-            log.error("Send failed", e);
+    private Long extractChatId(Update update) {
+        if (update.hasMessage()) {
+            return update.getMessage().getChatId();
         }
+        if (update.hasCallbackQuery()) {
+            return update.getCallbackQuery().getMessage().getChatId();
+        }
+        throw new IllegalArgumentException("Update has neither message nor callback query");
     }
 }

@@ -2,5 +2,5 @@ package com.hydroyura.eta.student.api.lesson;
 
 public interface EndLesson {
 
-    void execute(EndLessonCommand command);
+    EndLessonResult execute(EndLessonCommand command);
 }

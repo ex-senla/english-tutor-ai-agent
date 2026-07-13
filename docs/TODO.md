@@ -1,17 +1,32 @@
 # TODO — v1.0.0
 
-## Фичи релиза
+## Фичи релиза — бот
 
-| # | Фича | Статус | Команды бота | Что сделано / осталось |
-|---|------|--------|-------------|----------------------|
-| 1 | **Регистрация учителя** | ✅ | `/start`, `/register` | StartCmd (приветствие), RegisterCmd (chatId + имя) |
-| 2 | **Добавление учеников** | ✅ | `/newstudent` | NewStudentCmd → CreateStudentWithDictionary (оркестрация Dictionary + Student) |
-| 3 | **Список учеников** | ✅ | `/students` | StudentsCmd + inline-кнопки с именами учеников |
-| 4 | **Детали ученика** | ✅ | click по кнопке | Inline-кнопка → callback → FindTeacher + StudentQuery → карточка: имя, статистика словаря, статус урока |
-| 5 | **Начало урока** | ✅ | `/startlesson` | StartLessonCmd → StartLesson. Но выбор ученика — первый из списка, а не через кнопку ⚠️ |
-| 6 | **Добавление слов на уроке** | ✅ | `/addword` | AddWordCmd: трёхшаговый ввод (word → POS → translation). Слово идёт и в Dictionary, и в Lesson |
-| 7 | **Завершение урока** | ✅ | `/endlesson` | EndLessonCmd → EndLesson. Выводит список слов урока ⚠️ (проверить вывод) |
-| 8 | **Генерация упражнений** | ⚠️ | `/exercise` | ExerciseCmd: `/exercise <TYPE> <topic>` → генерация → проверка ответа. Нюансы: (а) без Spring AI — скелет, (б) не фильтрует слова по `IN_PROGRESS`, (в) 4 типа в коде, roadmap просит 2: FILL_IN_THE_BLANK + MULTIPLE_CHOICE |
+| # | Фича | Статус | Как вызвать | Заметки |
+|---|------|--------|-------------|---------|
+| 1 | **Регистрация учителя** | ✅ done | `/register` → ввод имени | |
+| 2 | **Добавление учеников** | ✅ done | кнопка `➕ Новый студент` или `/new` | Создаётся Student + Dictionary |
+| 3 | **Список учеников** | ✅ done | кнопка `👥 Мои студенты` или `/list` | Inline-кнопки, редактирование сообщения |
+| 4 | **Детали ученика** | ❌ stub | кнопка `📋 Details` | Показывает "Детали ученика (TODO)" |
+| 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в InMemoryLessonRepository |
+| 6 | **Добавление слов на уроке** | ✅ done | кнопка `➕ Добавить слово` → слово → POS → переводы | 3 шага: AWAITING_WORD → AWAITING_POS → AWAITING_TRANSLATION |
+| 7 | **Завершение урока** | ✅ done | кнопка `🏁 Завершить урок` | EndLesson, возврат в STUDENT_OPTIONS |
+| 8 | **Генерация упражнений** | ❌ stub | кнопка `🎯 Exercise` | Выбор типа → ввод темы (stub), ответ (stub) |
+| 9 | **Обработка дубляжа слова** | ❌ | добавление слова, которое уже есть в словаре | Сейчас бросает исключение, нужно переиспользовать существующее
+
+## Chatbot — реализация v2
+
+| # | Компонент | Статус | Заметки |
+|---|-----------|--------|---------|
+| C1 | State machine: 14 состояний | ✅ done | Enum State, все 14 |
+| C2 | StateMachine entity + repository | ✅ done | StateMachineId, InMemoryStateMachineRepository |
+| C3 | `EnglishTutorBot` | ✅ done | Обработка SendMessage / EditMessageText / DeleteMessage / ReplyKeyboardRemove |
+| C4 | `ActionHandler` | ✅ done | Центральный обработчик, switch по состояниям |
+| C5 | `Action` / `ActionResult` sealed types | ✅ done | Command, InputParam, Callback; TextResponse, TextWithInlineKeyboard, TextWithReplyKeyboard, EditMessageText, DeleteMessage |
+| C6 | `UpdateParser` | ✅ done | Парсинг Update → Action |
+| C7 | `SendMessageConverter` | ✅ done | Конвертация ActionResult → Telegram API objects |
+| C8 | Reply-клавиатура | ✅ done | Главное меню: `➕ Новый студент` / `👥 Мои студенты`. Убирается при уходе из ACTIVE |
+| C9 | Inline-клавиатуры + редактирование | ✅ done | EditMessageText при навигации по меню учеников |
 
 ## Инфраструктура
 
@@ -20,6 +35,7 @@
 | I1 | JPA entities + репозитории | ❌ | Замена всех InMemory*Repository |
 | I2 | PostgreSQL + Flyway миграции | ❌ | |
 | I3 | Spring AI интеграция | ❌ | Замена скелета SpringAiExerciseGenerator на реальный LLM |
+| I4 | `/debug` endpoint | ✅ done | DebugController, SnapshotProvider |
 
 ## Технический долг
 
@@ -32,8 +48,7 @@
 | D5 | InMemoryLessonRepository → JPA | ❌ |
 | D6 | InMemoryExerciseRepository → JPA | ❌ |
 | D7 | InMemoryStateMachineRepository → persistent | ❌ |
-| D8 | Рефакторинг команд чат-бота (расширяемость) | ❌ |
-| D9 | Выбор ученика через кнопки для startlesson | ❌ | Сейчас берёт первого. Нужно переделать на inline-кнопки выбора |
+| D8 | Команды `/new` и `/list` вместо `/newstudent` и `/students` | ✅ done |
 
 ## История (done)
 
@@ -44,6 +59,15 @@
 - [x] Student — factory + validation
 - [x] Teacher — CreateStudentWithDictionary (оркестрация Dictionary → Student)
 - [x] Lesson — Entity внутри агрегата Student
-- [x] Exercise — GenerateExercise + CheckExercise API/use cases, ExerciseType (4 типа), ExerciseStatus (3 статуса)
-- [x] StateMachine: pendingCommand, Context key-value, CommandDispatcher, двухфазный/трёхшаговый ввод, Result.stay/transition
-- [x] ExerciseCmd: двухфазная работа (генерация → проверка ответа)
+- [x] Exercise — GenerateExercise + CheckExercise API/use cases
+- [x] Старый модуль chatbot удалён. Дизайн v2: state machine, 14 состояний
+- [x] ActionHandler — полная реализация S1-S11, S12-S14 stubs
+- [x] EditMessageText — редактирование сообщений при навигации (inline-меню)
+- [x] ReplyKeyboardRemove — убирание reply-клавиатуры при уходе из ACTIVE
+- [x] Кнопки главного меню: `➕ Новый студент`, `👥 Мои студенты` (без команд на кнопках)
+- [x] Кнопки урока: `➕ Добавить слово`, `🏁 Завершить урок` (reply-клавиатура вместо команд)
+- [x] Прогрессивный ввод слова: слово → часть речи → переводы (с накоплением контекста)
+- [x] Итоги урока: дата, длительность, слова, ученик
+- [x] Кнопка «Назад» в списке студентов
+- [x] Удаление старых inline-меню (cleanupMessageId)
+- [x] WARN-логи для каждой спецификации валидации слов

@@ -1,38 +1,30 @@
 package com.hydroyura.eta.chatbot.application;
 
-import com.hydroyura.eta.chatbot.domain.command.CommandDispatcher;
-import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachineId;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachineRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
+@Slf4j
+@Component
 public class StateMachineAppService {
 
     private final StateMachineRepository repository;
-    private final CommandDispatcher dispatcher;
 
-    public BotResponse handle(String message, Long chatId) {
+    public StateMachine getOrCreate(Long chatId) {
         var id = new StateMachineId(chatId);
-        var sm = repository.findById(id).orElse(StateMachine.ofDefaults(id));
-
-        var command = sm.getPendingCommandSafely()
-            .map(dispatcher::get)
-            .orElseGet(() -> dispatcher.dispatch(message));
-
-        if (command == null) {
-            return new BotResponse("Unknown command. /help");
-        }
-
-        var result = sm.executeFull(command, message);
-        repository.save(sm);
-        return new BotResponse(result.message(), result.inlineKeyboard());
+        return repository.findById(id).orElseGet(() -> create(id));
     }
 
-    public State getState(Long chatId) {
-        return repository.findById(new StateMachineId(chatId))
-            .map(StateMachine::getState)
-            .orElse(State.NOT_REGISTER);
+    public void save(StateMachine sm) {
+        repository.save(sm);
+    }
+
+    private StateMachine create(StateMachineId id) {
+        log.info("create new stateMachine for id = '{}'", id);
+        return StateMachine.ofDefaults(id);
     }
 }

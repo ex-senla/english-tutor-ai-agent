@@ -6,31 +6,18 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.1.0</version>
-		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.hydroyura</groupId>
 	<artifactId>eta</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
 		<java.version>26</java.version>
 		<spring-modulith.version>2.1.0</spring-modulith.version>
 		<jmolecules.version>2025.0.2</jmolecules.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -48,6 +35,7 @@
 			<groupId>org.jmolecules</groupId>
 			<artifactId>jmolecules-ddd</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots-spring-boot-starter</artifactId>

@@ -1,5 +1,8 @@
 package com.hydroyura.eta.teacher.api.teacher;
 
+import lombok.Getter;
+
+@Getter
 public enum IdentifierType {
     TELEGRAM(Long.class);
 
@@ -9,7 +12,4 @@ public enum IdentifierType {
         this.valueClass = valueClass;
     }
 
-    public Class<?> getValueClass() {
-        return valueClass;
-    }
 }

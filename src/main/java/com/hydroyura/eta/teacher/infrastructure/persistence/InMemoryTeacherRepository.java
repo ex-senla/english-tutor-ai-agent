@@ -1,5 +1,6 @@
 package com.hydroyura.eta.teacher.infrastructure.persistence;
 
+import com.hydroyura.eta.shared.api.SnapshotProvider;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
 import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import com.hydroyura.eta.teacher.domain.teacher.Teacher;
@@ -11,7 +12,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class InMemoryTeacherRepository implements TeacherRepository {
+// TODO: remove SnapshotProvider when switching to JPA/PostgreSQL
+public class InMemoryTeacherRepository implements TeacherRepository, SnapshotProvider {
 
     private final Map<TeacherId, Teacher> store = new ConcurrentHashMap<>();
 
@@ -31,5 +33,10 @@ public class InMemoryTeacherRepository implements TeacherRepository {
         return store.values().stream()
             .filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type)))
             .findFirst();
+    }
+
+    // TODO: remove when switching to JPA/PostgreSQL
+    public Map<TeacherId, Teacher> snapshot() {
+        return Map.copyOf(store);
     }
 }

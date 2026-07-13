@@ -4,6 +4,7 @@ import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
+import com.hydroyura.eta.teacher.domain.teacher.Teacher;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -18,13 +19,13 @@ public class FindTeacherService implements FindTeacher {
     @Override
     public Optional<TeacherId> findByTelegramChatId(Long chatId) {
         return teacherRepository.findByIdentifier(IdentifierType.TELEGRAM, chatId)
-            .map(t -> t.getId());
+            .map(Teacher::getId);
     }
 
     @Override
     public Set<StudentId> getStudentIds(Long chatId) {
         return teacherRepository.findByIdentifier(IdentifierType.TELEGRAM, chatId)
-            .map(t -> t.getStudentIds())
+            .map(Teacher::getStudentIds)
             .orElse(Set.of());
     }
 }

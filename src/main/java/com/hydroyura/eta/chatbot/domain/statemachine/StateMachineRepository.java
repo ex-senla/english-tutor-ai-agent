@@ -6,6 +6,6 @@ public interface StateMachineRepository {
 
     Optional<StateMachine> findById(StateMachineId id);
 
-    void save(StateMachine stateMachine);
+    void save(StateMachine sm);
 
 }
