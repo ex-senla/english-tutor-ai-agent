@@ -7,8 +7,15 @@ import com.hydroyura.eta.chatbot.domain.statemachine.State;
 import com.hydroyura.eta.chatbot.domain.statemachine.StateMachine;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
+import com.hydroyura.eta.exercise.api.exercise.CheckExerciseCommand;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
+import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
@@ -47,6 +54,8 @@ public class ActionHandler {
     private final AddWordToDictionary addWordToDictionary;
     private final AddWordToLesson addWordToLesson;
     private final FindWords findWords;
+    private final GenerateExercise generateExercise;
+    private final CheckExercise checkExercise;
 
     public ActionResult handle(StateMachine sm, Action action) {
         return switch (sm.getState()) {
@@ -478,8 +487,13 @@ public class ActionHandler {
 
     private ActionResult handleAwaitingExerciseType(StateMachine sm, Action action) {
         if (action instanceof Action.Callback(var data, var messageId)) {
-            if (data.equals("exercise:FILL_IN_THE_BLANK") || data.equals("exercise:MULTIPLE_CHOICE")) {
-                sm.getContext().put("exerciseType", data);
+            var exerciseType = switch (data) {
+                case "exercise:FILL_IN_THE_BLANK" -> ExerciseType.FILL_IN_THE_BLANK;
+                case "exercise:MULTIPLE_CHOICE" -> ExerciseType.MULTIPLE_CHOICE;
+                default -> null;
+            };
+            if (exerciseType != null) {
+                sm.getContext().put("exerciseType", exerciseType);
                 sm.updateState(State.AWAITING_EXERCISE_TOPIC);
                 return new ActionResult.TextResponse("Введите тему упражнения (например, 'Animals')");
             }
@@ -496,11 +510,62 @@ public class ActionHandler {
     }
 
     private ActionResult handleAwaitingExerciseTopic(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Ввод темы упражнения (TODO)");
+        if (action instanceof Action.InputParam(var topic)) {
+            var studentIdStr = (String) sm.getContext().get("selectedStudentId");
+            var studentId = new StudentId(UUID.fromString(studentIdStr));
+            var exerciseType = (ExerciseType) sm.getContext().get("exerciseType");
+
+            var dictionaryId = studentQuery.getDictionaryId(studentId)
+                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
+
+            var exercise = generateExercise.execute(
+                new GenerateExerciseCommand(exerciseType, topic, dictionaryId));
+
+            sm.getContext().put("exerciseId", exercise.id());
+            sm.getContext().put("exerciseTopic", topic);
+            sm.updateState(State.AWAITING_EXERCISE_ANSWER);
+
+            var typeLabel = exerciseType == ExerciseType.FILL_IN_THE_BLANK
+                ? "✏️ Fill in the blank" : "🔤 Multiple choice";
+
+            log.info("Exercise {} generated: type={}, topic={}", exercise.id(), exerciseType, topic);
+            return new ActionResult.TextResponse(
+                typeLabel + " | Тема: " + topic + "\n\n" + exercise.content()
+                    + "\n\n✍️ Введите ваш ответ:");
+        }
+        return new ActionResult.TextResponse("Введите тему упражнения");
     }
 
     private ActionResult handleAwaitingExerciseAnswer(StateMachine sm, Action action) {
-        return new ActionResult.TextResponse("Проверка ответа (TODO)");
+        if (action instanceof Action.InputParam(var answer)) {
+            var exerciseId = (ExerciseId) sm.getContext().get("exerciseId");
+            var studentName = (String) sm.getContext().getOrDefault("selectedStudentName", "?");
+
+            if (exerciseId == null) {
+                sm.updateState(State.STUDENT_OPTIONS);
+                return new ActionResult.TextResponse("⚠️ Упражнение не найдено. Начните заново.");
+            }
+
+            var result = checkExercise.execute(new CheckExerciseCommand(exerciseId, answer));
+
+            sm.getContext().remove("exerciseId");
+            sm.getContext().remove("exerciseType");
+            sm.getContext().remove("exerciseTopic");
+            sm.updateState(State.STUDENT_OPTIONS);
+
+            log.info("Exercise {} checked: correct={}", exerciseId, result.correct());
+
+            var studentId = (String) sm.getContext().get("selectedStudentId");
+            var keyboard = List.of(
+                List.of(new InlineButton("▶ Start Lesson", "action:startlesson")),
+                List.of(new InlineButton("📋 Details", "action:details")),
+                List.of(new InlineButton("🎯 Exercise", "action:exercise")),
+                List.of(new InlineButton("◀ Back", "action:back"))
+            );
+            return new ActionResult.TextWithInlineKeyboard(
+                "🎯 Ученик: " + studentName + "\n\n" + result.feedback(), keyboard);
+        }
+        return new ActionResult.TextResponse("Введите ваш ответ на упражнение");
     }
 
     // ========================================================================
