@@ -1,8 +1,29 @@
 spring:
   application:
     name: eta
+  ai:
+    openai:
+      api-key: ${DEEPSEEK_API_KEY}
+      base-url: https://api.deepseek.com
+      chat:
+        model: deepseek-chat
+    chat:
+      client:
+        observations:
+          log-prompt: true
+          log-completion: true
+      observations:
+        log-prompt: true
+        log-completion: true
+        include-error-logging: true
 
 telegram:
   bot:
     token: ${TELEGRAM_BOT_TOKEN}
     username: eta_tutor_bot
+
+logging:
+  level:
+    org.springframework.ai: TRACE
+    org.springframework.ai.chat.client: TRACE
+    org.springframework.ai.openai: TRACE
