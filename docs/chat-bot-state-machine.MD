@@ -68,18 +68,18 @@
 ```
 process(update):
     sm = repo.findByChatId(chatId)
-    config = STATE_CONFIG[sm.state]
+    config = STATE_CONFIG[sm.chatState]
     
     тип = определить_тип(update)   // команда | параметр | callback
     
     if config.разрешён(тип):
         выполнить_действие(config, тип, update)
-        sm.state = config.новое_состояние(тип)
+        sm.chatState = config.новое_состояние(тип)
         обновить_контекст(sm, config, update)
         repo.save(sm)
-        return render(sm.state)
+        return render(sm.chatState)
     else:
-        return renderError(sm.state, тип)
+        return renderError(sm.chatState, тип)
 ```
 
 ### Формирование ответа
@@ -185,7 +185,7 @@ chatbot/
 │   └── statemachine/
 │       ├── State.java                 # Enum: все 14 состояний
 │       ├── StateConfig.java           # Конфиг состояния: разрешённые команды/параметр/КБ + действия
-│       ├── StateMachine.java          # Агрегат: id, chatId, state, context
+│       ├── StateMachine.java          # Агрегат: id, chatId, chatState, context
 │       └── StateMachineRepository.java
 ├── application/
 │   ├── config/
