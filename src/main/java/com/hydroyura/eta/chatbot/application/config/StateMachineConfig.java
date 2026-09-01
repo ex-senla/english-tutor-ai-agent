@@ -1,25 +1,20 @@
 package com.hydroyura.eta.chatbot.application.config;
 
-import com.hydroyura.eta.chatbot.application.ChatService;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
-import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.handler.Handler;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.TransitionKey;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.DefaultCmdActiveTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.active.ListCmdActiveTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.active.MyStudentsBtnActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.NewCmdActiveTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.active.NewStudentBtnActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.NewStudentTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingpos.PosCbAwaitingPosTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingregistrationname.InputAwaitingRegistrationNameTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentname.InputAwaitingStudentNameTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingtranslation.InputAwaitingTranslationTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingword.InputAwaitingWordTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.awatingexerciseanswer.InputAwatingExerciseAnswerTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.awatingexercisetopic.InputAwatingExerciseTopicTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.awatingexercisetype.ExerciseCbAwatingExerciseTypeTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexerciseanswer.InputAwaitingExerciseAnswerTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.InputAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetype.ExerciseCbAwaitingExerciseTypeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.initial.DefaultCmdInitialTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.initial.RegisterCmdInitialTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.inlesson.AddWordInLessonTransition;
@@ -29,9 +24,10 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdeta
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentoptions.ActionCbStudentOptionsTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.BackCbStudentsListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.ListCmdStudentsListTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.NewCmdStudentsListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.StudentCbStudentsListTransition;
-import com.hydroyura.eta.chatbot.item.Buttons;
+import com.hydroyura.eta.chatbot.view.Buttons;
+import com.hydroyura.eta.chatbot.view.Callbacks;
+import com.hydroyura.eta.chatbot.view.Commands;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
@@ -47,8 +43,6 @@ import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -72,226 +66,76 @@ import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENTS_LIST;
 @Configuration
 public class StateMachineConfig {
 
-    private final Map<TransitionKey, Transition<Action>> transitions = new HashMap<>();
-
-    private final Map<ChatState, Transition<Action>> inputTransitions = new EnumMap<>(ChatState.class);
-
-    @Bean
-    public Map<String, Transition<Action>> nameTransitionMap(List<Transition<Action>> transitions) {
-        return transitions.stream().collect(Collectors.toMap(Transition::getName, Function.identity()));
-    }
-
     @Bean
     public Map<ChatState, Handler> chatStateHandlerMap(List<Handler> handlers) {
         return handlers.stream().collect(Collectors.toMap(Handler::getChatState, Function.identity()));
     }
 
-    // ========================================================================
-    // Transitions as beans
-    // ========================================================================
-
-    // ---- INITIAL ----
     @Bean
-    public Transition<Action.Command> registerCmdInitialTransition() {
-        return new RegisterCmdInitialTransition();
-    }
-
-    @Bean
-    public Transition<Action.Command> defaultCmdInitialTransition() {
-        return new DefaultCmdInitialTransition();
-    }
-
-    // ---- ACTIVE ----
-    @Bean
-    public Transition<Action.Command> newCmdActiveTransition() {
-        return new NewCmdActiveTransition();
-    }
-
-    @Bean
-    public Transition<Action.Command> listCmdActiveTransition(FindTeacher findTeacher, StudentQuery studentQuery) {
-        return new ListCmdActiveTransition(findTeacher, studentQuery);
-    }
-
-    @Bean
-    public Transition<Action.Command> defaultCmdActiveTransition() {
-        return new DefaultCmdActiveTransition();
-    }
-
-    @Bean
-    public Transition<Action.Button> newStudentBtnActiveTransition() {
-        return new NewStudentBtnActiveTransition();
-    }
-
-    @Bean
-    public Transition<Action.Button> myStudentsBtnActiveTransition(FindTeacher findTeacher, StudentQuery studentQuery) {
-        return new MyStudentsBtnActiveTransition(findTeacher, studentQuery);
-    }
-
-    // ---- AWAITING_REGISTRATION_NAME ----
-    @Bean
-    public Transition<Action.Input> inputAwaitingRegistrationNameTransition(RegisterTeacher registerTeacher) {
-        return new InputAwaitingRegistrationNameTransition(registerTeacher);
-    }
-
-    // ---- AWAITING_STUDENT_NAME ----
-    @Bean
-    public Transition<Action.Input> inputAwaitingStudentNameTransition(FindTeacher findTeacher,
-                                                                       CreateStudentWithDictionary createStudentWithDictionary) {
-        return new InputAwaitingStudentNameTransition(findTeacher, createStudentWithDictionary);
-    }
-
-    // ---- STUDENTS_LIST ----
-    @Bean
-    public Transition<Action.Callback> studentCbStudentsListTransition(FindTeacher findTeacher, StudentQuery studentQuery) {
-        return new StudentCbStudentsListTransition(findTeacher, studentQuery);
-    }
-
-    @Bean
-    public Transition<Action.Callback> backCbStudentsListTransition() {
-        return new BackCbStudentsListTransition();
-    }
-
-    @Bean
-    public Transition<Action.Command> newCmdStudentsListTransition() {
-        return new NewCmdStudentsListTransition();
-    }
-
-    @Bean
-    public Transition<Action.Command> listCmdStudentsListTransition(FindTeacher findTeacher, StudentQuery studentQuery) {
-        return new ListCmdStudentsListTransition(findTeacher, studentQuery);
-    }
-
-    // ---- STUDENT_OPTIONS ----
-    @Bean
-    public Transition<Action.Callback> actionCbStudentOptionsTransition(StartLesson startLesson,
-                                                                        FindTeacher findTeacher,
-                                                                        StudentQuery studentQuery) {
-        return new ActionCbStudentOptionsTransition(startLesson, findTeacher, studentQuery);
-    }
-
-    // ---- STUDENT_DETAILS ----
-    @Bean
-    public Transition<Action.Callback> backCbStudentDetailsTransition(FindTeacher findTeacher, StudentQuery studentQuery) {
-        return new BackCbStudentDetailsTransition(findTeacher, studentQuery);
-    }
-
-    // ---- IN_LESSON ----
-    @Bean
-    public Transition<Action> addWordInLessonTransition() {
-        return new AddWordInLessonTransition();
-    }
-
-    @Bean
-    public Transition<Action> finishLessonInLessonTransition(FindActiveLesson findActiveLesson,
-                                                             EndLesson endLesson,
-                                                             StudentQuery studentQuery,
-                                                             FindWords findWords) {
-        return new FinishLessonInLessonTransition(findActiveLesson, endLesson, studentQuery, findWords);
-    }
-
-    @Bean
-    public Transition<Action.Command> helpCmdInLessonTransition() {
-        return new HelpCmdInLessonTransition();
-    }
-
-    // ---- AWAITING_WORD / AWAITING_POS / AWAITING_TRANSLATION ----
-    @Bean
-    public Transition<Action.Input> inputAwaitingWordTransition() {
-        return new InputAwaitingWordTransition();
-    }
-
-    @Bean
-    public Transition<Action.Callback> posCbAwaitingPosTransition() {
-        return new PosCbAwaitingPosTransition();
-    }
-
-    @Bean
-    public Transition<Action.Input> inputAwaitingTranslationTransition(StudentQuery studentQuery,
-                                                                       AddWordToDictionary addWordToDictionary,
-                                                                       FindActiveLesson findActiveLesson,
-                                                                       AddWordToLesson addWordToLesson) {
-        return new InputAwaitingTranslationTransition(studentQuery, addWordToDictionary,
-                findActiveLesson, addWordToLesson);
-    }
-
-    // ---- EXERCISE flow ----
-    @Bean
-    public Transition<Action.Callback> exerciseCbAwatingExerciseTypeTransition() {
-        return new ExerciseCbAwatingExerciseTypeTransition();
-    }
-
-    @Bean
-    public Transition<Action.Input> inputAwatingExerciseTopicTransition(StudentQuery studentQuery,
-                                                                        GenerateExercise generateExercise) {
-        return new InputAwatingExerciseTopicTransition(studentQuery, generateExercise);
-    }
-
-    @Bean
-    public Transition<Action.Input> inputAwatingExerciseAnswerTransition(CheckExercise checkExercise) {
-        return new InputAwatingExerciseAnswerTransition(checkExercise);
-    }
-
-    // ========================================================================
-    // Registration
-    // ========================================================================
-
-    @Bean
-    public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap,
-                                     ChatService chatService, FindTeacher findTeacher, StudentQuery studentQuery,
+    public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher, StudentQuery studentQuery,
                                      FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
                                      StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
                                      RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
                                      AddWordToLesson addWordToLesson, GenerateExercise generateExercise, CheckExercise checkExercise) {
-        StateMachine stateMachine = new StateMachine(chatStateHandlerMap, chatService);
+        StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
+
+        // переходы, регистрируемые под несколькими ключами
+        var defaultCmdInitialTransition = new DefaultCmdInitialTransition();
+        var defaultCmdActiveTransition = new DefaultCmdActiveTransition();
+        var studentListTransition = new StudentListTransition(findTeacher, studentQuery);
+        var newStudentTransition = new NewStudentTransition();
+        var listCmdStudentsListTransition = new ListCmdStudentsListTransition(findTeacher, studentQuery);
+        var addWordInLessonTransition = new AddWordInLessonTransition();
+        var finishLessonInLessonTransition = new FinishLessonInLessonTransition(findActiveLesson, endLesson, studentQuery, findWords);
 
         // INITIAL
-        stateMachine.onCommand(INITIAL, "/register", registerCmdInitialTransition());
-        stateMachine.onCommand(INITIAL, "/start", defaultCmdInitialTransition());
-        stateMachine.onCommand(INITIAL, "/help", defaultCmdInitialTransition());
+        stateMachine.onCommand(INITIAL, Commands.REGISTER, new RegisterCmdInitialTransition());
+        stateMachine.onCommand(INITIAL, Commands.START, defaultCmdInitialTransition);
+        stateMachine.onCommand(INITIAL, Commands.HELP, defaultCmdInitialTransition);
 
         // ACTIVE
-        stateMachine.onCommand(ACTIVE, "/new", newCmdActiveTransition());
-        stateMachine.onCommand(ACTIVE, "/list", listCmdActiveTransition(findTeacher, studentQuery));
-        stateMachine.onCommand(ACTIVE, "/help", defaultCmdActiveTransition());
-        stateMachine.onCommand(ACTIVE, "/start", defaultCmdActiveTransition());
-        stateMachine.onButton(ACTIVE, Buttons.ADD_STUDENT.getValue(), newStudentBtnActiveTransition());
-        stateMachine.onButton(ACTIVE, Buttons.LIST_STUDENT.getValue(), myStudentsBtnActiveTransition(findTeacher, studentQuery));
+        stateMachine.onCommand(ACTIVE, Commands.NEW, new NewCmdActiveTransition());
+        stateMachine.onCommand(ACTIVE, Commands.LIST, studentListTransition);
+        stateMachine.onCommand(ACTIVE, Commands.HELP, defaultCmdActiveTransition);
+        stateMachine.onCommand(ACTIVE, Commands.START, defaultCmdActiveTransition);
+        stateMachine.onButton(ACTIVE, Buttons.NEW_STUDENT, newStudentTransition);
+        stateMachine.onButton(ACTIVE, Buttons.LIST_STUDENT, studentListTransition);
 
         // AWAITING_REGISTRATION_NAME
-        stateMachine.onInput(AWAITING_REGISTRATION_NAME, inputAwaitingRegistrationNameTransition(registerTeacher));
+        stateMachine.onInput(AWAITING_REGISTRATION_NAME, new InputAwaitingRegistrationNameTransition(registerTeacher));
 
         // AWAITING_STUDENT_NAME
-        stateMachine.onInput(AWAITING_STUDENT_NAME, inputAwaitingStudentNameTransition(findTeacher, createStudentWithDictionary));
+        stateMachine.onInput(AWAITING_STUDENT_NAME, new InputAwaitingStudentNameTransition(findTeacher, createStudentWithDictionary));
 
         // STUDENTS_LIST
-        stateMachine.onCallback(STUDENTS_LIST, "student", studentCbStudentsListTransition(findTeacher, studentQuery));
-        stateMachine.onCallback(STUDENTS_LIST, "back", backCbStudentsListTransition());
-        stateMachine.onCommand(STUDENTS_LIST, "/new", newCmdStudentsListTransition());
-        stateMachine.onCommand(STUDENTS_LIST, "/list", listCmdStudentsListTransition(findTeacher, studentQuery));
-        stateMachine.onCommand(STUDENTS_LIST, "/help", listCmdStudentsListTransition(findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.STUDENT, new StudentCbStudentsListTransition(findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.BACK, new BackCbStudentsListTransition());
+        stateMachine.onCommand(STUDENTS_LIST, Commands.NEW, newStudentTransition);
+        stateMachine.onCommand(STUDENTS_LIST, Commands.LIST, listCmdStudentsListTransition);
+        stateMachine.onCommand(STUDENTS_LIST, Commands.HELP, listCmdStudentsListTransition);
 
         // STUDENT_OPTIONS
-        stateMachine.onCallback(STUDENT_OPTIONS, "action", actionCbStudentOptionsTransition(startLesson, findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENT_OPTIONS, Callbacks.ACTION, new ActionCbStudentOptionsTransition(startLesson, findTeacher, studentQuery));
 
         // STUDENT_DETAILS
-        stateMachine.onCallback(STUDENT_DETAILS, "details", backCbStudentDetailsTransition(findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(findTeacher, studentQuery));
 
         // IN_LESSON
-        stateMachine.onButton(IN_LESSON, Buttons.ADD_WORD.getValue(), addWordInLessonTransition());
-        stateMachine.onCommand(IN_LESSON, "/addword", addWordInLessonTransition());
-        stateMachine.onButton(IN_LESSON, Buttons.FINISH_LESSON.getValue(), finishLessonInLessonTransition(findActiveLesson, endLesson, studentQuery, findWords));
-        stateMachine.onCommand(IN_LESSON, "/finishlesson", finishLessonInLessonTransition(findActiveLesson, endLesson, studentQuery, findWords));
-        stateMachine.onCommand(IN_LESSON, "/help", helpCmdInLessonTransition());
+        stateMachine.onButton(IN_LESSON, Buttons.ADD_WORD, addWordInLessonTransition);
+        stateMachine.onCommand(IN_LESSON, Commands.ADD_WORD, addWordInLessonTransition);
+        stateMachine.onButton(IN_LESSON, Buttons.FINISH_LESSON, finishLessonInLessonTransition);
+        stateMachine.onCommand(IN_LESSON, Commands.FINISH_LESSON, finishLessonInLessonTransition);
+        stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
 
         // word flow: AWAITING_WORD -> AWAITING_POS -> AWAITING_TRANSLATION
-        stateMachine.onInput(AWAITING_WORD, inputAwaitingWordTransition());
-        stateMachine.onCallback(AWAITING_POS, "pos", posCbAwaitingPosTransition());
-        stateMachine.onInput(AWAITING_TRANSLATION, inputAwaitingTranslationTransition(studentQuery, addWordToDictionary, findActiveLesson, addWordToLesson));
+        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition());
+        stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition());
+        stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery, addWordToDictionary, findActiveLesson, addWordToLesson));
 
         // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_TOPIC -> AWAITING_EXERCISE_ANSWER
-        stateMachine.onCallback(AWAITING_EXERCISE_TYPE, "exercise", exerciseCbAwatingExerciseTypeTransition());
-        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, inputAwatingExerciseTopicTransition(studentQuery, generateExercise));
-        stateMachine.onInput(AWAITING_EXERCISE_ANSWER, inputAwatingExerciseAnswerTransition(checkExercise));
+        stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE, new ExerciseCbAwaitingExerciseTypeTransition());
+        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise));
+        stateMachine.onInput(AWAITING_EXERCISE_ANSWER, new InputAwaitingExerciseAnswerTransition(checkExercise));
 
         if (!stateMachine.isReady()) {
             throw new RuntimeException();

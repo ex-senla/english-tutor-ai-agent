@@ -1,6 +1,5 @@
 package com.hydroyura.eta.chatbot.application.statemachine;
 
-import com.hydroyura.eta.chatbot.application.ChatService;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
@@ -26,8 +25,6 @@ public class StateMachine {
     private final Map<TransitionKey, Transition<? super Action.Button>> buttonTransitions = new HashMap<>();
 
     private final Map<ChatState, Handler> defaultHandlers;
-
-    private final ChatService chatService;
 
     public void onCommand(ChatState initialState, String command, Transition<? super Action.Command> transition) {
         commandTransitions.put(new TransitionKey(initialState, command), transition);
@@ -62,13 +59,10 @@ public class StateMachine {
             return defaultHandlers.get(chat.getState()).handle(chat);
         }
 
-        ActionResult result = transition.transit(chat, action);
-
-        chatService.save(chat);
-
-        return result;
+        return transition.transit(chat, action);
     }
 
+    //TODO переделать проверку
     public boolean isReady() {
         return !inputTransitions.containsValue(null);
     }

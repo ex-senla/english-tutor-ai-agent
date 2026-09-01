@@ -1,7 +1,7 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
 import com.hydroyura.eta.chatbot.domain.action.Action;
-import com.hydroyura.eta.chatbot.item.Buttons;
+import com.hydroyura.eta.chatbot.view.Buttons;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -49,7 +49,7 @@ public final class UpdateParser {
                 return new Action.Command(text);
             }
 
-            if (Buttons.getAllValues().contains(text)) {
+            if (Buttons.getReplyButtons().contains(text)) {
                 return new Action.Button(text);
             }
 

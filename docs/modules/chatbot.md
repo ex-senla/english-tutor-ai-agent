@@ -31,9 +31,9 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 ### StateMachine (Domain Service, `domain/statemachine`)
 `applyAction(Chat, Action)` — маршрутизация по типу действия:
-- `Command` → `TransitionKey(state, command)` из `transitions`
-- `Button` → `TransitionKey(state, button.command())` из `transitions`
-- `Callback` → `TransitionKey(state, callback.prefix())` из `transitions`
+- `Commands` → `TransitionKey(state, command)` из `transitions`
+- `Buttons` → `TransitionKey(state, button.command())` из `transitions`
+- `Callbacks` → `TransitionKey(state, callback.prefix())` из `transitions`
 - `Input` → `inputTransitions.get(state)` (свободный текст резолвится только состоянием)
 
 Если переход не найден — дефолтный `Handler` состояния. После перехода чат сохраняется
@@ -45,7 +45,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 зависит от триггера — `Transition<Action>`.
 
 Именование: `<Что><Триггер><Состояние>Transition`, триггеры: `Cmd` / `Inp` / `Cb` / `Btn`.
-Например `NewCmdActiveTransition`, `MyStudentsBtnActiveTransition`, `PosCbAwaitingPosTransition`.
+Например `NewCmdActiveTransition`, `StudentListTransition`, `PosCbAwaitingPosTransition`.
 
 Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, ...). `ActiveTransition` —
 референсный монолитный вариант до рефакторинга.
@@ -61,12 +61,12 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `nameTransitionMap` — реестр `getName() -> Transition`
 - таблица регистрации: `addTransition(state, ключ, transition)` для Cmd/Btn/Cb,
   `addInputTransition(state, transition)` для Input
-- ключи Cmd/Btn — текст (`"/new"`, `Buttons.ADD_STUDENT.getValue()`), ключ Cb — префикс (`"student"`, `"action"`, `"pos"`)
+- ключи Cmd/Btn — текст (`"/new"`, `Buttons.ADD_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`, `"pos"`)
 
 ### Items (презентация, `item/`)
-Статические билдеры `ActionResult`: `MenuItem` (главное меню), `StudentItem` (список/опции
-учеников, `optionsKeyboard()`), `WordItem` (`posMenu`, `posLabel`), `LessonItem`
-(клавиатура урока, сводка завершения), `ExerciseItem` (выбор типа упражнения). `Buttons` —
+Статические билдеры `ActionResult`: `MenuView` (главное меню), `StudentView` (список/опции
+учеников, `optionsKeyboard()`), `WordView` (`posMenu`, `posLabel`), `LessonView`
+(клавиатура урока, сводка завершения), `ExerciseView` (выбор типа упражнения). `Buttons` —
 enum reply-кнопок, единый словарь для рендера и парсинга.
 
 ## Application Layer

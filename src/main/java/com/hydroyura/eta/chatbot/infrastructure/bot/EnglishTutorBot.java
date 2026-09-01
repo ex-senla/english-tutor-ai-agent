@@ -64,6 +64,9 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         var result = stateMachine.applyAction(chat, action);
         var newState = chat.getState();
 
+        // 4. save chat
+        chatService.save(chat);
+
         // 5. prepare response
         var response = converter.convert(result, chatId);
 

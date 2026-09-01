@@ -5,12 +5,15 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.item.menu.MenuItem;
+import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.hydroyura.eta.chatbot.view.Messages.ENTER_ANOTHER_NAME;
+import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_ADDED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,16 +35,11 @@ public class InputAwaitingStudentNameTransition implements Transition<Action.Inp
                     new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName));
             log.info("Student created: name={}, id={}, teacherId={}", name, studentId, teacherId);
             chat.updateState(ChatState.ACTIVE);
-            var teacherName = (String) chat.getContext().getOrDefault("teacherName", "");
-            return MenuItem.activeMenuWithMessage("✅ Ученик '" + name + "' добавлен!", teacherName);
+            return MenuView.activeMenuWithMessage(STUDENT_ADDED.formatted(name));
         } catch (IllegalArgumentException e) {
             log.warn("Failed to create student '{}': {}", name, e.getMessage());
-            return new ActionResult.TextResponse("❌ " + e.getMessage() + ". Введите другое имя:");
+            return new ActionResult.TextResponse(ENTER_ANOTHER_NAME.formatted(e.getMessage()));
         }
     }
 
-    @Override
-    public String getName() {
-        return "InputAwaitingStudentNameTransition";
-    }
 }

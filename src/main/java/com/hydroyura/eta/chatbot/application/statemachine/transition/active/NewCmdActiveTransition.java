@@ -16,9 +16,4 @@ public class NewCmdActiveTransition implements Transition<Action.Command> {
         return new ActionResult.TextResponse("Введите имя нового ученика");
     }
 
-    @Override
-    public String getName() {
-        return "NewCmdActiveTransition";
-    }
-
 }

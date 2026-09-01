@@ -5,12 +5,14 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
+import static com.hydroyura.eta.chatbot.view.Messages.ENTER_STUDENT_NAME;
+
 @Component
 public class AwaitingStudentNameHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse("Введите имя ученика");
+        return new ActionResult.TextResponse(ENTER_STUDENT_NAME);
     }
 
     @Override

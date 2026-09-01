@@ -5,7 +5,7 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.item.word.WordItem;
+import com.hydroyura.eta.chatbot.view.word.WordView;
 
 public class InputAwaitingWordTransition implements Transition<Action.Input> {
 
@@ -13,11 +13,7 @@ public class InputAwaitingWordTransition implements Transition<Action.Input> {
     public ActionResult transit(Chat chat, Action.Input input) {
         chat.getContext().put("wordValue", input.text());
         chat.updateState(ChatState.AWAITING_POS);
-        return WordItem.posMenu(input.text());
+        return WordView.posMenu(input.text());
     }
 
-    @Override
-    public String getName() {
-        return "InputAwaitingWordTransition";
-    }
 }

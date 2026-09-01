@@ -5,12 +5,14 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
+import static com.hydroyura.eta.chatbot.view.Messages.ENTER_TRANSLATIONS;
+
 @Component
 public class AwaitingTranslationHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse("Введите переводы через запятую");
+        return new ActionResult.TextResponse(ENTER_TRANSLATIONS);
     }
 
     @Override

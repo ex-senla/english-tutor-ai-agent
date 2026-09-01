@@ -8,6 +8,4 @@ public interface Transition<T extends Action> {
 
     ActionResult transit(Chat chat, T action);
 
-    String getName();
-
 }

@@ -5,12 +5,14 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
+import static com.hydroyura.eta.chatbot.view.Messages.ENTER_WORD_IN_ENGLISH;
+
 @Component
 public class AwaitingWordHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse("Введите слово на английском");
+        return new ActionResult.TextResponse(ENTER_WORD_IN_ENGLISH);
     }
 
     @Override

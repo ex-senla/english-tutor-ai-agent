@@ -5,7 +5,7 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.item.students.StudentItem;
+import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
@@ -31,11 +31,7 @@ public class BackCbStudentDetailsTransition implements Transition<Action.Callbac
                 .orElse("?");
 
         chat.getContext().put("selectedStudentName", name);
-        return StudentItem.options(callback.messageId(), name);
+        return StudentView.options(callback.messageId(), name);
     }
 
-    @Override
-    public String getName() {
-        return "BackCbStudentDetailsTransition";
-    }
 }

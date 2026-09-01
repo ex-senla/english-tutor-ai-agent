@@ -5,8 +5,9 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.item.lesson.LessonItem;
+import com.hydroyura.eta.chatbot.view.lesson.LessonView;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.EndLessonCommand;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
@@ -52,7 +53,7 @@ public class FinishLessonInLessonTransition implements Transition<Action> {
 
         var wordValues = findWords.findByDictionaryId(dictionaryId).stream()
                 .filter(wp -> result.wordIds().contains(wp.id()))
-                .map(wp -> wp.value())
+                .map(WordProjection::value)
                 .toList();
 
         var date = DateTimeFormatter.ofPattern("dd.MM.yyyy")
@@ -63,11 +64,7 @@ public class FinishLessonInLessonTransition implements Transition<Action> {
         chat.updateState(ChatState.STUDENT_OPTIONS);
 
         var studentName = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
-        return LessonItem.finishMenuWithKeyBoard(date, duration, wordValues, studentName);
+        return LessonView.finishMenuWithKeyBoard(date, duration, wordValues, studentName);
     }
 
-    @Override
-    public String getName() {
-        return "FinishLessonInLessonTransition";
-    }
 }

@@ -5,13 +5,14 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
+import static com.hydroyura.eta.chatbot.view.Messages.WELCOME;
+
 @Component
 public class InitialHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse(
-                "Добро пожаловать! Для начала зарегистрируйтесь: /register");
+        return new ActionResult.TextResponse(WELCOME);
     }
 
     @Override

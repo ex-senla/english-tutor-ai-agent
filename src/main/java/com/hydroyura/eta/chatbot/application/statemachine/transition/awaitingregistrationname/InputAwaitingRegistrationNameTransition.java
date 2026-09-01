@@ -5,7 +5,7 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
-import com.hydroyura.eta.chatbot.item.menu.MenuItem;
+import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +24,7 @@ public class InputAwaitingRegistrationNameTransition implements Transition<Actio
         chat.getContext().put("teacherName", name);
         chat.updateState(ChatState.ACTIVE);
         log.info("Teacher registered: chatId={}, name={}", chat.getId().chatId(), name);
-        return MenuItem.activeMenu(name);
-    }
-
-    @Override
-    public String getName() {
-        return "InputAwaitingRegistrationNameTransition";
+        return MenuView.activeMenu();
     }
 
 }
