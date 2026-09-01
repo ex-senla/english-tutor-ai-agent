@@ -108,46 +108,71 @@ send / edit / delete
 
 ## Граф переходов
 
+```mermaid
+flowchart TD
+    S1["<b>S1</b><br/>INITIAL"]
+    S2["<b>S2</b><br/>AWAITING_REGISTRATION_NAME"]
+    S3["<b>S3</b><br/>ACTIVE"]
+    S4["<b>S4</b><br/>AWAITING_STUDENT_NAME"]
+    S5["<b>S5</b><br/>STUDENTS_LIST"]
+    S6["<b>S6</b><br/>STUDENT_OPTIONS"]
+    S7["<b>S7</b><br/>STUDENT_DETAILS"]
+    S8["<b>S8</b><br/>IN_LESSON"]
+    S9["<b>S9</b><br/>AWAITING_WORD"]
+    S10["<b>S10</b><br/>AWAITING_POS"]
+    S11["<b>S11</b><br/>AWAITING_TRANSLATION"]
+    S12["<b>S12</b><br/>AWAITING_EXERCISE_TYPE"]
+    S13["<b>S13</b><br/>AWAITING_EXERCISE_TOPIC"]
+    S14["<b>S14</b><br/>AWAITING_EXERCISE_ANSWER"]
+
+    S8 ~~~ S9
+    S8 ~~~ S11
+    S10 ~~~ S11
+    S8 ~~~ S12
+
+    S1 -->|"/register"| S2
+    S2 -->|"текст (имя учителя)"| S3
+
+    S3 -->|"кнопка или /new"| S4
+    S4 -->|"текст (имя ученика)"| S3
+    S3 -->|"кнопка или /list"| S5
+
+    S5 -->|"student:&lt;id&gt; (edit)"| S6
+    S5 -->|"/newstudent"| S4
+    S6 -->|"action:back (edit)"| S5
+
+    S6 -->|"action:startlesson"| S8
+    S8 -->|"/finishlesson"| S6
+
+    S8 -->|"/addword"| S9
+    S9 -->|"текст (слово)"| S10
+    S10 -->|"pos:NOUN / pos:VERB / pos:ADJECTIVE"| S11
+    S11 -->|"текст (перевод)"| S8
+
+    S6 -->|"action:details"| S7
+    S7 -->|"details:back (edit)"| S6
+
+    S6 -->|"action:exercise"| S12
+    S12 -->|"exercise:FILL_IN_THE_BLANK / exercise:MULTIPLE_CHOICE"| S13
+    S13 -->|"текст (тема)"| S14
+    S14 -->|"текст (ответ)"| S3
+
+    classDef registration fill:#E3F2FD,stroke:#1565C0
+    classDef core fill:#E8F5E9,stroke:#2E7D32
+    classDef students fill:#FFF8E1,stroke:#F9A825
+    classDef lesson fill:#F3E5F5,stroke:#6A1B9A
+    classDef exercise fill:#FFEBEE,stroke:#C62828
+    class S1,S2 registration
+    class S3 core
+    class S4,S5,S6,S7 students
+    class S8,S9,S10,S11 lesson
+    class S12,S13,S14 exercise
+
+    linkStyle 5,7,15 stroke-dasharray: 5 5
 ```
-S1: INITIAL
- │
- │ /register
- ▼
-S2: AWAITING_REGISTRATION_NAME
- │
- │ текст (имя)
- ▼
-S3: ACTIVE ──────────────────────────────────────────────────────────────┐
- │                                                                       │
- ├── кнопка/`/new` ──► S4: AWAITING_STUDENT_NAME ──(текст)──► S3        │
- │                                                                       │
- ├── кнопка/`/list` ──► S5: STUDENTS_LIST                                │
- │                    │                                                  │
- │                    │ callback: student:<id> (редактирует сообщение)   │
- │                    ▼                                                  │
- │                 S6: STUDENT_OPTIONS                                   │
- │                    │                                                  │
- │                    ├── action:startlesson ──► S8: IN_LESSON           │
- │                    │      │                                           │
- │                    │      ├── кнопка/`/addword` ──► S9 ─► S10 ─► S11  │
- │                    │      │                            │             │
- │                    │      │      S11 ──(перевод)──► S8 ◄┘             │
- │                    │      │                                           │
- │                    │      └── кнопка/`/finishlesson` ──► S6 (edit)    │
- │                    │                                                  │
- │                    ├── action:details ──► S7: STUDENT_DETAILS         │
- │                    │      │                                           │
- │                    │      └── details:back ──► S6 (edit)              │
- │                    │                                                  │
- │                    ├── action:exercise ──► S12 ─► S13 ─► S14          │
- │                    │                                      │           │
- │                    │                          (ответ) ──► S6          │
- │                    │                                                  │
- │                    └── action:back ──► S5 (edit)                      │
- │                                                                       │
- │                    Везде где edit — сообщение редактируется,           │
- │                    а не создаётся новое                               │
-```
+
+Переходы, отмеченные `(edit)` (пунктирные стрелки), редактируют существующее сообщение
+(`EditMessageText`), а не создают новое.
 
 ## Контекст состояния (Map<String, Object>)
 
@@ -213,4 +238,17 @@ chatbot/
 │   └── persistence/
 │       └── InMemoryChatRepository.java
 └── package-info.java
+```
+
+## Зависимости модуля
+
+```java
+@ApplicationModule(allowedDependencies = {
+    "teacher :: teacher",
+    "student :: student",
+    "student :: lesson",
+    "dictionary :: dictionary",
+    "dictionary :: word",
+    "exercise :: exercise"
+})
 ```
