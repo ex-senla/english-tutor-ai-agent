@@ -60,7 +60,7 @@
 - [x] Teacher — CreateStudentWithDictionary (оркестрация Dictionary → Student)
 - [x] Lesson — Entity внутри агрегата Student
 - [x] Exercise — GenerateExercise + CheckExercise API/use cases
-- [x] Старый модуль chatbot удалён. Дизайн v2: state machine, 14 состояний
+- [x] Старый модуль chatbot удалён. Дизайн v2: chatState machine, 14 состояний
 - [x] ActionHandler — полная реализация S1-S11, S12-S14 stubs
 - [x] EditMessageText — редактирование сообщений при навигации (inline-меню)
 - [x] ReplyKeyboardRemove — убирание reply-клавиатуры при уходе из ACTIVE

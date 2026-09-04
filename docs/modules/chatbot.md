@@ -1,122 +1,119 @@
 # Chatbot
 
-Модуль стейт-машин для бота. Платформонезависимый — Telegram, WhatsApp и т.д. подключаются через инфраструктуру.
+Модуль стейт-машины чата. Платформонезависимый — Telegram подключается через инфраструктуру.
 
 ## Составляющие
 
-### StateMachine (Domain Entity)
-- `StateMachineId id` — record с `Long chatId`
-- `State state` — текущее состояние
-- `Class<? extends Command> pendingCommand` — ожидаемая команда (для двухфазного ввода)
-- `Context context` — key-value хранилище (`Map<String, Object>`)
-- `ofDefaults(StateMachineId)` — фабрика, начальное состояние `NOT_REGISTER`
-- `execute(Command, String userMessage)` — выполняет команду, возвращает текст ответа
-- `getPendingCommandSafely()` → `Optional<Class<? extends Command>>`
-- `clearPendingCommand()` — сбрасывает `pendingCommand = null`
+### Action (Domain, `domain/action`)
+Sealed-иерархия действий — единственная абстракция «что пришло от пользователя»:
+- `Command(String command)` — команда (`/new`, `/list`, ...) — определяется по `BOT_COMMAND` entity
+- `Input(String text)` — свободный текст (смысл задаётся состоянием)
+- `Callback(String prefix, String payload, int messageId)` — inline-кнопка; `prefix`/`payload`
+  разделены парсером (`"student:<uuid>"` → `student` + `<uuid>`)
+- `Button(String command)` — reply-кнопка; текст совпал со словарём `view/Buttons.REPLY_BUTTONS`
 
-### State (Enum)
-- `NOT_REGISTER`: START, REGISTER, HELP
-- `ACTIVE`: START, NEW_STUDENT, START_LESSON, HELP
-- `IN_LESSON`: ADD_WORD, END_LESSON, HELP
-- `keyboardButtons()` — возвращает кнопки клавиатуры для состояния
+### ActionResult (Domain, `domain/action`)
+Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`, `TextWithReplyKeyboard`,
+`EditMessageText`, `DeleteMessage`.
 
-### CommandType (Enum)
-START, REGISTER, NEW_STUDENT, START_LESSON, ADD_WORD, END_LESSON, HELP, UNKNOWN
+### Chat (Domain Entity, `domain/chat`)
+- `ChatId id` — record с `Long chatId`
+- `ChatState state` — текущее состояние
+- `Map<String, Object> context` — key-value хранилище (`selectedStudentId`, `selectedStudentName`,
+  `teacherName`, `wordValue`, `wordPos`, `exerciseType`, `exerciseId`, `activeLessonId`, ...)
+- `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
-### Context
-- Key-value хранилище (`Map<String, Object>`)
-- Методы: `put(key, value)`, `get(key)`, `get(key, Class<T>)`
-- В `IN_LESSON` хранит `"lessonId"` (UUID)
-- `AddWordCmd` использует для многошагового ввода: `"addWord.step"`, `"addWord.word"`, `"addWord.pos"`
+### ChatState (Enum, `domain/chat`)
+14 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+`STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`, `IN_LESSON`, `AWAITING_WORD`,
+`AWAITING_POS`, `AWAITING_TRANSLATION`, `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_TOPIC`,
+`AWAITING_EXERCISE_ANSWER`.
 
-### Command (Domain Interface, `domain/command`)
-```java
-public interface Command {
-    CommandType type();
-    Result execute(StateMachine sm, String userMessage);
-    boolean matches(String text); // default: false
-}
-```
+### StateMachine (Application, `application/statemachine`)
+Чистая маршрутизация без персистенции — `(Chat, Action) → ActionResult`. Четыре таблицы переходов:
+- `commandTransitions`: `TransitionKey(state, команда)` → `Transition<? super Action.Command>`
+- `buttonTransitions`: `TransitionKey(state, текст кнопки)` → `Transition<? super Action.Button>`
+- `callbackTransitions`: `TransitionKey(state, префикс колбэка)` → `Transition<? super Action.Callback>`
+- `inputTransitions`: `ChatState` → `Transition<? super Action.Input>` (свободный текст
+  резолвится только состоянием)
 
-### Result (Domain Record, `domain/command`)
-```java
-public record Result(String message, CommandType commandType, State state, Optional<Context> context) {
-    static Result stay(message, type);          // без смены состояния
-    static Result transition(message, type, newState, newContext); // со сменой состояния
-}
-```
+`applyAction(Chat, Action)` выбирает таблицу по типу действия. Если переход не найден —
+дефолтный `Handler` состояния. Сохранение чата выполняет вызывающий код (`EnglishTutorBot`
+после `applyAction`), машина репозиториев не знает.
 
-### CommandDispatcher (Domain Interface, `domain/command`)
-- `dispatch(String command)` → Command — находит команду по тексту
-- `get(Class<? extends Command>)` → Command — получает команду по классу (для pending)
+Регистрация: `onCommand(state, команда, t)` / `onButton(state, кнопка, t)` /
+`onCallback(state, префикс, t)` / `onInput(state, t)`.
+
+### Transition (Application, `application/statemachine/transition`)
+`Transition<T>` — обработчик одного (состояние, триггер): `transit(Chat, T)`.
+Типизация по триггеру: `Transition<Action.Command|Input|Callback|Button>`; если логика не
+зависит от триггера (общая для кнопки и команды) — `Transition<Action>`
+(`AddWordInLessonTransition`, `FinishLessonInLessonTransition`).
+
+Переход — application-оркестратор: вызывает use case-порты других модулей (`RegisterTeacher`,
+`StartLesson`, `AddWordToDictionary`, ...), мутирует собственный агрегат `Chat` и возвращает
+`ActionResult`. Чужие репозитории не инжектятся.
+
+Именование: `<Что><Триггер><Состояние>Transition`, триггеры: `Cmd` / `Inp` / `Cb` / `Btn`.
+Например `NewCmdActiveTransition`, `StudentListTransition`, `PosCbAwaitingPosTransition`.
+Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, ...).
+
+### Handler (Application, `application/statemachine/handler`)
+Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
+«Используйте кнопки ниже», ...). Один `@Component` на состояние, собирается в
+`Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
+
+### StateMachineConfig (`application/config`)
+Собирает машину в одном `@Bean`-методе `stateMachine(...)`:
+- переходы — обычные объекты (`new ...Transition(deps)`), а не Spring-бины; регистрируемые
+  под несколькими ключами — локальные переменные
+- таблица регистрации: `onCommand(state, команда, transition)`, `onButton(state, кнопка, transition)`,
+  `onCallback(state, префикс, transition)`, `onInput(state, transition)`
+- ключи Cmd/Btn — текст (`"/new"`, `Buttons.NEW_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`, `"pos"`)
+
+### View (презентация, `view/`)
+Статические билдеры `ActionResult`: `MenuView` (главное меню), `StudentView` (список/опции
+учеников, `optionsKeyboard()`), `WordView` (`posMenu`, `posLabel`), `LessonView`
+(клавиатура урока, сводка завершения), `ExerciseView` (выбор типа упражнения).
+
+Словари констант — единый источник для рендера и парсинга:
+- `Buttons` — тексты кнопок + `REPLY_BUTTONS` (множество reply-кнопок для `UpdateParser`)
+- `Callbacks` — префиксы и payload колбэков (`"student"`, `"action"`, `"pos"`, ...)
+- `Commands` — команды (`"/register"`, `"/new"`, ...)
+- `Messages` — тексты сообщений
+- `util/ItemUtils.createCallbackData(...)` — сборка `"prefix:payload"`
 
 ## Application Layer
 
-### StateMachineAppService
-- `handle(String message, Long chatId)` — основной метод обработки сообщения
-  1. Загружает StateMachine из репозитория (или создаёт новую)
-  2. Если есть `pendingCommand` — использует её, иначе диспатчит по тексту
-  3. Выполняет `sm.execute(command, message)`
-  4. Сохраняет StateMachine
-  5. Возвращает текст ответа
-- `getState(Long chatId)` — возвращает текущее состояние
+- `ChatService` — загрузка/сохранение `Chat` через `ChatRepository` (`getOrCreate`, `save`)
 
-### CommandDispatcherImpl
-- `@Component`, создаёт экземпляры команд через `CommandDispatcherConfig`
-- Команды создаются per-request (не бины), получают зависимости через config record
-- `CommandDispatcherConfig` — record со всеми API-зависимостями:
-  `RegisterTeacher`, `CreateStudentWithDictionary`, `StartLesson`, `AddWordToDictionary`,
-  `AddWordToLesson`, `EndLesson`, `FindTeacher`, `StudentQuery`
+## Инфраструктура (`infrastructure/bot`)
+- `UpdateParser` — `Update` → `Action`: callback-данные делятся на `prefix`/`payload` по первому `:`;
+  `BOT_COMMAND` entity → `Action.Command`; текст из `Buttons.REPLY_BUTTONS` → `Action.Button`;
+  остальной текст → `Action.Input`
+- `EnglishTutorBot` — `TelegramLongPollingBot`: chatId → `ChatService.getOrCreate` →
+  `UpdateParser` → `StateMachine.applyAction` → `ChatService.save` → `SendMessageConverter` →
+  send/edit/delete; удаляет reply-клавиатуру при выходе из `ACTIVE`/`IN_LESSON`
+- `BotInitializer`, `SendMessageConverter`
 
-### ChatbotModuleConfig
-- `@Configuration`, создаёт бин `StateMachineAppService`
-
-## Команды
-
-### StartCmd
-- `/start` — проверяет, зарегистрирован ли учитель (через `FindTeacher.findByTelegramChatId`)
-- Если да → transition в ACTIVE ("Welcome back!")
-- Если нет → stay в NOT_REGISTER ("Welcome! /register <name>")
-
-### RegisterCmd
-- Двухфазный ввод:
-  1. `/register` → `pendingCommand = RegisterCmd.class`, просит ввести имя
-  2. Следующее сообщение (имя) → выполняет `RegisterTeacher`, transition в ACTIVE
-- `/register Name` в одном сообщении → сразу регистрирует
-
-### NewStudentCmd
-- Двухфазный ввод: `/newstudent` → запрос имени → `CreateStudentWithDictionary`
-- `/newstudent Name` в одном сообщении
-
-### StartLessonCmd
-- Двухфазный ввод: `/startlesson` → запрос имени студента → `FindStudentByNameQuery`
-- Находит студента среди учеников учителя, вызывает `StartLesson`
-- Сохраняет `lessonId` в контекст, transition в IN_LESSON
-
-### AddWordCmd
-- Трёхшаговый ввод через контекст:
-  1. Запрос слова → сохраняет в `addWord.word`
-  2. Запрос части речи (NOUN/VERB/ADJECTIVE) → сохраняет в `addWord.pos`
-  3. Запрос перевода (через `;` для нескольких) → `AddWordToDictionary` + `AddWordToLesson`
-- `/add word VERB translation` в одном сообщении — все три шага сразу
-
-### EndLessonCmd
-- `/endlesson` — достаёт `lessonId` из контекста, вызывает `EndLesson`, transition в ACTIVE
-
-### HelpCmd
-- `/help` — возвращает доступные команды в зависимости от состояния
-
-## Инфраструктура
-- `EnglishTutorBot` — `TelegramLongPollingBot`, Spring `@Component`
-  - `onUpdateReceived` → `service.handle(text, chatId)` → отправляет ответ с клавиатурой
-  - Клавиатура формируется из `state.keyboardButtons()`
-- `BotInitializer` — регистрирует бота в `TelegramBotsApi` через `@PostConstruct`
-- `InMemoryStateMachineRepository` — `ConcurrentHashMap<StateMachineId, StateMachine>`
+Персистентность: `InMemoryChatRepository` (план: PostgreSQL + Flyway).
 
 ## Зависимости
 ```java
 @ApplicationModule(allowedDependencies = {
     "teacher :: teacher", "student :: student",
-    "student :: lesson", "dictionary :: dictionary", "dictionary :: word"
+    "student :: lesson", "dictionary :: dictionary", "dictionary :: word",
+    "shared :: shared", "exercise :: exercise"
 })
 ```
+
+## Известные долги
+- Нет тестов на модуль (таблица переходов и переходы покрываются тривиально)
+- `StateMachine.isReady()` не проверяет полноту таблиц (TODO в коде): состояние без `Handler`
+  даст NPE в рантайме
+- Опечатка в именах `AwatingExerciseAnswerHandler` / `AwatingExerciseTopicHandler` /
+  `AwatingExerciseTypeHandler` (→ `Awaiting...`)
+- Поиск имени ученика: загрузка всех студентов учителя и фильтрация в Java (нужен `FindStudentById`)
+- Контекст чата stringly-typed (`Map<String, Object>` + касты)
+- Ошибки `IllegalStateException` без обработки на уровне бота
+- `ChatService.getOrCreate` и `InMemoryChatRepository.findById` дублируют логику создания чата

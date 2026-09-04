@@ -1,12 +1,13 @@
 package com.hydroyura.eta.chatbot.domain.action;
 
-public sealed interface Action permits Action.Command, Action.InputParam, Action.Callback {
+public sealed interface Action permits Action.Command, Action.Input, Action.Callback, Action.Button {
 
 
-    record Command(String command, String userName) implements Action {}
+    record Command(String command) implements Action {}
 
-    record InputParam(String text) implements Action {}
+    record Input(String text) implements Action {}
 
-    record Callback(String data, int messageId) implements Action {}
+    record Callback(String prefix, String payload, int messageId) implements Action {}
 
+    record Button(String command) implements Action {}
 }

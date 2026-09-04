@@ -1,9 +1,9 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
-import com.hydroyura.eta.chatbot.application.ActionHandler;
-import com.hydroyura.eta.chatbot.application.StateMachineAppService;
+import com.hydroyura.eta.chatbot.application.ChatService;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
-import com.hydroyura.eta.chatbot.domain.statemachine.State;
+import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,21 +20,21 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final String botUsername;
-    private final StateMachineAppService service;
+    private final ChatService chatService;
     private final UpdateParser updateParser;
-    private final ActionHandler actionHandler;
     private final SendMessageConverter converter;
+    private final StateMachine stateMachine;
 
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
                            @Value("${telegram.bot.username}") String botUsername,
-                           StateMachineAppService service, UpdateParser updateParser,
-                           ActionHandler actionHandler, SendMessageConverter converter) {
+                           ChatService chatService, UpdateParser updateParser,
+                           SendMessageConverter converter, StateMachine stateMachine) {
         super(botToken);
         this.botUsername = botUsername;
-        this.service = service;
+        this.chatService = chatService;
         this.updateParser = updateParser;
-        this.actionHandler = actionHandler;
         this.converter = converter;
+        this.stateMachine = stateMachine;
     }
 
     @Override
@@ -53,19 +53,19 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
 
         // 0. get chatId
         var chatId = extractChatId(update);
-        // 1. get stateMachine
-        var sm = service.getOrCreate(chatId);
+        // 1. get chat
+        var chat = chatService.getOrCreate(chatId);
 
         // 2. parse update to select action
         var action = updateParser.parseUpdate(update);
 
-        // 3. perform action in sm
-        var oldState = sm.getState();
-        var result = actionHandler.handle(sm, action);
-        var newState = sm.getState();
+        // 3. perform action in chat
+        var oldState = chat.getState();
+        var result = stateMachine.applyAction(chat, action);
+        var newState = chat.getState();
 
-        // 4. save sm
-        service.save(sm);
+        // 4. save chat
+        chatService.save(chat);
 
         // 5. prepare response
         var response = converter.convert(result, chatId);
@@ -81,8 +81,8 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
 
         // 7. send/edit/delete message
         // remove reply keyboard when leaving ACTIVE or IN_LESSON state
-        if ((oldState == State.ACTIVE && newState != State.ACTIVE)
-                || (oldState == State.IN_LESSON && newState != State.IN_LESSON)) {
+        if ((oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
+                || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON)) {
             var remove = SendMessage.builder()
                     .chatId(chatId.toString())
                     .text(".")

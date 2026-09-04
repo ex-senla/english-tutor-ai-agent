@@ -1,6 +1,7 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
 import com.hydroyura.eta.chatbot.domain.action.Action;
+import com.hydroyura.eta.chatbot.view.Buttons;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,11 @@ public final class UpdateParser {
             var callbackQuery = update.getCallbackQuery();
             var data = callbackQuery.getData();
             var messageId = callbackQuery.getMessage().getMessageId();
-            return new Action.Callback(data, messageId);
+            // "student:<uuid>" -> prefix="student", payload="<uuid>"
+            var idx = data.indexOf(':');
+            var prefix = idx < 0 ? data : data.substring(0, idx);
+            var payload = idx < 0 ? "" : data.substring(idx + 1);
+            return new Action.Callback(prefix, payload, messageId);
         }
 
         // check if command or input param
@@ -38,14 +43,17 @@ public final class UpdateParser {
                     .map("BOT_COMMAND"::equalsIgnoreCase)
                     .orElse(FALSE);
 
+            var text = update.getMessage().getText();
+
             if (isCommand) {
-                var command = update.getMessage().getText();
-                var userName = update.getMessage().getFrom().getFirstName();
-                return new Action.Command(command, userName);
-            } else {
-                var text = update.getMessage().getText();
-                return new Action.InputParam(text);
+                return new Action.Command(text);
             }
+
+            if (Buttons.getReplyButtons().contains(text)) {
+                return new Action.Button(text);
+            }
+
+            return new Action.Input(text);
         }
 
         throw new RuntimeException("Can't parse Update object");

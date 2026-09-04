@@ -1,6 +1,7 @@
-package com.hydroyura.eta.chatbot.domain.statemachine;
+package com.hydroyura.eta.chatbot.domain.chat;
 
-public enum State {
+public enum ChatState {
+
     INITIAL,
     AWAITING_REGISTRATION_NAME,
     ACTIVE,
@@ -14,5 +15,6 @@ public enum State {
     AWAITING_TRANSLATION,
     AWAITING_EXERCISE_TYPE,
     AWAITING_EXERCISE_TOPIC,
-    AWAITING_EXERCISE_ANSWER
+    AWAITING_EXERCISE_ANSWER;
+
 }
