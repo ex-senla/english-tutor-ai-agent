@@ -31,9 +31,9 @@ public class InMemoryStudentRepository implements StudentRepository, SnapshotPro
     @Override
     public boolean existsByNameInIds(Set<StudentId> ids, String name) {
         return ids.stream()
-            .map(store::get)
-            .filter(java.util.Objects::nonNull)
-            .anyMatch(s -> s.getName().equalsIgnoreCase(name));
+                .map(store::get)
+                .filter(java.util.Objects::nonNull)
+                .anyMatch(s -> s.getName().equalsIgnoreCase(name));
     }
 
     // TODO: remove when switching to JPA/PostgreSQL

@@ -10,13 +10,14 @@ import com.hydroyura.eta.exercise.application.port.WordData;
 import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GenerateExerciseUseCase implements GenerateExercise {
 
     private final ExerciseRepository repository;
+
     private final ExerciseGenerator generator;
+
     private final FindWords findWords;
 
     public GenerateExerciseUseCase(ExerciseRepository repository, ExerciseGenerator generator, FindWords findWords) {
@@ -32,19 +33,19 @@ public class GenerateExerciseUseCase implements GenerateExercise {
         var wordProjections = findWords.findByDictionaryId(command.dictionaryId());
 
         var wordIds = wordProjections.stream()
-            .map(wp -> wp.id())
-            .collect(Collectors.toSet());
+                .map(wp -> wp.id())
+                .collect(Collectors.toSet());
 
         var exercise = Exercise.create(
-            ExerciseId.generate(),
-            command.type(),
-            command.topic(),
-            wordIds
+                ExerciseId.generate(),
+                command.type(),
+                command.topic(),
+                wordIds
         );
 
         var wordDataList = wordProjections.stream()
-            .map(wp -> new WordData(wp.value(), wp.translations(), wp.partOfSpeech().name()))
-            .collect(Collectors.toSet());
+                .map(wp -> new WordData(wp.value(), wp.translations(), wp.partOfSpeech().name()))
+                .collect(Collectors.toSet());
 
         var dto = generator.generate(command, wordDataList);
         exercise.setContent(dto.content());
@@ -52,6 +53,6 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
         repository.save(exercise);
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),
-            exercise.getContent(), exercise.getExpectedAnswer(), exercise.getStatus());
+                exercise.getContent(), exercise.getExpectedAnswer(), exercise.getStatus());
     }
 }

@@ -19,13 +19,13 @@ public class FindTeacherService implements FindTeacher {
     @Override
     public Optional<TeacherId> findByTelegramChatId(Long chatId) {
         return teacherRepository.findByIdentifier(IdentifierType.TELEGRAM, chatId)
-            .map(Teacher::getId);
+                .map(Teacher::getId);
     }
 
     @Override
     public Set<StudentId> getStudentIds(Long chatId) {
         return teacherRepository.findByIdentifier(IdentifierType.TELEGRAM, chatId)
-            .map(Teacher::getStudentIds)
-            .orElse(Set.of());
+                .map(Teacher::getStudentIds)
+                .orElse(Set.of());
     }
 }

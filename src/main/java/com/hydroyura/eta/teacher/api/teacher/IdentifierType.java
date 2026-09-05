@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum IdentifierType {
+
     TELEGRAM(Long.class);
 
     private final Class<?> valueClass;

@@ -6,7 +6,6 @@ import com.hydroyura.eta.student.api.student.*;
 import com.hydroyura.eta.student.domain.student.Lesson;
 import com.hydroyura.eta.student.domain.student.LessonRepository;
 import com.hydroyura.eta.student.api.student.StudentId;
-import com.hydroyura.eta.teacher.api.teacher.TeacherId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LessonUseCasesTest {
 
     private StartLessonUseCase startLesson;
+
     private AddWordToLessonUseCase addWordToLesson;
+
     private EndLessonUseCase endLesson;
+
     private StubLessonRepository repository;
 
     @BeforeEach
@@ -35,7 +37,7 @@ class LessonUseCasesTest {
     void shouldFullLessonLifecycle() {
         // start
         var lessonId = startLesson.execute(
-            new StartLessonCommand(StudentId.generate(), "Lesson 1"));
+                new StartLessonCommand(StudentId.generate(), "Lesson 1"));
 
         assertThat(lessonId).isNotNull();
 
@@ -50,15 +52,29 @@ class LessonUseCasesTest {
 
         lesson = repository.findById(lessonId).orElseThrow();
         assertThat(lesson.getStatus()).isEqualTo(
-            com.hydroyura.eta.student.domain.student.LessonStatus.ENDED);
+                com.hydroyura.eta.student.domain.student.LessonStatus.ENDED);
     }
 
     // --- stub ---
 
     static class StubLessonRepository implements LessonRepository {
+
         private final Map<LessonId, Lesson> store = new HashMap<>();
-        @Override public Lesson save(Lesson l) { store.put(l.getId(), l); return l; }
-        @Override public Optional<Lesson> findById(LessonId id) { return Optional.ofNullable(store.get(id)); }
-        @Override public Optional<Lesson> findActiveByStudentId(StudentId sid) { return Optional.empty(); }
+
+        @Override
+        public Lesson save(Lesson l) {
+            store.put(l.getId(), l);
+            return l;
+        }
+
+        @Override
+        public Optional<Lesson> findById(LessonId id) {
+            return Optional.ofNullable(store.get(id));
+        }
+
+        @Override
+        public Optional<Lesson> findActiveByStudentId(StudentId sid) {
+            return Optional.empty();
+        }
     }
 }

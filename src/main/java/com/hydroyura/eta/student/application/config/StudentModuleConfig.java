@@ -43,8 +43,8 @@ public class StudentModuleConfig {
 
     @Bean
     StudentQuery studentQuery(StudentRepository studentRepository,
-                              FindWords findWords,
-                              FindActiveLesson findActiveLesson) {
+            FindWords findWords,
+            FindActiveLesson findActiveLesson) {
         return new StudentQueryService(studentRepository, findWords, findActiveLesson);
     }
 

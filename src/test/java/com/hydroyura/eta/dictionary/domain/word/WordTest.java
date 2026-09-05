@@ -44,23 +44,26 @@ class WordTest {
 
     @Test
     void shouldAddTranslation() {
-        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10, 0);
+        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10,
+                0);
         word.addTranslation("запускать");
         assertThat(word.getTranslations()).containsExactlyInAnyOrder("бежать", "запускать");
     }
 
     @Test
     void shouldRemoveTranslationWhenMoreThanOne() {
-        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать", "стартовать")), PartOfSpeech.VERB, 10, 0);
+        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать", "стартовать")),
+                PartOfSpeech.VERB, 10, 0);
         word.removeTranslation("бежать");
         assertThat(word.getTranslations()).containsExactly("стартовать");
     }
 
     @Test
     void shouldNotRemoveLastTranslation() {
-        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10, 0);
+        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10,
+                0);
         assertThatThrownBy(() -> word.removeTranslation("бежать"))
-            .isInstanceOf(LastTranslationException.class);
+                .isInstanceOf(LastTranslationException.class);
     }
 
     @Test
@@ -74,13 +77,14 @@ class WordTest {
     void shouldNotSetNullPartOfSpeech() {
         var word = new Word(WordId.generate(), "apple", Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0);
         assertThatThrownBy(() -> word.setPartOfSpeech(null))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void shouldNotAddBlankTranslation() {
-        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10, 0);
+        var word = new Word(WordId.generate(), "run", new java.util.HashSet<>(Set.of("бежать")), PartOfSpeech.VERB, 10,
+                0);
         assertThatThrownBy(() -> word.addTranslation("  "))
-            .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

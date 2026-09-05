@@ -18,14 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 public class CreateStudentWithDictionaryUseCase implements CreateStudentWithDictionary {
 
     private final TeacherRepository teacherRepository;
+
     private final StudentQuery studentQuery;
+
     private final CreateDictionary createDictionary;
+
     private final CreateStudent createStudent;
 
     @Override
     public StudentId execute(CreateStudentWithDictionaryCommand cmd) {
         var teacher = teacherRepository.findById(cmd.teacherId())
-            .orElseThrow(() -> new IllegalArgumentException("Teacher not found: " + cmd.teacherId()));
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found: " + cmd.teacherId()));
 
         if (studentQuery.existsByName(new StudentExistsByNameQuery(teacher.getStudentIds(), cmd.studentName()))) {
             throw new IllegalArgumentException("Student '" + cmd.studentName() + "' already exists");
@@ -38,7 +41,7 @@ public class CreateStudentWithDictionaryUseCase implements CreateStudentWithDict
         teacherRepository.save(teacher);
 
         log.info("Student '{}' created with dictionary '{}' for teacher {}",
-            cmd.studentName(), cmd.dictionaryName(), cmd.teacherId().value());
+                cmd.studentName(), cmd.dictionaryName(), cmd.teacherId().value());
         return studentId;
     }
 }

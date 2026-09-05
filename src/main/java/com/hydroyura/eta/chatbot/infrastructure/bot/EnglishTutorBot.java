@@ -20,15 +20,19 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final String botUsername;
+
     private final ChatService chatService;
+
     private final UpdateParser updateParser;
+
     private final SendMessageConverter converter;
+
     private final StateMachine stateMachine;
 
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
-                           @Value("${telegram.bot.username}") String botUsername,
-                           ChatService chatService, UpdateParser updateParser,
-                           SendMessageConverter converter, StateMachine stateMachine) {
+            @Value("${telegram.bot.username}") String botUsername,
+            ChatService chatService, UpdateParser updateParser,
+            SendMessageConverter converter, StateMachine stateMachine) {
         super(botToken);
         this.botUsername = botUsername;
         this.chatService = chatService;
@@ -38,7 +42,9 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public String getBotUsername() { return botUsername; }
+    public String getBotUsername() {
+        return botUsername;
+    }
 
     @Override
     @SneakyThrows // TODO: create exception handler

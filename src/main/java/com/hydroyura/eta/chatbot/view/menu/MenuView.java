@@ -30,7 +30,7 @@ public class MenuView {
     private static String activeMenuText() {
         return """
                 Главное меню
-                
+
                 %s — добавить ученика
                 %s — список учеников""".formatted(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT);
     }

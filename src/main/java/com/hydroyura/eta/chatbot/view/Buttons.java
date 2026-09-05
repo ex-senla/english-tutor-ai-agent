@@ -5,19 +5,19 @@ import java.util.Set;
 public final class Buttons {
 
     public static final String NEW_STUDENT = "➕ Новый студент";
-    
+
     public static final String LIST_STUDENT = "👥 Мои студенты";
-    
+
     public static final String ADD_WORD = "➕ Добавить слово";
-    
+
     public static final String FINISH_LESSON = "🏁 Завершить урок";
-    
+
     public static final String START_LESSON = "▶ Start Lesson";
-    
+
     public static final String DETAILS = "📋 Details";
-    
+
     public static final String EXERCISE = "🎯 Exercise";
-    
+
     public static final String BACK = "◀ Back";
 
     public static final String NOUN = "📛 Noun";

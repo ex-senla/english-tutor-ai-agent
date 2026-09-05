@@ -32,9 +32,9 @@ public class InMemoryLessonRepository implements LessonRepository, SnapshotProvi
     @Override
     public Optional<Lesson> findActiveByStudentId(StudentId studentId) {
         return store.values().stream()
-            .filter(l -> java.util.Objects.equals(l.getStudentId(), studentId))
-            .filter(l -> l.getStatus() == LessonStatus.ACTIVE)
-            .findFirst();
+                .filter(l -> java.util.Objects.equals(l.getStudentId(), studentId))
+                .filter(l -> l.getStatus() == LessonStatus.ACTIVE)
+                .findFirst();
     }
 
     // TODO: remove when switching to JPA/PostgreSQL

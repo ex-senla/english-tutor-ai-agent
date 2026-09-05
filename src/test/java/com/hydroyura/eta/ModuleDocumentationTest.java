@@ -10,7 +10,7 @@ class ModuleDocumentationTest {
         var modules = ApplicationModules.of(EtaApplication.class);
 
         new org.springframework.modulith.docs.Documenter(modules)
-            .writeDocumentation();
+                .writeDocumentation();
 
         System.out.println("Documentation generated in target/spring-modulith-docs/");
     }

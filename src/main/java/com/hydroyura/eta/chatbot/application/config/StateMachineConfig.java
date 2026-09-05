@@ -72,11 +72,12 @@ public class StateMachineConfig {
     }
 
     @Bean
-    public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher, StudentQuery studentQuery,
-                                     FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
-                                     StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
-                                     RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
-                                     AddWordToLesson addWordToLesson, GenerateExercise generateExercise, CheckExercise checkExercise) {
+    public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher,
+            StudentQuery studentQuery,
+            FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
+            StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
+            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
+            AddWordToLesson addWordToLesson, GenerateExercise generateExercise, CheckExercise checkExercise) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
 
         // переходы, регистрируемые под несколькими ключами
@@ -86,7 +87,8 @@ public class StateMachineConfig {
         var newStudentTransition = new NewStudentTransition();
         var listCmdStudentsListTransition = new ListCmdStudentsListTransition(findTeacher, studentQuery);
         var addWordInLessonTransition = new AddWordInLessonTransition();
-        var finishLessonInLessonTransition = new FinishLessonInLessonTransition(findActiveLesson, endLesson, studentQuery, findWords);
+        var finishLessonInLessonTransition = new FinishLessonInLessonTransition(findActiveLesson, endLesson,
+                studentQuery, findWords);
 
         // INITIAL
         stateMachine.onCommand(INITIAL, Commands.REGISTER, new RegisterCmdInitialTransition());
@@ -105,20 +107,24 @@ public class StateMachineConfig {
         stateMachine.onInput(AWAITING_REGISTRATION_NAME, new InputAwaitingRegistrationNameTransition(registerTeacher));
 
         // AWAITING_STUDENT_NAME
-        stateMachine.onInput(AWAITING_STUDENT_NAME, new InputAwaitingStudentNameTransition(findTeacher, createStudentWithDictionary));
+        stateMachine.onInput(AWAITING_STUDENT_NAME, new InputAwaitingStudentNameTransition(findTeacher,
+                createStudentWithDictionary));
 
         // STUDENTS_LIST
-        stateMachine.onCallback(STUDENTS_LIST, Callbacks.STUDENT, new StudentCbStudentsListTransition(findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.STUDENT, new StudentCbStudentsListTransition(findTeacher,
+                studentQuery));
         stateMachine.onCallback(STUDENTS_LIST, Callbacks.BACK, new BackCbStudentsListTransition());
         stateMachine.onCommand(STUDENTS_LIST, Commands.NEW, newStudentTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.LIST, listCmdStudentsListTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.HELP, listCmdStudentsListTransition);
 
         // STUDENT_OPTIONS
-        stateMachine.onCallback(STUDENT_OPTIONS, Callbacks.ACTION, new ActionCbStudentOptionsTransition(startLesson, findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENT_OPTIONS, Callbacks.ACTION, new ActionCbStudentOptionsTransition(startLesson,
+                findTeacher, studentQuery));
 
         // STUDENT_DETAILS
-        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(findTeacher, studentQuery));
+        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(findTeacher,
+                studentQuery));
 
         // IN_LESSON
         stateMachine.onButton(IN_LESSON, Buttons.ADD_WORD, addWordInLessonTransition);
@@ -130,11 +136,14 @@ public class StateMachineConfig {
         // word flow: AWAITING_WORD -> AWAITING_POS -> AWAITING_TRANSLATION
         stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition());
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition());
-        stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery, addWordToDictionary, findActiveLesson, addWordToLesson));
+        stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery,
+                addWordToDictionary, findActiveLesson, addWordToLesson));
 
         // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_TOPIC -> AWAITING_EXERCISE_ANSWER
-        stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE, new ExerciseCbAwaitingExerciseTypeTransition());
-        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise));
+        stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE,
+                new ExerciseCbAwaitingExerciseTypeTransition());
+        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery,
+                generateExercise));
         stateMachine.onInput(AWAITING_EXERCISE_ANSWER, new InputAwaitingExerciseAnswerTransition(checkExercise));
 
         if (!stateMachine.isReady()) {

@@ -5,6 +5,6 @@
  * Supports word lookups, categorization, and dictionary export.
  */
 @org.springframework.modulith.ApplicationModule(
-    allowedDependencies = "shared :: shared"
+        allowedDependencies = "shared :: shared"
 )
 package com.hydroyura.eta.dictionary;

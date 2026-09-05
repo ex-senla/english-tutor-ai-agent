@@ -14,9 +14,9 @@ public final class Messages {
 
     public static final String EXERCISE_ENTER_ANSWER = """
             %s | Тема: %s
-            
+
             %s
-            
+
             ✍️ Введите ваш ответ:""";
 
     public static final String FILL_IN_THE_BLANK = "✏️ Fill in the blank";
@@ -49,7 +49,7 @@ public final class Messages {
 
     public static final String STUDENT_FEEDBACK = """
             🎯 Ученик: %s
-            
+
             %s""";
 
     public static final String WORD_POS_TRANSLATIONS = """

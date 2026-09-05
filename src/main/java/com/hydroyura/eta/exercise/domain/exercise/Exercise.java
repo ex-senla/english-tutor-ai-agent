@@ -18,15 +18,22 @@ public class Exercise {
 
     @Identity
     private ExerciseId id;
+
     private ExerciseType type;
+
     private String topic;
+
     @Association
     private Set<WordId> wordIds = new HashSet<>();
+
     private String content;
+
     private String expectedAnswer;
+
     private ExerciseStatus status;
 
-    private Exercise() {}
+    private Exercise() {
+    }
 
     public static Exercise create(ExerciseId id, ExerciseType type, String topic, Set<WordId> wordIds) {
         Objects.requireNonNull(id, "id must not be null");

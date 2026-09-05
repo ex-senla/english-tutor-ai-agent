@@ -50,7 +50,7 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
     @Override
     public ActionResult transit(Chat chat, Action.Callback callback) {
         var method = methodStrategy.get(callback.payload());
-        
+
         if (method == null) {
             return new ActionResult.TextResponse(USE_BUTTONS_BELOW);
         }

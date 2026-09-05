@@ -17,15 +17,51 @@ class WordFactoryTest {
     @BeforeEach
     void setUp() {
         var config = new WordSpecificationConfig() {
-            @Override public String valueAllowedPattern() { return "[a-zA-Z'\\- ]+"; }
-            @Override public int valueMinLength() { return 2; }
-            @Override public int valueMaxLength() { return 50; }
-            @Override public String translationAllowedPattern() { return "[а-яА-ЯёЁ ]+"; }
-            @Override public int translationMinLength() { return 1; }
-            @Override public int translationMaxLength() { return 100; }
-            @Override public int minTranslations() { return 1; }
-            @Override public int maxTargetRepetitions() { return 100; }
-            @Override public int defaultTargetRepetitions() { return 10; }
+
+            @Override
+            public String valueAllowedPattern() {
+                return "[a-zA-Z'\\- ]+";
+            }
+
+            @Override
+            public int valueMinLength() {
+                return 2;
+            }
+
+            @Override
+            public int valueMaxLength() {
+                return 50;
+            }
+
+            @Override
+            public String translationAllowedPattern() {
+                return "[а-яА-ЯёЁ ]+";
+            }
+
+            @Override
+            public int translationMinLength() {
+                return 1;
+            }
+
+            @Override
+            public int translationMaxLength() {
+                return 100;
+            }
+
+            @Override
+            public int minTranslations() {
+                return 1;
+            }
+
+            @Override
+            public int maxTargetRepetitions() {
+                return 100;
+            }
+
+            @Override
+            public int defaultTargetRepetitions() {
+                return 10;
+            }
         };
         var specs = new WordSpecifications(config);
         factory = new WordFactory(specs, config);
@@ -53,18 +89,18 @@ class WordFactoryTest {
     @Test
     void shouldRejectRussianValue() {
         assertThatThrownBy(() -> factory.create("привет", Set.of("hello"), PartOfSpeech.NOUN))
-            .isInstanceOf(WordValidationException.class);
+                .isInstanceOf(WordValidationException.class);
     }
 
     @Test
     void shouldRejectEmptyTranslations() {
         assertThatThrownBy(() -> factory.create("apple", Set.of(), PartOfSpeech.NOUN))
-            .isInstanceOf(WordValidationException.class);
+                .isInstanceOf(WordValidationException.class);
     }
 
     @Test
     void shouldRejectTooShortValue() {
         assertThatThrownBy(() -> factory.create("a", Set.of("яблоко"), PartOfSpeech.NOUN))
-            .isInstanceOf(WordValidationException.class);
+                .isInstanceOf(WordValidationException.class);
     }
 }

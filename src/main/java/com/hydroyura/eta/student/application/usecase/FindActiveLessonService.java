@@ -16,6 +16,6 @@ public class FindActiveLessonService implements FindActiveLesson {
     @Override
     public Optional<LessonId> findByStudentId(StudentId studentId) {
         return lessonRepository.findActiveByStudentId(studentId)
-            .map(l -> l.getId());
+                .map(l -> l.getId());
     }
 }

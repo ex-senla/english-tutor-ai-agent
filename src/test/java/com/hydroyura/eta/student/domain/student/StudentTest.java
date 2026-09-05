@@ -21,12 +21,12 @@ class StudentTest {
     @Test
     void shouldRejectNullName() {
         assertThatThrownBy(() -> Student.create(StudentId.generate(), DictionaryId.generate(), null))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void shouldRejectNullDictionaryId() {
         assertThatThrownBy(() -> Student.create(StudentId.generate(), null, "Иван"))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
     }
 }

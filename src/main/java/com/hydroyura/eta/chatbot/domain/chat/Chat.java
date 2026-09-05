@@ -10,8 +10,10 @@ public final class Chat {
 
     @Getter
     private final ChatId id;
+
     @Getter
     private ChatState state;
+
     @Getter
     private final Map<String, Object> context = new HashMap<>();
 

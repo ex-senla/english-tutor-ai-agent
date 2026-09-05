@@ -10,14 +10,15 @@ public class Identifiers {
 
     private final Map<IdentifierType, Object> values = new HashMap<>();
 
-    public Identifiers() {}
+    public Identifiers() {
+    }
 
     public <T> void put(IdentifierType type, T value) {
         Objects.requireNonNull(type, "type must not be null");
         Objects.requireNonNull(value, "value must not be null");
         if (!type.getValueClass().isInstance(value)) {
             throw new IllegalArgumentException(
-                "Expected " + type.getValueClass().getSimpleName() + " for " + type);
+                    "Expected " + type.getValueClass().getSimpleName() + " for " + type);
         }
         values.put(type, value);
     }

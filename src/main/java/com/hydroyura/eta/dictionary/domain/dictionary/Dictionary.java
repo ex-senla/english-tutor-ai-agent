@@ -25,7 +25,9 @@ public final class Dictionary {
 
     @Identity
     private final DictionaryId id;
+
     private final Set<Word> words;
+
     private String name;
 
     public void addWord(Word word) {

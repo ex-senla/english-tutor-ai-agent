@@ -5,6 +5,6 @@
  * Available to all other modules.
  */
 @org.springframework.modulith.ApplicationModule(
-    allowedDependencies = {}
+        allowedDependencies = {}
 )
 package com.hydroyura.eta.shared;
