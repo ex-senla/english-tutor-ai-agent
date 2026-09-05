@@ -37,7 +37,7 @@ class LessonTest {
         lesson.end();
 
         assertThatThrownBy(() -> lesson.addWord(WordId.generate()))
-            .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -56,6 +56,6 @@ class LessonTest {
         lesson.end();
 
         assertThatThrownBy(lesson::end)
-            .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 }

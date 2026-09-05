@@ -16,11 +16,12 @@ public class WordView {
         var keyboard = List.of(
                 List.of(new ActionResult.InlineButton(Buttons.NOUN, createCallbackData(Callbacks.POS, Callbacks.NOUN))),
                 List.of(new ActionResult.InlineButton(Buttons.VERB, createCallbackData(Callbacks.POS, Callbacks.VERB))),
-                List.of(new ActionResult.InlineButton(Buttons.ADJECTIVE, createCallbackData(Callbacks.POS, Callbacks.ADJECTIVE)))
+                List.of(new ActionResult.InlineButton(Buttons.ADJECTIVE, createCallbackData(Callbacks.POS,
+                        Callbacks.ADJECTIVE)))
         );
         return new ActionResult.TextWithInlineKeyboard("""
                 Слово: %s
-                
+
                 Выберите часть речи:""".formatted(word), keyboard);
     }
 
@@ -34,8 +35,8 @@ public class WordView {
 
     public static PartOfSpeech fromCallback(String payload) {
         return switch (payload) {
-            case Callbacks.NOUN      -> PartOfSpeech.NOUN;
-            case Callbacks.VERB      -> PartOfSpeech.VERB;
+            case Callbacks.NOUN -> PartOfSpeech.NOUN;
+            case Callbacks.VERB -> PartOfSpeech.VERB;
             case Callbacks.ADJECTIVE -> PartOfSpeech.ADJECTIVE;
             default -> throw new IllegalArgumentException(
                     "Unknown part-of-speech callback payload: " + payload);
@@ -47,8 +48,9 @@ public class WordView {
                 """
                         Слово: %s
                         Часть речи: %s
-                        
-                        Введите переводы через запятую (например: дом, здание, строение)""".formatted(word, posLabel(pos)), List.of());
+
+                        Введите переводы через запятую (например: дом, здание, строение)""".formatted(word, posLabel(
+                        pos)), List.of());
     }
 
 }

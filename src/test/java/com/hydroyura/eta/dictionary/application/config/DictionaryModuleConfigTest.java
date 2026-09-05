@@ -31,22 +31,36 @@ class DictionaryModuleConfigTest {
     @Configuration
     @EnableConfigurationProperties(WordSpecificationSpringProperties.class)
     static class TestConfig {
+
         @Bean
         WordSpecifications wordSpecifications(WordSpecificationSpringProperties config) {
             return new WordSpecifications(config);
         }
+
         @Bean
         WordFactory wordFactory(WordSpecifications specs, WordSpecificationSpringProperties config) {
             return new WordFactory(specs, config);
         }
+
         @Bean
         DictionaryRepository dictionaryRepository() {
             return new DictionaryRepository() {
+
                 private final java.util.Map<DictionaryId, Dictionary> store = new java.util.HashMap<>();
-                @Override public Dictionary save(Dictionary dict) { store.put(dict.getId(), dict); return dict; }
-                @Override public java.util.Optional<Dictionary> findById(DictionaryId id) { return java.util.Optional.ofNullable(store.get(id)); }
+
+                @Override
+                public Dictionary save(Dictionary dict) {
+                    store.put(dict.getId(), dict);
+                    return dict;
+                }
+
+                @Override
+                public java.util.Optional<Dictionary> findById(DictionaryId id) {
+                    return java.util.Optional.ofNullable(store.get(id));
+                }
             };
         }
+
         @Bean
         AddWordToDictionary addWordToDictionary(DictionaryRepository repo, WordFactory factory) {
             return new AddWordToDictionaryUseCase(repo, factory);
@@ -88,7 +102,7 @@ class DictionaryModuleConfigTest {
     @Test
     void factoryShouldCreateWord() {
         var word = wordFactory.create("hello", java.util.Set.of("привет"),
-            com.hydroyura.eta.dictionary.api.word.PartOfSpeech.NOUN);
+                com.hydroyura.eta.dictionary.api.word.PartOfSpeech.NOUN);
 
         assertThat(word).isNotNull();
         assertThat(word.getValue()).isEqualTo("hello");

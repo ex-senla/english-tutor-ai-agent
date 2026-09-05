@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CreateDictionaryUseCaseTest {
 
     private CreateDictionaryUseCase useCase;
+
     private StubDictionaryRepository repository;
 
     @BeforeEach
@@ -37,9 +38,18 @@ class CreateDictionaryUseCaseTest {
     // --- stub ---
 
     static class StubDictionaryRepository implements DictionaryRepository {
+
         private final Map<DictionaryId, Dictionary> store = new HashMap<>();
 
-        @Override public Dictionary save(Dictionary dict) { store.put(dict.getId(), dict); return dict; }
-        @Override public Optional<Dictionary> findById(DictionaryId id) { return Optional.ofNullable(store.get(id)); }
+        @Override
+        public Dictionary save(Dictionary dict) {
+            store.put(dict.getId(), dict);
+            return dict;
+        }
+
+        @Override
+        public Optional<Dictionary> findById(DictionaryId id) {
+            return Optional.ofNullable(store.get(id));
+        }
     }
 }

@@ -31,8 +31,8 @@ public class InMemoryTeacherRepository implements TeacherRepository, SnapshotPro
     @Override
     public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
         return store.values().stream()
-            .filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type)))
-            .findFirst();
+                .filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type)))
+                .findFirst();
     }
 
     // TODO: remove when switching to JPA/PostgreSQL

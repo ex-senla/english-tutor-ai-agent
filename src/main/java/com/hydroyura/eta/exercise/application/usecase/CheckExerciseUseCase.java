@@ -4,7 +4,6 @@ import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.CheckExerciseCommand;
 import com.hydroyura.eta.exercise.api.exercise.CheckExerciseResult;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
-import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import java.util.Objects;
 
@@ -21,7 +20,7 @@ public class CheckExerciseUseCase implements CheckExercise {
         Objects.requireNonNull(command, "command must not be null");
 
         var exercise = repository.findById(command.exerciseId())
-            .orElseThrow(() -> new IllegalArgumentException("Exercise not found: " + command.exerciseId()));
+                .orElseThrow(() -> new IllegalArgumentException("Exercise not found: " + command.exerciseId()));
 
         exercise.markAnswered();
 
@@ -35,16 +34,16 @@ public class CheckExerciseUseCase implements CheckExercise {
         repository.save(exercise);
 
         var feedback = correct
-            ? "✅ Correct!"
-            : "❌ Incorrect. Expected: " + expectedAnswer;
+                ? "✅ Correct!"
+                : "❌ Incorrect. Expected: " + expectedAnswer;
 
         var dto = new ExerciseDto(
-            exercise.getId(),
-            exercise.getType(),
-            exercise.getTopic(),
-            exercise.getContent(),
-            exercise.getExpectedAnswer(),
-            exercise.getStatus()
+                exercise.getId(),
+                exercise.getType(),
+                exercise.getTopic(),
+                exercise.getContent(),
+                exercise.getExpectedAnswer(),
+                exercise.getStatus()
         );
 
         return new CheckExerciseResult(correct, feedback, dto);

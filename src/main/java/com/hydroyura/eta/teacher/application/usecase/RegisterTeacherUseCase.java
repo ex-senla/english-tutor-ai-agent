@@ -12,7 +12,6 @@ import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import java.util.Objects;
 import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import java.util.Objects;
-import com.hydroyura.eta.teacher.domain.teacher.Identifiers;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import java.util.Objects;

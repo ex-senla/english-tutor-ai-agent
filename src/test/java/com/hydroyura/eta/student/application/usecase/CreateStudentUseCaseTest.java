@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CreateStudentUseCaseTest {
 
     private CreateStudentUseCase useCase;
+
     private StubStudentRepository repository;
 
     @BeforeEach
@@ -43,8 +44,8 @@ class CreateStudentUseCaseTest {
         var cmd = new CreateStudentCommand("  ", DictionaryId.generate());
 
         assertThatThrownBy(() -> useCase.execute(cmd))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("blank");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("blank");
     }
 
     @Test
@@ -58,6 +59,7 @@ class CreateStudentUseCaseTest {
     // --- stub ---
 
     static class StubStudentRepository implements StudentRepository {
+
         private final Map<StudentId, Student> store = new HashMap<>();
 
         @Override

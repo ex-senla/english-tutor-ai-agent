@@ -25,20 +25,57 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AddWordToDictionaryUseCaseTest {
 
     private AddWordToDictionaryUseCase useCase;
+
     private StubDictionaryRepository repository;
 
     @BeforeEach
     void setUp() {
         var config = new WordSpecificationConfig() {
-            @Override public String valueAllowedPattern() { return "[a-zA-Z'\\- ]+"; }
-            @Override public int valueMinLength() { return 2; }
-            @Override public int valueMaxLength() { return 50; }
-            @Override public String translationAllowedPattern() { return "[а-яА-ЯёЁ ]+"; }
-            @Override public int translationMinLength() { return 1; }
-            @Override public int translationMaxLength() { return 100; }
-            @Override public int minTranslations() { return 1; }
-            @Override public int maxTargetRepetitions() { return 100; }
-            @Override public int defaultTargetRepetitions() { return 10; }
+
+            @Override
+            public String valueAllowedPattern() {
+                return "[a-zA-Z'\\- ]+";
+            }
+
+            @Override
+            public int valueMinLength() {
+                return 2;
+            }
+
+            @Override
+            public int valueMaxLength() {
+                return 50;
+            }
+
+            @Override
+            public String translationAllowedPattern() {
+                return "[а-яА-ЯёЁ ]+";
+            }
+
+            @Override
+            public int translationMinLength() {
+                return 1;
+            }
+
+            @Override
+            public int translationMaxLength() {
+                return 100;
+            }
+
+            @Override
+            public int minTranslations() {
+                return 1;
+            }
+
+            @Override
+            public int maxTargetRepetitions() {
+                return 100;
+            }
+
+            @Override
+            public int defaultTargetRepetitions() {
+                return 10;
+            }
         };
         var specs = new WordSpecifications(config);
         var factory = new WordFactory(specs, config);
@@ -65,7 +102,7 @@ class AddWordToDictionaryUseCaseTest {
         var cmd = new AddWordCommand(DictionaryId.generate(), "apple", Set.of("яблоко"), PartOfSpeech.NOUN);
 
         assertThatThrownBy(() -> useCase.execute(cmd))
-            .isInstanceOf(DictionaryNotFoundException.class);
+                .isInstanceOf(DictionaryNotFoundException.class);
     }
 
     @Test
@@ -75,14 +112,15 @@ class AddWordToDictionaryUseCaseTest {
 
         useCase.execute(new AddWordCommand(dictId, "apple", Set.of("яблоко"), PartOfSpeech.NOUN));
 
-        assertThatThrownBy(() ->
-            useCase.execute(new AddWordCommand(dictId, "apple", Set.of("яблочко"), PartOfSpeech.NOUN)))
-            .isInstanceOf(WordAlreadyExistsException.class);
+        assertThatThrownBy(() -> useCase.execute(new AddWordCommand(dictId, "apple", Set.of("яблочко"),
+                PartOfSpeech.NOUN)))
+                .isInstanceOf(WordAlreadyExistsException.class);
     }
 
     // --- stub ---
 
     static class StubDictionaryRepository implements DictionaryRepository {
+
         private final Map<DictionaryId, Dictionary> store = new HashMap<>();
 
         @Override

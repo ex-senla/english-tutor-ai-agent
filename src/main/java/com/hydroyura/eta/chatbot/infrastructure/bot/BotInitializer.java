@@ -10,7 +10,9 @@ public class BotInitializer {
 
     private final EnglishTutorBot bot;
 
-    public BotInitializer(EnglishTutorBot bot) { this.bot = bot; }
+    public BotInitializer(EnglishTutorBot bot) {
+        this.bot = bot;
+    }
 
     @PostConstruct
     public void init() throws Exception {

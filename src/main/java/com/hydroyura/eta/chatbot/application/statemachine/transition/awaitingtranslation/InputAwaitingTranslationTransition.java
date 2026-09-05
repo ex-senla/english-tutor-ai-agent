@@ -57,7 +57,8 @@ public class InputAwaitingTranslationTransition implements Transition<Action.Inp
         log.info("Word '{}' added to lesson {} for student {}", wordValue, lessonId, studentIdStr);
 
         chat.updateState(ChatState.IN_LESSON);
-        return LessonView.lessonKeyboard(WORD_POS_TRANSLATIONS.formatted(wordValue, WordView.posLabel(pos), String.join(", ", translations)));
+        return LessonView.lessonKeyboard(WORD_POS_TRANSLATIONS.formatted(wordValue, WordView.posLabel(pos), String.join(
+                ", ", translations)));
     }
 
 }

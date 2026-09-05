@@ -18,7 +18,6 @@ import static java.lang.Boolean.FALSE;
 @Component
 public final class UpdateParser {
 
-
     public Action parseUpdate(Update update) {
 
         // check if callBack

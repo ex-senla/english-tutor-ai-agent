@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RegisterTeacherUseCaseTest {
 
     private RegisterTeacherUseCase useCase;
+
     private StubTeacherRepository repository;
 
     @BeforeEach
@@ -39,19 +40,31 @@ class RegisterTeacherUseCaseTest {
     @Test
     void shouldRejectBlankName() {
         assertThatThrownBy(() -> useCase.execute(new RegisterTeacherCommand(123L, "  ")))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("blank");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("blank");
     }
 
     // --- stub ---
 
     static class StubTeacherRepository implements TeacherRepository {
+
         private final Map<TeacherId, Teacher> store = new HashMap<>();
 
-        @Override public Teacher save(Teacher t) { store.put(t.getId(), t); return t; }
-        @Override public Optional<Teacher> findById(TeacherId id) { return Optional.ofNullable(store.get(id)); }
-        @Override public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
-            return store.values().stream().filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type))).findFirst();
+        @Override
+        public Teacher save(Teacher t) {
+            store.put(t.getId(), t);
+            return t;
+        }
+
+        @Override
+        public Optional<Teacher> findById(TeacherId id) {
+            return Optional.ofNullable(store.get(id));
+        }
+
+        @Override
+        public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
+            return store.values().stream().filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type)))
+                    .findFirst();
         }
     }
 }

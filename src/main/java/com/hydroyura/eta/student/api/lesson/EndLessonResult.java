@@ -5,7 +5,8 @@ import java.time.Instant;
 import java.util.Set;
 
 public record EndLessonResult(
-    Instant startedAt,
-    Instant endedAt,
-    Set<WordId> wordIds
-) {}
+        Instant startedAt,
+        Instant endedAt,
+        Set<WordId> wordIds
+) {
+}

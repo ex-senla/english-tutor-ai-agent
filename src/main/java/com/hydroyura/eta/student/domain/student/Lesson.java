@@ -19,16 +19,23 @@ public class Lesson {
 
     @Identity
     private LessonId id;
+
     @Association
     private StudentId studentId;
+
     private String name;
+
     @Association
     private Set<WordId> wordIds = new HashSet<>();
+
     private LessonStatus status;
+
     private Instant startedAt;
+
     private Instant endedAt;
 
-    private Lesson() {}
+    private Lesson() {
+    }
 
     public static Lesson start(LessonId id, StudentId studentId, String name) {
         Objects.requireNonNull(id, "LessonId must not be null");

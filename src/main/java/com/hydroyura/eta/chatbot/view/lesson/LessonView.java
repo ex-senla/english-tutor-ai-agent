@@ -21,19 +21,25 @@ public class LessonView {
         return new ActionResult.TextWithReplyKeyboard(message, keyboard, cleanupMessageId);
     }
 
-    public static ActionResult finishMenuWithKeyBoard(String date, long duration, List<String> wordValues, String studentName) {
+    public static ActionResult finishMenuWithKeyBoard(String date, long duration, List<String> wordValues,
+            String studentName) {
         var summary = """
                 🏁 Урок завершён!
                 📅 Дата: %s
                 ⏱ Длительность: %d мин.
                 📝 Слова: %s
-                👤 Ученик: %s""".formatted(date, duration, wordValues.isEmpty() ? "—" : String.join(", ", wordValues), studentName);
+                👤 Ученик: %s""".formatted(date, duration, wordValues.isEmpty() ? "—" : String.join(", ", wordValues),
+                studentName);
 
         var keyboard = List.of(
-                List.of(new ActionResult.InlineButton(Buttons.START_LESSON, createCallbackData(Callbacks.ACTION, Callbacks.START_LESSON))),
-                List.of(new ActionResult.InlineButton(Buttons.DETAILS, createCallbackData(Callbacks.ACTION, Callbacks.DETAILS))),
-                List.of(new ActionResult.InlineButton(Buttons.EXERCISE, createCallbackData(Callbacks.ACTION, Callbacks.EXERCISE))),
-                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.ACTION, Callbacks.BACK)))
+                List.of(new ActionResult.InlineButton(Buttons.START_LESSON, createCallbackData(Callbacks.ACTION,
+                        Callbacks.START_LESSON))),
+                List.of(new ActionResult.InlineButton(Buttons.DETAILS, createCallbackData(Callbacks.ACTION,
+                        Callbacks.DETAILS))),
+                List.of(new ActionResult.InlineButton(Buttons.EXERCISE, createCallbackData(Callbacks.ACTION,
+                        Callbacks.EXERCISE))),
+                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.ACTION,
+                        Callbacks.BACK)))
         );
         return new ActionResult.TextWithInlineKeyboard(summary, keyboard);
     }

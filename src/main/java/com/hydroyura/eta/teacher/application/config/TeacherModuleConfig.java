@@ -30,10 +30,10 @@ public class TeacherModuleConfig {
 
     @Bean
     CreateStudentWithDictionary createStudentWithDictionary(
-        TeacherRepository teacherRepository,
-        StudentQuery studentQuery,
-        CreateDictionary createDictionary,
-        CreateStudent createStudent
+            TeacherRepository teacherRepository,
+            StudentQuery studentQuery,
+            CreateDictionary createDictionary,
+            CreateStudent createStudent
     ) {
         return new CreateStudentWithDictionaryUseCase(teacherRepository, studentQuery, createDictionary, createStudent);
     }

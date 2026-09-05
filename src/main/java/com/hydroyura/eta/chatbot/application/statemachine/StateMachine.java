@@ -48,7 +48,8 @@ public class StateMachine {
                     apply(chat, commandTransitions.get(new TransitionKey(chat.getState(), command.command())), command);
             case Action.Input input -> apply(chat, inputTransitions.get(chat.getState()), input);
             case Action.Callback callback ->
-                    apply(chat, callbackTransitions.get(new TransitionKey(chat.getState(), callback.prefix())), callback);
+                    apply(chat, callbackTransitions.get(new TransitionKey(chat.getState(), callback.prefix())),
+                            callback);
             case Action.Button button ->
                     apply(chat, buttonTransitions.get(new TransitionKey(chat.getState(), button.command())), button);
         };

@@ -13,8 +13,8 @@ public class ExerciseModuleConfig {
 
     @Bean
     GenerateExerciseUseCase generateExerciseUseCase(ExerciseRepository repository,
-                                                     ExerciseGenerator generator,
-                                                     FindWords findWords) {
+            ExerciseGenerator generator,
+            FindWords findWords) {
         return new GenerateExerciseUseCase(repository, generator, findWords);
     }
 

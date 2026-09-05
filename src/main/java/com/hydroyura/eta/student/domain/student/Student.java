@@ -14,11 +14,14 @@ public class Student {
 
     @Identity
     private StudentId id;
+
     @Association
     private DictionaryId dictionaryId;
+
     private String name;
 
-    private Student() {}
+    private Student() {
+    }
 
     public static Student create(StudentId id, DictionaryId dictionaryId, String name) {
         Objects.requireNonNull(id, "StudentId must not be null");

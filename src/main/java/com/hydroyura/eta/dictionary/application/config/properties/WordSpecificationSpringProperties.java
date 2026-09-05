@@ -13,12 +13,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class WordSpecificationSpringProperties implements WordSpecificationConfig {
 
     private String valueAllowedPattern = "[a-zA-Z'\\- ]+";
+
     private int valueMinLength = 1;
+
     private int valueMaxLength = 50;
+
     private String translationAllowedPattern = "[а-яА-ЯёЁ ]+";
+
     private int translationMinLength = 1;
+
     private int translationMaxLength = 100;
+
     private int minTranslations = 1;
+
     private int maxTargetRepetitions = 100;
+
     private int defaultTargetRepetitions = 10;
 }

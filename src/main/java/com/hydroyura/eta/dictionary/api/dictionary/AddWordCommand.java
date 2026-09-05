@@ -4,8 +4,9 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import java.util.Set;
 
 public record AddWordCommand(
-    DictionaryId dictionaryId,
-    String value,
-    Set<String> translations,
-    PartOfSpeech partOfSpeech
-) {}
+        DictionaryId dictionaryId,
+        String value,
+        Set<String> translations,
+        PartOfSpeech partOfSpeech
+) {
+}

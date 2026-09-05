@@ -11,8 +11,9 @@ public class AiConfig {
     @Bean
     ChatClient chatClient(ChatClient.Builder builder) {
         return builder
-            .defaultSystem("You are a professional English tutor AI. Respond only with valid JSON objects, no other text.")
-            .defaultAdvisors(new SimpleLoggerAdvisor())
-            .build();
+                .defaultSystem(
+                        "You are a professional English tutor AI. Respond only with valid JSON objects, no other text.")
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .build();
     }
 }

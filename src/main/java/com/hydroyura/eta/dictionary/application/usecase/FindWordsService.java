@@ -22,18 +22,18 @@ public class FindWordsService implements FindWords {
     @Override
     public Set<WordProjection> findByDictionaryId(DictionaryId dictionaryId) {
         var dictionary = dictionaryRepository.findById(dictionaryId)
-            .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId));
+                .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId));
 
         return dictionary.getWords().stream()
-            .map(w -> new WordProjection(w.getId(), w.getValue(), w.getTranslations(), w.getPartOfSpeech()))
-            .collect(Collectors.toSet());
+                .map(w -> new WordProjection(w.getId(), w.getValue(), w.getTranslations(), w.getPartOfSpeech()))
+                .collect(Collectors.toSet());
     }
 
     @Override
     public DictionaryStats getStats(DictionaryId dictionaryId) {
         var words = dictionaryRepository.findById(dictionaryId)
-            .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId))
-            .getWords();
+                .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId))
+                .getWords();
 
         var total = words.size();
         var newCount = words.stream().filter(w -> w.getStatus() == WordStatus.NEW).count();

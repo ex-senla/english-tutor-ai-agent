@@ -15,7 +15,7 @@ public class AddWordToLessonUseCase implements AddWordToLesson {
     @Override
     public void execute(AddWordToLessonCommand cmd) {
         var lesson = lessonRepository.findById(cmd.lessonId())
-            .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + cmd.lessonId()));
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + cmd.lessonId()));
 
         lesson.addWord(cmd.wordId());
         lessonRepository.save(lesson);

@@ -14,17 +14,18 @@ import lombok.extern.slf4j.Slf4j;
 public class AddWordToDictionaryUseCase implements AddWordToDictionary {
 
     private final DictionaryRepository dictionaryRepository;
+
     private final WordFactory wordFactory;
 
     @Override
     public WordId execute(AddWordCommand cmd) {
         var dictionary = dictionaryRepository.findById(cmd.dictionaryId())
-            .orElseThrow(() -> new DictionaryNotFoundException(cmd.dictionaryId()));
+                .orElseThrow(() -> new DictionaryNotFoundException(cmd.dictionaryId()));
 
         var word = wordFactory.create(
-            cmd.value(),
-            cmd.translations(),
-            cmd.partOfSpeech()
+                cmd.value(),
+                cmd.translations(),
+                cmd.partOfSpeech()
         );
 
         dictionary.addWord(word);

@@ -16,7 +16,7 @@ public class EndLessonUseCase implements EndLesson {
     @Override
     public EndLessonResult execute(EndLessonCommand cmd) {
         var lesson = lessonRepository.findById(cmd.lessonId())
-            .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + cmd.lessonId()));
+                .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + cmd.lessonId()));
 
         var startedAt = lesson.getStartedAt();
         var wordIds = lesson.getWordIds();

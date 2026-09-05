@@ -21,19 +21,25 @@ public class StudentView {
         }
 
         var keyboard = new ArrayList<>(students.stream()
-                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id().value().toString()))))
+                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
+                        .value().toString()))))
                 .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
+                Callbacks.MAIN))));
 
         return new ActionResult.TextWithInlineKeyboard("Ваши ученики:", keyboard);
     }
 
     public static List<List<ActionResult.InlineButton>> optionsKeyboard() {
         return List.of(
-                List.of(new ActionResult.InlineButton(Buttons.START_LESSON, createCallbackData(Callbacks.ACTION, Callbacks.START_LESSON))),
-                List.of(new ActionResult.InlineButton(Buttons.DETAILS, createCallbackData(Callbacks.ACTION, Callbacks.DETAILS))),
-                List.of(new ActionResult.InlineButton(Buttons.EXERCISE, createCallbackData(Callbacks.ACTION, Callbacks.EXERCISE))),
-                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.ACTION, Callbacks.BACK)))
+                List.of(new ActionResult.InlineButton(Buttons.START_LESSON, createCallbackData(Callbacks.ACTION,
+                        Callbacks.START_LESSON))),
+                List.of(new ActionResult.InlineButton(Buttons.DETAILS, createCallbackData(Callbacks.ACTION,
+                        Callbacks.DETAILS))),
+                List.of(new ActionResult.InlineButton(Buttons.EXERCISE, createCallbackData(Callbacks.ACTION,
+                        Callbacks.EXERCISE))),
+                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.ACTION,
+                        Callbacks.BACK)))
         );
     }
 
@@ -43,16 +49,19 @@ public class StudentView {
 
     public static ActionResult listEdit(int messageId, List<StudentInfo> students) {
         var keyboard = new java.util.ArrayList<>(students.stream()
-                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id().value().toString()))))
+                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
+                        .value().toString()))))
                 .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
+                Callbacks.MAIN))));
 
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
 
     public static ActionResult studentDetails(int messageId) {
         return new ActionResult.EditMessageText(messageId, "Детали ученика (TODO)",
-                List.of(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS, Callbacks.BACK)))));
+                List.of(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS,
+                        Callbacks.BACK)))));
     }
 
 }

@@ -27,10 +27,15 @@ public final class Word {
 
     @Identity
     private final WordId id;
+
     private final String value;
+
     private final Set<String> translations;
+
     private PartOfSpeech partOfSpeech;
+
     private Integer targetRepetitions;
+
     private Integer currentRepetitions;
 
     public WordStatus getStatus() {

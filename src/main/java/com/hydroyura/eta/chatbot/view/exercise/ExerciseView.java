@@ -13,8 +13,10 @@ public class ExerciseView {
 
     public static ActionResult exerciseTypeEdit(int messageId) {
         var keyboard = List.of(
-                List.of(new ActionResult.InlineButton(FILL_IN_THE_BLANK, createCallbackData(Callbacks.EXERCISE, Callbacks.FILL_IN_THE_BLANK))),
-                List.of(new ActionResult.InlineButton(MULTIPLE_CHOICE, createCallbackData(Callbacks.EXERCISE, Callbacks.MULTIPLE_CHOICE)))
+                List.of(new ActionResult.InlineButton(FILL_IN_THE_BLANK, createCallbackData(Callbacks.EXERCISE,
+                        Callbacks.FILL_IN_THE_BLANK))),
+                List.of(new ActionResult.InlineButton(MULTIPLE_CHOICE, createCallbackData(Callbacks.EXERCISE,
+                        Callbacks.MULTIPLE_CHOICE)))
         );
         return new ActionResult.EditMessageText(messageId, "Выберите тип упражнения:", keyboard);
     }

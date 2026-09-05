@@ -22,15 +22,51 @@ class DictionaryTest {
     @BeforeEach
     void setUp() {
         var config = new WordSpecificationConfig() {
-            @Override public String valueAllowedPattern() { return "[a-zA-Z'\\- ]+"; }
-            @Override public int valueMinLength() { return 1; }
-            @Override public int valueMaxLength() { return 50; }
-            @Override public String translationAllowedPattern() { return "[а-яА-ЯёЁ ]+"; }
-            @Override public int translationMinLength() { return 1; }
-            @Override public int translationMaxLength() { return 100; }
-            @Override public int minTranslations() { return 1; }
-            @Override public int maxTargetRepetitions() { return 100; }
-            @Override public int defaultTargetRepetitions() { return 10; }
+
+            @Override
+            public String valueAllowedPattern() {
+                return "[a-zA-Z'\\- ]+";
+            }
+
+            @Override
+            public int valueMinLength() {
+                return 1;
+            }
+
+            @Override
+            public int valueMaxLength() {
+                return 50;
+            }
+
+            @Override
+            public String translationAllowedPattern() {
+                return "[а-яА-ЯёЁ ]+";
+            }
+
+            @Override
+            public int translationMinLength() {
+                return 1;
+            }
+
+            @Override
+            public int translationMaxLength() {
+                return 100;
+            }
+
+            @Override
+            public int minTranslations() {
+                return 1;
+            }
+
+            @Override
+            public int maxTargetRepetitions() {
+                return 100;
+            }
+
+            @Override
+            public int defaultTargetRepetitions() {
+                return 10;
+            }
         };
         var specs = new WordSpecifications(config);
         wordFactory = new WordFactory(specs, config);
@@ -52,8 +88,8 @@ class DictionaryTest {
         dictionary.addWord(wordFactory.create("apple", Set.of("яблоко"), PartOfSpeech.NOUN));
 
         assertThatThrownBy(() -> dictionary.addWord(
-            wordFactory.create("APPLE", Set.of("яблочко"), PartOfSpeech.NOUN)))
-            .isInstanceOf(WordAlreadyExistsException.class);
+                wordFactory.create("APPLE", Set.of("яблочко"), PartOfSpeech.NOUN)))
+                .isInstanceOf(WordAlreadyExistsException.class);
     }
 
     @Test
@@ -61,6 +97,6 @@ class DictionaryTest {
         var dictionary = new Dictionary(DictionaryId.generate(), new HashSet<>(), "My Dictionary");
 
         assertThatThrownBy(() -> dictionary.addWord(null))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
     }
 }

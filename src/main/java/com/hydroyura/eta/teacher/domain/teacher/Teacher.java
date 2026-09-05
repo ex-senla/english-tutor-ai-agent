@@ -17,12 +17,16 @@ public class Teacher {
 
     @Identity
     private TeacherId id;
+
     private String name;
+
     private Identifiers identifiers;
+
     @Association
     private Set<StudentId> studentIds = new HashSet<>();
 
-    private Teacher() {}
+    private Teacher() {
+    }
 
     public static Teacher create(TeacherId id, String name) {
         Objects.requireNonNull(id, "TeacherId must not be null");
