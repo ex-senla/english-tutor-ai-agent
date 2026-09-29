@@ -15,6 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_ENTER_ANSWER;
 import static com.hydroyura.eta.chatbot.view.Messages.FILL_IN_THE_BLANK;
 import static com.hydroyura.eta.chatbot.view.Messages.MULTIPLE_CHOICE;
@@ -30,9 +34,9 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
         var topic = input.text();
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
         var studentId = new StudentId(UUID.fromString(studentIdStr));
-        var exerciseType = (ExerciseType) chat.getContext().get("exerciseType");
+        var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
@@ -40,8 +44,8 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         var exercise = generateExercise.execute(
                 new GenerateExerciseCommand(exerciseType, topic, dictionaryId));
 
-        chat.getContext().put("exerciseId", exercise.id());
-        chat.getContext().put("exerciseTopic", topic);
+        chat.getContext().put(EXERCISE_ID.getValue(), exercise.id());
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), topic);
         chat.updateState(ChatState.AWAITING_EXERCISE_ANSWER);
 
         var typeLabel = exerciseType == ExerciseType.FILL_IN_THE_BLANK ? FILL_IN_THE_BLANK : MULTIPLE_CHOICE;
