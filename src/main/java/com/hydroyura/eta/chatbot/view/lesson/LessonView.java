@@ -6,7 +6,7 @@ import com.hydroyura.eta.chatbot.view.Callbacks;
 
 import java.util.List;
 
-import static com.hydroyura.eta.chatbot.view.util.ItemUtils.createCallbackData;
+import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class LessonView {
 
