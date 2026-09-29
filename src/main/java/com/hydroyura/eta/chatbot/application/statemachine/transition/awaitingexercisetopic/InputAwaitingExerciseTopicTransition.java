@@ -25,6 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static com.hydroyura.eta.chatbot.view.Messages.NO_WORDS_IN_DICTIONARY;
 
@@ -43,10 +46,10 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
         var topic = input.text();
-        var grammarRule = (String) chat.getContext().get("grammarRule");
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
+        var grammarRule = (String) chat.getContext().get(GRAMMAR_RULE.getValue());
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
         var studentId = new StudentId(UUID.fromString(studentIdStr));
-        var exerciseType = (ExerciseType) chat.getContext().get("exerciseType");
+        var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));

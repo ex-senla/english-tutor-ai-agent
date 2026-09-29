@@ -3,6 +3,7 @@ package com.hydroyura.eta.chatbot.view.students;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.view.Buttons;
 import com.hydroyura.eta.chatbot.view.Callbacks;
+import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import lombok.RequiredArgsConstructor;
 
@@ -67,13 +68,22 @@ public class StudentView {
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
 
-    public static ActionResult studentDetails(int messageId) {
+    public static ActionResult studentDetails(int messageId, String studentName, DictionaryStats dictionaryStats) {
         return new ActionResult.EditMessageText(
                 messageId,
                 """
-                        Ученик %s
-                        
-                        Словарь - %d слов""".formatted("", 0),
+                        🧑‍🎓 Ученик: %s
+
+                        📚 Словарь · всего %d
+                        ├ 🆕 Новые: %d
+                        ├ 🔄 В процессе: %d
+                        └ ✅ Выучено: %d""".formatted(
+                        studentName,
+                        dictionaryStats.totalWords(),
+                        dictionaryStats.newCount(),
+                        dictionaryStats.inProgressCount(),
+                        dictionaryStats.learnedCount()
+                ),
                 List.of(
                         List.of(
                                 new ActionResult.InlineButton(

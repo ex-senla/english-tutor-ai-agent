@@ -11,6 +11,7 @@ public enum ContextKey {
     EXERCISE_ID("exerciseId"),
     EXERCISE_TOPIC("exerciseTopic"),
     EXERCISE_TYPE("exerciseType"),
+    GRAMMAR_RULE("grammarRule"),
     SELECTED_STUDENT_ID("selectedStudentId"),
     SELECTED_STUDENT_NAME("selectedStudentName"),
     TEACHER_NAME("teacherName"),

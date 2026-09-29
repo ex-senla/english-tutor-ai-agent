@@ -68,7 +68,12 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
 
     private ActionResult getStudentDetails(Chat chat, int messageId) {
         chat.updateState(ChatState.STUDENT_DETAILS);
-        return StudentView.studentDetails(messageId);
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
+        var studentId = new StudentId(UUID.fromString(studentIdStr));
+        var studentDetails = studentQuery.findStudentDetails(studentId)
+                .orElseThrow(() -> new IllegalStateException("Student not found with studentId=" + studentIdStr));
+
+        return StudentView.studentDetails(messageId, studentDetails.name(), studentDetails.dictionaryStats());
     }
 
     private ActionResult startLesson(Chat chat, int messageId) {
