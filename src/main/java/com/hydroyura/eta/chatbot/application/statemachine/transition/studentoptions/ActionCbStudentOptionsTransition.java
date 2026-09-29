@@ -68,6 +68,9 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
 
     private ActionResult getStudentDetails(Chat chat, int messageId) {
         chat.updateState(ChatState.STUDENT_DETAILS);
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
+        var studentId = new StudentId(UUID.fromString(studentIdStr));
+
         return StudentView.studentDetails(messageId);
     }
 
