@@ -20,6 +20,8 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 
 /**
  * Ожидает и кнопку «🏁 Завершить урок», и команду /finishlesson —
@@ -39,7 +41,7 @@ public class FinishLessonInLessonTransition implements Transition<Action> {
 
     @Override
     public ActionResult transit(Chat chat, Action action) {
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
         var studentId = new StudentId(UUID.fromString(studentIdStr));
 
         var lessonId = findActiveLesson.findByStudentId(studentId)
@@ -63,7 +65,7 @@ public class FinishLessonInLessonTransition implements Transition<Action> {
 
         chat.updateState(ChatState.STUDENT_OPTIONS);
 
-        var studentName = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
+        var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
         return LessonView.finishMenuWithKeyBoard(date, duration, wordValues, studentName);
     }
 

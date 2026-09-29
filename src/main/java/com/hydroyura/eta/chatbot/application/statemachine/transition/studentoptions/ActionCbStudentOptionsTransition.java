@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON_STARTED;
 import static com.hydroyura.eta.chatbot.view.Messages.NO_STUDENTS;
@@ -69,12 +72,12 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
     }
 
     private ActionResult startLesson(Chat chat, int messageId) {
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
         var studentId = new StudentId(UUID.fromString(studentIdStr));
-        var name = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
+        var name = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
 
         var lessonId = startLesson.execute(new StartLessonCommand(studentId, LESSON.formatted(name)));
-        chat.getContext().put("activeLessonId", lessonId.value().toString());
+        chat.getContext().put(ACTIVE_LESSON_ID.getValue(), lessonId.value().toString());
         chat.updateState(ChatState.IN_LESSON);
         log.info("Lesson {} started for student {}", lessonId, studentIdStr);
 
