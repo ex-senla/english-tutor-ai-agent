@@ -8,9 +8,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.view.Messages.NO_STUDENTS;
-import static com.hydroyura.eta.chatbot.view.util.ItemUtils.createCallbackData;
+import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 @RequiredArgsConstructor
 public class StudentView {
@@ -48,20 +49,40 @@ public class StudentView {
     }
 
     public static ActionResult listEdit(int messageId, List<StudentInfo> students) {
-        var keyboard = new java.util.ArrayList<>(students.stream()
-                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
-                        .value().toString()))))
-                .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
-                Callbacks.MAIN))));
+        var keyboard = students.stream()
+                .map(
+                        info -> List.of(
+                                new ActionResult.InlineButton(
+                                        info.name(),
+                                        createCallbackData(Callbacks.STUDENT, info.id().value().toString())
+                                )
+                        )
+                )
+                .collect(Collectors.toList());
+
+        keyboard.add(
+                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN)))
+        );
 
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
 
     public static ActionResult studentDetails(int messageId) {
-        return new ActionResult.EditMessageText(messageId, "Детали ученика (TODO)",
-                List.of(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS,
-                        Callbacks.BACK)))));
+        return new ActionResult.EditMessageText(
+                messageId,
+                """
+                        Ученик %s
+                        
+                        Словарь - %d слов""".formatted("", 0),
+                List.of(
+                        List.of(
+                                new ActionResult.InlineButton(
+                                        Buttons.BACK,
+                                        createCallbackData(Callbacks.DETAILS, Callbacks.BACK)
+                                )
+                        )
+                )
+        );
     }
 
 }
