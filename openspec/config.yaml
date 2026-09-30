@@ -1,0 +1,54 @@
+schema: spec-driven
+
+context: |
+  Проект: English Tutor AI Agent (ETA) — Telegram-бот, который помогает преподавателю английского вести уроки и генерировать упражнения.
+
+  Технологии:
+  - Java 26, Spring Boot 4.1.0, Maven (один модуль)
+  - Spring Modulith 2.1.0 (модульный монолит)
+  - jMolecules DDD 2025.0.2
+  - Spring AI 2.0.0 (OpenAI starter → DeepSeek, модель deepseek-chat)
+  - Telegram Bots 6.9.7.1
+  - Lombok, Spotless (форматтер Eclipse по Code_style.xml)
+
+  Архитектура:
+  - Модульный монолит + DDD (Spring Modulith). Bounded contexts: teacher, student, dictionary, exercise, chatbot, shared.
+  - У каждого модуля 4 слоя: api/ (интерфейсы, DTO, команды), application/ (use cases, порты), domain/ (сущности, репозитории), infrastructure/ (persistence, AI, бот).
+  - Корневой пакет: com.hydroyura.eta.
+  - Доменные сущности используют jMolecules: @Entity, @Identity, @Association.
+  - Межмодульные зависимости ограничены через @ApplicationModule(allowedDependencies = ...).
+  - Сейчас in-memory репозитории (ConcurrentHashMap); JPA/PostgreSQL + Flyway запланированы.
+
+  Стиль кода:
+  - Objects.requireNonNull для null-проверок; Apache Commons StringUtils/CollectionUtils вместо ручных проверок.
+  - Статические фабрики (например, Exercise.create(...)) вместо публичных конструкторов.
+  - Records для команд/DTO/проекций; enum для типов и статусов.
+  - Тесты: JUnit 5, Spring Modulith tests; ModuleVerificationTest проверяет модульность.
+
+  Конвенции:
+  - Документация и комментарии — на русском; идентификаторы и код — на английском.
+  - Проверка сборки: ./mvnw verify (включает Spotless и тесты модульности).
+
+rules:
+  proposal:
+    - Пиши кратко (1-2 страницы), фокус на «зачем», а не «как»
+    - Каждая capability из Capabilities должна иметь соответствующий файл specs/<capability>/spec.md
+  specs:
+    - В теле каждого требования обязательно используй нормативные MUST/SHALL
+    - Каждый сценарий оформляй как `#### Scenario:` (ровно 4 решётки) с WHEN/THEN
+  design:
+    - Каждое решение сопровождай обоснованием «почему» и рассмотренной альтернативой
+    - Ссылайся на proposal.md и specs вместо пересказа
+  tasks:
+    - Каждая задача — чекбокс `- [ ] X.Y ...`
+    - Порядок задач — по зависимостям (сначала словарь/домен, потом use cases, потом адаптеры/бот)
+
+operations:
+  apply:
+    guidance:
+      - После каждого шага запускай соответствующие тесты, а не только в конце
+      - Соблюдай layering — domain не должен зависеть от Spring/JPA
+  archive:
+    guidance:
+      - Перед архивацией прогони ./mvnw verify и openspec validate
+      - Кратко опиши итог архивации в финальном ответе
