@@ -2,10 +2,12 @@ package com.hydroyura.eta.chatbot.domain.chat;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Chat {
 
     @Getter

@@ -4,7 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
-import com.hydroyura.eta.dictionary.domain.word.WordStatus;
+import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import com.hydroyura.eta.dictionary.domain.dictionary.exception.DictionaryNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class FindWordsService implements FindWords {
                 .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId));
 
         return dictionary.getWords().stream()
-                .map(w -> new WordProjection(w.getId(), w.getValue(), w.getTranslations(), w.getPartOfSpeech()))
+                .map(w -> new WordProjection(w.getId(), w.getValue(), w.getTranslations(), w.getPartOfSpeech(), w.getStatus()))
                 .collect(Collectors.toSet());
     }
 

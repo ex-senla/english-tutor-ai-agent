@@ -13,6 +13,7 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstu
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingtranslation.InputAwaitingTranslationTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingword.InputAwaitingWordTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexerciseanswer.InputAwaitingExerciseAnswerTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisegrammar.InputAwaitingExerciseGrammarTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.InputAwaitingExerciseTopicTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetype.ExerciseCbAwaitingExerciseTypeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.initial.DefaultCmdInitialTransition;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ACTIVE;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_ANSWER;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_GRAMMAR;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_POS;
@@ -139,9 +141,10 @@ public class StateMachineConfig {
         stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery,
                 addWordToDictionary, findActiveLesson, addWordToLesson));
 
-        // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_TOPIC -> AWAITING_EXERCISE_ANSWER
+        // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_GRAMMAR -> AWAITING_EXERCISE_TOPIC -> AWAITING_EXERCISE_ANSWER
         stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE,
                 new ExerciseCbAwaitingExerciseTypeTransition());
+        stateMachine.onInput(AWAITING_EXERCISE_GRAMMAR, new InputAwaitingExerciseGrammarTransition());
         stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery,
                 generateExercise));
         stateMachine.onInput(AWAITING_EXERCISE_ANSWER, new InputAwaitingExerciseAnswerTransition(checkExercise));

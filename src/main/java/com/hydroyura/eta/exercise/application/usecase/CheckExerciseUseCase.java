@@ -5,6 +5,8 @@ import com.hydroyura.eta.exercise.api.exercise.CheckExerciseCommand;
 import com.hydroyura.eta.exercise.api.exercise.CheckExerciseResult;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class CheckExerciseUseCase implements CheckExercise {
@@ -24,8 +26,22 @@ public class CheckExerciseUseCase implements CheckExercise {
 
         exercise.markAnswered();
 
-        var expectedAnswer = exercise.getExpectedAnswer();
-        var correct = normalize(command.userAnswer()).equals(normalize(expectedAnswer));
+        var expectedAnswers = exercise.getExpectedAnswers();
+        var userAnswers = Arrays.stream(command.userAnswer().split(","))
+                .map(String::strip)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
+        var feedbackLines = new ArrayList<String>();
+        var correct = userAnswers.size() == expectedAnswers.size();
+        for (var i = 0; i < expectedAnswers.size(); i++) {
+            var itemCorrect = i < userAnswers.size()
+                    && normalize(userAnswers.get(i)).equals(normalize(expectedAnswers.get(i)));
+            if (!itemCorrect) {
+                correct = false;
+            }
+            feedbackLines.add((i + 1) + ") " + (itemCorrect ? "✅" : "❌ (ожидалось: " + expectedAnswers.get(i) + ")"));
+        }
 
         if (correct) {
             exercise.markChecked();
@@ -33,20 +49,16 @@ public class CheckExerciseUseCase implements CheckExercise {
 
         repository.save(exercise);
 
-        var feedback = correct
-                ? "✅ Correct!"
-                : "❌ Incorrect. Expected: " + expectedAnswer;
-
         var dto = new ExerciseDto(
                 exercise.getId(),
                 exercise.getType(),
                 exercise.getTopic(),
                 exercise.getContent(),
-                exercise.getExpectedAnswer(),
+                exercise.getExpectedAnswers(),
                 exercise.getStatus()
         );
 
-        return new CheckExerciseResult(correct, feedback, dto);
+        return new CheckExerciseResult(correct, String.join("\n", feedbackLines), dto);
     }
 
     private String normalize(String s) {

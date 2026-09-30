@@ -6,6 +6,7 @@ public record WordProjection(
         WordId id,
         String value,
         Set<String> translations,
-        PartOfSpeech partOfSpeech
+        PartOfSpeech partOfSpeech,
+        WordStatus status
 ) {
 }

@@ -6,11 +6,15 @@ public final class Messages {
 
     public static final String CHOOSE_EXERCISE_TOPIC = "Введите тему упражнения (например, 'Animals')";
 
+    public static final String CHOOSE_EXERCISE_GRAMMAR = "Введите грамматическое правило (например, 'Past Simple')";
+
     public static final String CHOOSE_STUDENT = "Выберите ученика кнопками ниже";
 
     public static final String CHOOSE_POS = "Выберите часть речи кнопками ниже";
 
     public static final String EXERCISE_NOT_FOUND = "⚠️ Упражнение не найдено. Начните заново.";
+
+    public static final String NO_WORDS_IN_DICTIONARY = "⚠️ В словаре ученика нет слов.";
 
     public static final String EXERCISE_ENTER_ANSWER = """
             %s | Тема: %s
@@ -18,6 +22,8 @@ public final class Messages {
             %s
 
             ✍️ Введите ваш ответ:""";
+
+    public static final String EXERCISE_GENERATED = "✅ Упражнение сгенерировано.";
 
     public static final String FILL_IN_THE_BLANK = "✏️ Fill in the blank";
 
@@ -36,6 +42,8 @@ public final class Messages {
     public static final String ENTER_YOUR_ANSWER = "Введите ваш ответ на упражнение";
 
     public static final String ENTER_EXERCISE_TOPIC = "Введите тему упражнения";
+
+    public static final String ENTER_EXERCISE_GRAMMAR = "Введите грамматическое правило";
 
     public static final String LESSON = "Урок %s";
 
