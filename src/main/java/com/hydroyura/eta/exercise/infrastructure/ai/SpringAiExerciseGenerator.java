@@ -30,46 +30,48 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
     private static final String DEFAULT_CEFR_LEVEL = "A2";
 
     // language=json
-    private static final String FILL_IN_BLANK_SYSTEM = """
-            You are an English tutor creating a FILL_IN_THE_BLANK exercise for a student at CEFR level {level}.
+    private static final String FILL_IN_BLANK_SYSTEM =
+            """
+                    You are an English tutor creating a FILL_IN_THE_BLANK exercise for a student at CEFR level {level}.
 
-            Generate exactly {count} sentences. Each sentence tests the given grammar rule.
+                    Generate exactly {count} sentences. Each sentence tests the given grammar rule.
 
-            Rules:
-            - Exactly ONE blank per sentence, written as ___.
-            - The blank must test the specified grammar rule; the learner must apply the rule to determine the answer.
-            - The grammar form must be essential: do NOT create a sentence where the answer can be guessed from context alone without applying the rule.
-            - Each sentence has exactly one unambiguous correct answer (grammatically and semantically).
-            - Use the target vocabulary to build natural context. Target words are NOT the missing words and do NOT determine the answer.
-            - All sentences relate to the given general topic.
+                    Rules:
+                    - Exactly ONE blank per sentence, written as ___.
+                    - The blank must test the specified grammar rule; the learner must apply the rule to determine the answer.
+                    - The grammar form must be essential: do NOT create a sentence where the answer can be guessed from context alone without applying the rule.
+                    - Each sentence has exactly one unambiguous correct answer (grammatically and semantically).
+                    - Use the target vocabulary to build natural context. Target words are NOT the missing words and do NOT determine the answer.
+                    - All sentences relate to the given general topic.
 
-            Respond with ONLY a valid JSON object, no markdown, no commentary:
-            {"items":[{"sentence":"... ___ ...","options":[],"correctAnswer":"travelled"}]}
+                    Respond with ONLY a valid JSON object, no markdown, no commentary:
+                    {"items":[{"sentence":"... ___ ...","options":[],"correctAnswer":"travelled"}]}
 
-            For FILL_IN_THE_BLANK, "options" must always be an empty array; "correctAnswer" is the exact word/phrase that fills the blank.
-            """;
+                    For FILL_IN_THE_BLANK, "options" must always be an empty array; "correctAnswer" is the exact word/phrase that fills the blank.
+                    """;
 
     // language=json
-    private static final String MULTIPLE_CHOICE_SYSTEM = """
-            You are an English tutor creating a MULTIPLE_CHOICE exercise for a student at CEFR level {level}.
+    private static final String MULTIPLE_CHOICE_SYSTEM =
+            """
+                    You are an English tutor creating a MULTIPLE_CHOICE exercise for a student at CEFR level {level}.
 
-            Generate exactly {count} questions. Each question tests the given grammar rule.
+                    Generate exactly {count} questions. Each question tests the given grammar rule.
 
-            Rules:
-            - Exactly ONE blank per sentence, written as ___.
-            - The blank must test the specified grammar rule; the learner must apply the rule to choose the answer.
-            - The grammar form must be essential: do NOT create a question where the correct option can be guessed from context alone without applying the rule.
-            - Exactly FOUR options; exactly one is correct grammatically and semantically; the other three are incorrect.
-            - The three incorrect options must be plausible grammar mistakes typical for learners (same part of speech), not words that can be eliminated by meaning alone.
-            - Correct answers must be balanced across the four positions, not always the same one.
-            - Use the target vocabulary to build natural context. Target words are NOT necessarily the options and do NOT determine the answer.
-            - All questions relate to the given general topic.
+                    Rules:
+                    - Exactly ONE blank per sentence, written as ___.
+                    - The blank must test the specified grammar rule; the learner must apply the rule to choose the answer.
+                    - The grammar form must be essential: do NOT create a question where the correct option can be guessed from context alone without applying the rule.
+                    - Exactly FOUR options; exactly one is correct grammatically and semantically; the other three are incorrect.
+                    - The three incorrect options must be plausible grammar mistakes typical for learners (same part of speech), not words that can be eliminated by meaning alone.
+                    - Correct answers must be balanced across the four positions, not always the same one.
+                    - Use the target vocabulary to build natural context. Target words are NOT necessarily the options and do NOT determine the answer.
+                    - All questions relate to the given general topic.
 
-            Respond with ONLY a valid JSON object, no markdown, no commentary:
-            {"items":[{"sentence":"... ___ ...","options":["travel","travelled","travelling","travels"],"correctAnswer":"travelled"}]}
+                    Respond with ONLY a valid JSON object, no markdown, no commentary:
+                    {"items":[{"sentence":"... ___ ...","options":["travel","travelled","travelling","travels"],"correctAnswer":"travelled"}]}
 
-            "options" is an array of exactly 4 strings. "correctAnswer" must be the exact text of the correct option (one of the 4 strings).
-            """;
+                    "options" is an array of exactly 4 strings. "correctAnswer" must be the exact text of the correct option (one of the 4 strings).
+                    """;
 
     @Override
     public ExerciseDto generate(GenerateExerciseCommand command, Set<WordData> words) {
@@ -160,7 +162,10 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
             }
             sb.append(i + 1).append(". ").append(item.sentence());
             if (item.options() != null && !item.options().isEmpty()) {
-                var letters = new char[] { 'A', 'B', 'C', 'D' };
+                var letters = new char[]{'A',
+                        'B',
+                        'C',
+                        'D'};
                 for (var j = 0; j < item.options().size(); j++) {
                     sb.append("\n").append(letters[j]).append(") ").append(item.options().get(j));
                 }
