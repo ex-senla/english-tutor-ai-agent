@@ -33,5 +33,6 @@ build/
 .vscode/
 /docs/generated/
 
-### Pi agent ###
-.pi/sessions/
+### Pi agent / OpenSpec ###
+.pi/
+openspec/
