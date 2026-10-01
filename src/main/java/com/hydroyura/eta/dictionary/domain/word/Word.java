@@ -1,6 +1,7 @@
 package com.hydroyura.eta.dictionary.domain.word;
 
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import java.util.Objects;
 import com.hydroyura.eta.dictionary.api.word.WordId;
 import java.util.Objects;

@@ -49,6 +49,7 @@
 | D6 | InMemoryExerciseRepository → JPA | ❌ |
 | D7 | InMemoryStateMachineRepository → persistent | ❌ |
 | D8 | Команды `/new` и `/list` вместо `/newstudent` и `/students` | ✅ done |
+| D9 | Уровень CEFR как входной параметр генерации упражнений (сейчас захардкожен `A2` в `SpringAiExerciseGenerator`) | ❌ |
 
 ## История (done)
 

@@ -17,6 +17,11 @@ spring:
         log-completion: true
         include-error-logging: true
 
+eta:
+  exercise:
+    generation:
+      sentence-count: 5
+
 telegram:
   bot:
     token: ${TELEGRAM_BOT_TOKEN}

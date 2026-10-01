@@ -10,7 +10,7 @@ import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 
 import java.util.Map;
 
-import static com.hydroyura.eta.chatbot.view.Messages.CHOOSE_EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.view.Messages.CHOOSE_EXERCISE_GRAMMAR;
 import static com.hydroyura.eta.chatbot.view.Messages.CHOOSE_EXERCISE_TYPE;
 
 public class ExerciseCbAwaitingExerciseTypeTransition implements Transition<Action.Callback> {
@@ -29,8 +29,8 @@ public class ExerciseCbAwaitingExerciseTypeTransition implements Transition<Acti
             return new ActionResult.TextResponse(CHOOSE_EXERCISE_TYPE);
         }
         chat.getContext().put("exerciseType", exerciseType);
-        chat.updateState(ChatState.AWAITING_EXERCISE_TOPIC);
-        return new ActionResult.TextResponse(CHOOSE_EXERCISE_TOPIC);
+        chat.updateState(ChatState.AWAITING_EXERCISE_GRAMMAR);
+        return new ActionResult.TextResponse(CHOOSE_EXERCISE_GRAMMAR);
     }
 
 }

@@ -5,12 +5,17 @@ import java.util.Objects;
 
 public record GenerateExerciseCommand(
         ExerciseType type,
+        String grammarRule,
         String topic,
         DictionaryId dictionaryId
 ) {
 
     public GenerateExerciseCommand {
         Objects.requireNonNull(type, "type must not be null");
+        Objects.requireNonNull(grammarRule, "grammarRule must not be null");
+        if (grammarRule.isBlank()) {
+            throw new IllegalArgumentException("grammarRule must not be blank");
+        }
         Objects.requireNonNull(topic, "topic must not be null");
         Objects.requireNonNull(dictionaryId, "dictionaryId must not be null");
     }

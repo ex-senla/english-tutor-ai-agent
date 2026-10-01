@@ -1,6 +1,7 @@
 package com.hydroyura.eta.exercise.application.usecase;
 
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
@@ -30,29 +31,32 @@ public class GenerateExerciseUseCase implements GenerateExercise {
     public ExerciseDto execute(GenerateExerciseCommand command) {
         Objects.requireNonNull(command, "command must not be null");
 
-        var wordProjections = findWords.findByDictionaryId(command.dictionaryId());
+        // TODO (временно): берём все слова словаря без фильтра по статусу IN_PROGRESS.
+        // Вернуть фильтр по статусу IN_PROGRESS (roadmap: «слова в статусе на изучении»).
+        var words = findWords.findByDictionaryId(command.dictionaryId());
 
-        var wordIds = wordProjections.stream()
-                .map(wp -> wp.id())
+        if (words.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No words in dictionary: " + command.dictionaryId().value());
+        }
+
+        var wordIds = words.stream()
+                .map(WordProjection::id)
                 .collect(Collectors.toSet());
 
-        var exercise = Exercise.create(
-                ExerciseId.generate(),
-                command.type(),
-                command.topic(),
-                wordIds
-        );
+        var exercise = Exercise.create(ExerciseId.generate(), command.type(), command.topic(), wordIds);
 
-        var wordDataList = wordProjections.stream()
+        var wordDataList = words.stream()
                 .map(wp -> new WordData(wp.value(), wp.translations(), wp.partOfSpeech().name()))
                 .collect(Collectors.toSet());
 
         var dto = generator.generate(command, wordDataList);
         exercise.setContent(dto.content());
-        exercise.setExpectedAnswer(dto.expectedAnswer());
+        exercise.setExpectedAnswers(dto.expectedAnswers());
 
         repository.save(exercise);
+
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),
-                exercise.getContent(), exercise.getExpectedAnswer(), exercise.getStatus());
+                exercise.getContent(), exercise.getExpectedAnswers(), exercise.getStatus());
     }
 }
