@@ -1,6 +1,7 @@
 package com.hydroyura.eta.exercise.infrastructure.ai;
 
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.application.config.properties.ExerciseGenerationProperties;
@@ -46,7 +47,23 @@ class SpringAiExerciseGeneratorTest {
         assertThat(dto.type()).isEqualTo(ExerciseType.FILL_IN_THE_BLANK);
         assertThat(dto.content()).contains("1. Last summer, I ___ to the mountains.");
         assertThat(dto.expectedAnswers()).containsExactly("travelled");
+        assertThat(dto.items()).containsExactly(
+                new ExerciseItem("Last summer, I ___ to the mountains.", List.of(), "travelled"));
         assertThat(dto.status()).isEqualTo(ExerciseStatus.GENERATED);
+    }
+
+    @Test
+    void shouldPopulateItemsForMultipleChoice() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("I ___ home yesterday.", List.of("go", "went", "gone", "going"), "went"))));
+
+        var dto = generator.generate(multipleChoiceCommand(), words());
+
+        assertThat(dto.items()).hasSize(1);
+        var item = dto.items().get(0);
+        assertThat(item.sentence()).contains("___");
+        assertThat(item.options()).containsExactly("go", "went", "gone", "going");
+        assertThat(item.correctAnswer()).isEqualTo("went");
     }
 
     @Test
@@ -78,6 +95,11 @@ class SpringAiExerciseGeneratorTest {
 
     private GenerateExerciseCommand command() {
         return new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", DictionaryId
+                .generate());
+    }
+
+    private GenerateExerciseCommand multipleChoiceCommand() {
+        return new GenerateExerciseCommand(ExerciseType.MULTIPLE_CHOICE, "Past Simple", "Animals", DictionaryId
                 .generate());
     }
 

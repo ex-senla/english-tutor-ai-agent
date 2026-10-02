@@ -25,6 +25,8 @@ public final class Messages {
 
     public static final String EXERCISE_GENERATED = "✅ Упражнение сгенерировано.";
 
+    public static final String EXERCISE_PDF_ERROR = "⚠️ Не удалось сформировать PDF упражнения. Попробуйте ещё раз.";
+
     public static final String FILL_IN_THE_BLANK = "✏️ Fill in the blank";
 
     public static final String ENTER_ANOTHER_NAME = "❌ %s. Введите другое имя:";

@@ -9,6 +9,7 @@ public record ExerciseDto(
         String topic,
         String content,
         List<String> expectedAnswers,
+        List<ExerciseItem> items,
         ExerciseStatus status
 ) {
 }

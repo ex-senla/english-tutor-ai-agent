@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Answers</title>
+    <style>
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12pt; }
+        h1 { font-size: 16pt; }
+        h2 { font-size: 13pt; margin-top: 16pt; }
+        ol.answers > li { margin-bottom: 6pt; }
+    </style>
+</head>
+<body>
+    <h1>Answers</h1>
+    <p><strong>Type:</strong> <span th:text="${type}"></span></p>
+    <p><strong>Topic:</strong> <span th:text="${topic}"></span></p>
+
+    <h2>Correct answers</h2>
+    <ol class="answers">
+        <li th:each="a : ${answers}">
+            <span th:text="${a.number}"></span>. <span th:text="${a.answer}"></span>
+        </li>
+    </ol>
+
+    <h2>Used vocabulary</h2>
+    <ul th:if="${!usedWords.isEmpty()}">
+        <li th:each="w : ${usedWords}">
+            <span th:text="${w.value}"></span> — <span th:text="${w.translations}"></span>
+        </li>
+    </ul>
+    <p th:if="${usedWords.isEmpty()}">No vocabulary words were used.</p>
+</body>
+</html>

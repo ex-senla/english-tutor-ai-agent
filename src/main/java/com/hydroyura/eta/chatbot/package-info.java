@@ -9,6 +9,7 @@
                 "dictionary :: dictionary",
                 "dictionary :: word",
                 "shared :: shared",
-                "exercise :: exercise"}
+                "exercise :: exercise",
+                "generator :: document"}
 )
 package com.hydroyura.eta.chatbot;

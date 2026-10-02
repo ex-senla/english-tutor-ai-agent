@@ -3,14 +3,17 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 @Component
@@ -25,7 +28,22 @@ public final class SendMessageConverter {
             case ActionResult.EditMessageText(var messageId, var text, var keyboard) -> buildEdit(chatId, messageId,
                     text, keyboard);
             case ActionResult.DeleteMessage(var messageId) -> buildDelete(chatId, messageId);
+            case ActionResult.SendDocument doc -> convertDocument(doc, chatId);
+            case ActionResult.SendDocuments ignored -> throw new IllegalArgumentException(
+                    "SendDocuments must be handled separately");
         };
+    }
+
+    public SendDocument convertDocument(ActionResult.SendDocument doc, Long chatId) {
+        return SendDocument.builder()
+                .chatId(chatId.toString())
+                .caption(doc.caption())
+                .document(new InputFile(new ByteArrayInputStream(doc.content()), doc.fileName()))
+                .build();
+    }
+
+    public SendMessage convertTextWithInlineKeyboard(String text, List<List<InlineButton>> keyboard, Long chatId) {
+        return buildInline(chatId, text, keyboard);
     }
 
     private SendMessage buildText(Long chatId, String text) {

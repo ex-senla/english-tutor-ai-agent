@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -74,7 +75,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         chatService.save(chat);
 
         // 5. prepare response
-        var response = converter.convert(result, chatId);
+        // (вычисляется ниже, после обработки батч-отправки документов)
 
         // 6. delete old inline-keyboard message if requested
         if (result instanceof ActionResult.TextWithReplyKeyboard twk && twk.cleanupMessageId() != null) {
@@ -85,8 +86,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             execute(delete);
         }
 
-        // 7. send/edit/delete message
-        // remove reply keyboard when leaving ACTIVE or IN_LESSON state
+        // 7. remove reply keyboard when leaving ACTIVE or IN_LESSON state
         if ((oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
                 || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON)) {
             var remove = SendMessage.builder()
@@ -96,10 +96,21 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
                     .build();
             execute(remove);
         }
+
+        // 8. send documents / send/edit/delete message
+        if (result instanceof ActionResult.SendDocuments sendDocuments) {
+            for (var doc : sendDocuments.documents()) {
+                execute(converter.convertDocument(doc, chatId));
+            }
+            execute(converter.convertTextWithInlineKeyboard(sendDocuments.text(), sendDocuments.keyboard(), chatId));
+            return;
+        }
+        var response = converter.convert(result, chatId);
         switch (response) {
             case SendMessage msg -> execute(msg);
             case EditMessageText edit -> execute(edit);
             case DeleteMessage delete -> execute(delete);
+            case SendDocument doc -> execute(doc);
             default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
         }
     }
