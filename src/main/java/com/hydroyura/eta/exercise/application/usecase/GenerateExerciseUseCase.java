@@ -53,10 +53,11 @@ public class GenerateExerciseUseCase implements GenerateExercise {
         var dto = generator.generate(command, wordDataList);
         exercise.setContent(dto.content());
         exercise.setExpectedAnswers(dto.expectedAnswers());
+        exercise.setItems(dto.items());
 
         repository.save(exercise);
 
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),
-                exercise.getContent(), exercise.getExpectedAnswers(), exercise.getStatus());
+                exercise.getContent(), exercise.getExpectedAnswers(), exercise.getItems(), exercise.getStatus());
     }
 }

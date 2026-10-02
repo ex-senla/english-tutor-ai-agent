@@ -7,7 +7,9 @@ public sealed interface ActionResult
         ActionResult.TextWithInlineKeyboard,
         ActionResult.TextWithReplyKeyboard,
         ActionResult.EditMessageText,
-        ActionResult.DeleteMessage {
+        ActionResult.DeleteMessage,
+        ActionResult.SendDocument,
+        ActionResult.SendDocuments {
 
     record TextResponse(String text) implements ActionResult {
     }
@@ -26,5 +28,12 @@ public sealed interface ActionResult
     }
 
     record DeleteMessage(int messageId) implements ActionResult {
+    }
+
+    record SendDocument(String fileName, byte[] content, String caption) implements ActionResult {
+    }
+
+    record SendDocuments(List<SendDocument> documents, String text, List<List<InlineButton>> keyboard) implements
+            ActionResult {
     }
 }

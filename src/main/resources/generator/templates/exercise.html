@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Exercise</title>
+    <style>
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12pt; }
+        h1 { font-size: 16pt; }
+        .options { list-style: none; padding-left: 0; }
+        ol.items > li { margin-bottom: 10pt; }
+    </style>
+</head>
+<body>
+    <h1>Exercise</h1>
+    <p><strong>Type:</strong> <span th:text="${type}"></span></p>
+    <p><strong>Topic:</strong> <span th:text="${topic}"></span></p>
+
+    <ol class="items">
+        <li th:each="item : ${items}">
+            <div th:utext="${item.sentence}"></div>
+            <ul class="options" th:if="${!item.options.isEmpty()}">
+                <li th:each="opt : ${item.options}" th:utext="${opt}"></li>
+            </ul>
+        </li>
+    </ol>
+</body>
+</html>

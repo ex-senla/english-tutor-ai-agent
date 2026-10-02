@@ -55,6 +55,7 @@ public class CheckExerciseUseCase implements CheckExercise {
                 exercise.getTopic(),
                 exercise.getContent(),
                 exercise.getExpectedAnswers(),
+                exercise.getItems(),
                 exercise.getStatus()
         );
 

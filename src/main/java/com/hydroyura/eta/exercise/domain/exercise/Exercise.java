@@ -2,6 +2,7 @@ package com.hydroyura.eta.exercise.domain.exercise;
 
 import com.hydroyura.eta.dictionary.api.word.WordId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +32,8 @@ public class Exercise {
     private String content;
 
     private List<String> expectedAnswers = new ArrayList<>();
+
+    private List<ExerciseItem> items = new ArrayList<>();
 
     private ExerciseStatus status;
 
@@ -62,6 +65,11 @@ public class Exercise {
         this.expectedAnswers = new ArrayList<>(expectedAnswers);
     }
 
+    public void setItems(List<ExerciseItem> items) {
+        Objects.requireNonNull(items, "items must not be null");
+        this.items = new ArrayList<>(items);
+    }
+
     public void markAnswered() {
         this.status = ExerciseStatus.ANSWERED;
     }
@@ -72,6 +80,10 @@ public class Exercise {
 
     public List<String> getExpectedAnswers() {
         return Collections.unmodifiableList(expectedAnswers);
+    }
+
+    public List<ExerciseItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
 
     public Set<WordId> getWordIds() {

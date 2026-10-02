@@ -75,7 +75,7 @@ class GenerateExerciseUseCaseTest {
         public ExerciseDto generate(GenerateExerciseCommand command, Set<WordData> words) {
             this.receivedWords = words;
             return new ExerciseDto(ExerciseId.generate(), command.type(), command.topic(), "content",
-                    List.of("answer"), ExerciseStatus.GENERATED);
+                    List.of("answer"), List.of(), ExerciseStatus.GENERATED);
         }
     }
 

@@ -2,6 +2,7 @@ package com.hydroyura.eta.exercise.infrastructure.ai;
 
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.application.config.properties.ExerciseGenerationProperties;
@@ -120,6 +121,9 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
         var expectedAnswers = response.items().stream()
                 .map(AiExerciseItem::correctAnswer)
                 .toList();
+        var items = response.items().stream()
+                .map(item -> new ExerciseItem(item.sentence(), item.options(), item.correctAnswer()))
+                .toList();
 
         log.info("Generated exercise: type={}, items={}", command.type(), response.items().size());
         return new ExerciseDto(
@@ -128,6 +132,7 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
                 command.topic(),
                 content,
                 expectedAnswers,
+                items,
                 ExerciseStatus.GENERATED
         );
     }
@@ -195,6 +200,7 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
                 command.topic(),
                 placeholder,
                 List.of("(fallback)"),
+                List.of(),
                 ExerciseStatus.GENERATED
         );
     }

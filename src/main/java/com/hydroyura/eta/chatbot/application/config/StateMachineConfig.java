@@ -33,6 +33,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
@@ -79,7 +80,8 @@ public class StateMachineConfig {
             FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
             RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
-            AddWordToLesson addWordToLesson, GenerateExercise generateExercise, CheckExercise checkExercise) {
+            AddWordToLesson addWordToLesson, GenerateExercise generateExercise, CheckExercise checkExercise,
+            GenerateExercisePdf generateExercisePdf) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
 
         // переходы, регистрируемые под несколькими ключами
@@ -146,7 +148,7 @@ public class StateMachineConfig {
                 new ExerciseCbAwaitingExerciseTypeTransition());
         stateMachine.onInput(AWAITING_EXERCISE_GRAMMAR, new InputAwaitingExerciseGrammarTransition());
         stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery,
-                generateExercise));
+                generateExercise, findWords, generateExercisePdf));
         stateMachine.onInput(AWAITING_EXERCISE_ANSWER, new InputAwaitingExerciseAnswerTransition(checkExercise));
 
         if (!stateMachine.isReady()) {
