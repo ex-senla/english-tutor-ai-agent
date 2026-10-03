@@ -16,6 +16,8 @@ public final class Buttons {
 
     public static final String DETAILS = "📋 Details";
 
+    public static final String CHANGE_LEVEL = "🔄 Изменить уровень";
+
     public static final String EXERCISE = "🎯 Exercise";
 
     public static final String BACK = "◀ Back";

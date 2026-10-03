@@ -27,9 +27,6 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
 
     private final ExerciseGenerationProperties properties;
 
-    // TODO (техдолг): уровень CEFR должен стать входным параметром, а не хардкодом.
-    private static final String DEFAULT_CEFR_LEVEL = "A2";
-
     // language=json
     private static final String FILL_IN_BLANK_SYSTEM =
             """
@@ -91,10 +88,10 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
         var systemPrompt = switch (command.type()) {
             case FILL_IN_THE_BLANK -> FILL_IN_BLANK_SYSTEM
                     .replace("{count}", String.valueOf(count))
-                    .replace("{level}", DEFAULT_CEFR_LEVEL);
+                    .replace("{level}", command.cefrLevel());
             case MULTIPLE_CHOICE -> MULTIPLE_CHOICE_SYSTEM
                     .replace("{count}", String.valueOf(count))
-                    .replace("{level}", DEFAULT_CEFR_LEVEL);
+                    .replace("{level}", command.cefrLevel());
         };
 
         log.info("Generating {} exercise on grammar '{}', topic '{}' with {} words",

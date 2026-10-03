@@ -7,7 +7,8 @@ public record GenerateExerciseCommand(
         ExerciseType type,
         String grammarRule,
         String topic,
-        DictionaryId dictionaryId
+        DictionaryId dictionaryId,
+        String cefrLevel
 ) {
 
     public GenerateExerciseCommand {
@@ -18,5 +19,9 @@ public record GenerateExerciseCommand(
         }
         Objects.requireNonNull(topic, "topic must not be null");
         Objects.requireNonNull(dictionaryId, "dictionaryId must not be null");
+        Objects.requireNonNull(cefrLevel, "cefrLevel must not be null");
+        if (cefrLevel.isBlank()) {
+            throw new IllegalArgumentException("cefrLevel must not be blank");
+        }
     }
 }

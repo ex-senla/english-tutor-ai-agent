@@ -28,7 +28,7 @@ public class CreateStudentUseCase implements CreateStudent {
             throw new IllegalArgumentException("Name must not be blank");
         }
 
-        var student = Student.create(StudentId.generate(), cmd.dictionaryId(), cmd.name());
+        var student = Student.create(StudentId.generate(), cmd.dictionaryId(), cmd.name(), cmd.level());
         student = studentRepository.save(student);
 
         log.info("Student '{}' created: {}", cmd.name(), student.getId().value());

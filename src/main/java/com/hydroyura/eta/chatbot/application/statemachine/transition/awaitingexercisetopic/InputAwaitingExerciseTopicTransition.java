@@ -51,10 +51,13 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
 
+        var cefrLevel = studentQuery.getCefrLevel(studentId)
+                .orElseThrow(() -> new IllegalStateException("No level for student " + studentIdStr));
+
         ExerciseDto exercise;
         try {
             exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
-                    dictionaryId));
+                    dictionaryId, cefrLevel.code()));
         } catch (IllegalArgumentException e) {
             log.warn("Cannot generate exercise: {}", e.getMessage());
             reset(chat);

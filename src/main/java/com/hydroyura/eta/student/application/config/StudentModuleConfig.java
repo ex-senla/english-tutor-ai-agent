@@ -3,11 +3,13 @@ package com.hydroyura.eta.student.application.config;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
+import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
 import com.hydroyura.eta.student.api.student.CreateStudent;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.student.application.usecase.AddWordToLessonUseCase;
+import com.hydroyura.eta.student.application.usecase.ChangeStudentLevelUseCase;
 import com.hydroyura.eta.student.application.usecase.CreateStudentUseCase;
 import com.hydroyura.eta.student.application.usecase.EndLessonUseCase;
 import com.hydroyura.eta.student.application.usecase.FindActiveLessonService;
@@ -24,6 +26,11 @@ public class StudentModuleConfig {
     @Bean
     CreateStudent createStudent(StudentRepository repository) {
         return new CreateStudentUseCase(repository);
+    }
+
+    @Bean
+    ChangeStudentLevel changeStudentLevel(StudentRepository repository) {
+        return new ChangeStudentLevelUseCase(repository);
     }
 
     @Bean

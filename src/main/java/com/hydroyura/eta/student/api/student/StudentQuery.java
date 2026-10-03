@@ -16,4 +16,6 @@ public interface StudentQuery {
     List<StudentInfo> findStudentsByIds(Set<StudentId> ids);
 
     Optional<StudentDetails> findStudentDetails(StudentId studentId);
+
+    Optional<CefrLevel> getCefrLevel(StudentId studentId);
 }

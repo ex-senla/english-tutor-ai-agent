@@ -3,12 +3,14 @@ package com.hydroyura.eta.student.application.usecase;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
+import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +62,13 @@ public class StudentQueryService implements StudentQuery {
                 .map(student -> {
                     var stats = findWords.getStats(student.getDictionaryId());
                     var hasActiveLesson = findActiveLesson.findByStudentId(studentId).isPresent();
-                    return new StudentDetails(student.getName(), stats, hasActiveLesson);
+                    return new StudentDetails(student.getName(), stats, hasActiveLesson, student.getLevel());
                 });
+    }
+
+    @Override
+    public Optional<CefrLevel> getCefrLevel(StudentId studentId) {
+        return studentRepository.findById(studentId)
+                .map(Student::getLevel);
     }
 }

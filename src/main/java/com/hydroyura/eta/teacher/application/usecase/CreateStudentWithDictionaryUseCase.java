@@ -35,7 +35,7 @@ public class CreateStudentWithDictionaryUseCase implements CreateStudentWithDict
         }
 
         var dictId = createDictionary.execute(new CreateDictionaryCommand(cmd.dictionaryName()));
-        var studentId = createStudent.execute(new CreateStudentCommand(cmd.studentName(), dictId));
+        var studentId = createStudent.execute(new CreateStudentCommand(cmd.studentName(), dictId, cmd.level()));
 
         teacher.addStudent(studentId);
         teacherRepository.save(teacher);

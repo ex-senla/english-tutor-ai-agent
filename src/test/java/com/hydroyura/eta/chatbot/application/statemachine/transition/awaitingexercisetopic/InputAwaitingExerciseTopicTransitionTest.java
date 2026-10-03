@@ -15,22 +15,26 @@ import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
 import com.hydroyura.eta.generator.api.document.ExercisePdfBundle;
 import com.hydroyura.eta.generator.api.document.ExercisePdfDocument;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.generator.api.document.PdfRenderException;
+import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class InputAwaitingExerciseTopicTransitionTest {
@@ -46,6 +50,7 @@ class InputAwaitingExerciseTopicTransitionTest {
         var dictionaryId = DictionaryId.generate();
 
         when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
         when(generateExercise.execute(any())).thenReturn(exercise());
         when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of(word()));
         when(generateExercisePdf.execute(any())).thenReturn(new ExercisePdfBundle(
@@ -66,6 +71,10 @@ class InputAwaitingExerciseTopicTransitionTest {
         assertThat(sendDocuments.documents()).hasSize(2);
         assertThat(sendDocuments.text()).isEqualTo("Ученик: Alice");
         assertThat(sendDocuments.keyboard()).isNotEmpty();
+
+        var captor = ArgumentCaptor.forClass(GenerateExerciseCommand.class);
+        verify(generateExercise).execute(captor.capture());
+        assertThat(captor.getValue().cefrLevel()).isEqualTo("B1");
     }
 
     @Test
@@ -79,6 +88,7 @@ class InputAwaitingExerciseTopicTransitionTest {
         var dictionaryId = DictionaryId.generate();
 
         when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
         when(generateExercise.execute(any())).thenReturn(exercise());
         when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of(word()));
         when(generateExercisePdf.execute(any())).thenThrow(new PdfRenderException("boom"));
