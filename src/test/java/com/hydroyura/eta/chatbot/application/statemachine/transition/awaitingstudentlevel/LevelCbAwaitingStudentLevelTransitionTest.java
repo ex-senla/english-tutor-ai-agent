@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class LevelCbAwaitingStudentLevelTransitionTest {
@@ -47,5 +48,23 @@ class LevelCbAwaitingStudentLevelTransitionTest {
         assertThat(chat.getState()).isEqualTo(ChatState.ACTIVE);
         assertThat(chat.getContext()).doesNotContainKey("pendingStudentName");
         assertThat(result).isInstanceOf(ActionResult.TextWithReplyKeyboard.class);
+    }
+
+    @Test
+    void shouldReturnKeyboardOnInvalidPayload() {
+        var findTeacher = mock(FindTeacher.class);
+        var createStudentWithDictionary = mock(CreateStudentWithDictionary.class);
+
+        var transition = new LevelCbAwaitingStudentLevelTransition(findTeacher, createStudentWithDictionary);
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.updateState(ChatState.AWAITING_STUDENT_LEVEL);
+        chat.getContext().put("pendingStudentName", "Иван");
+
+        var result = transition.transit(chat, new Action.Callback("level", "ZZ", 42));
+
+        assertThat(result).isInstanceOf(ActionResult.EditMessageText.class);
+        assertThat(chat.getState()).isEqualTo(ChatState.AWAITING_STUDENT_LEVEL);
+        verifyNoInteractions(createStudentWithDictionary);
     }
 }

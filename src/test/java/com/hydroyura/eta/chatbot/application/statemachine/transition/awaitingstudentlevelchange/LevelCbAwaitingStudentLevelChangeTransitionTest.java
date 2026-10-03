@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class LevelCbAwaitingStudentLevelChangeTransitionTest {
@@ -46,5 +47,23 @@ class LevelCbAwaitingStudentLevelChangeTransitionTest {
         assertThat(captor.getValue().level()).isEqualTo(CefrLevel.C1);
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_DETAILS);
         assertThat(result).isInstanceOf(ActionResult.EditMessageText.class);
+    }
+
+    @Test
+    void shouldReturnKeyboardOnInvalidPayload() {
+        var studentQuery = mock(StudentQuery.class);
+        var changeStudentLevel = mock(ChangeStudentLevel.class);
+
+        var transition = new LevelCbAwaitingStudentLevelChangeTransition(studentQuery, changeStudentLevel);
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.updateState(ChatState.AWAITING_STUDENT_LEVEL_CHANGE);
+        chat.getContext().put("selectedStudentId", StudentId.generate().value().toString());
+
+        var result = transition.transit(chat, new Action.Callback("level", "ZZ", 42));
+
+        assertThat(result).isInstanceOf(ActionResult.EditMessageText.class);
+        assertThat(chat.getState()).isEqualTo(ChatState.AWAITING_STUDENT_LEVEL_CHANGE);
+        verifyNoInteractions(changeStudentLevel);
     }
 }

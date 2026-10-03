@@ -1,5 +1,7 @@
 package com.hydroyura.eta.student.api.student;
 
+import java.util.Optional;
+
 public enum CefrLevel {
 
     A1("A1"),
@@ -17,5 +19,16 @@ public enum CefrLevel {
 
     public String code() {
         return code;
+    }
+
+    public static Optional<CefrLevel> fromCode(String code) {
+        if (code == null || code.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(CefrLevel.valueOf(code));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 }

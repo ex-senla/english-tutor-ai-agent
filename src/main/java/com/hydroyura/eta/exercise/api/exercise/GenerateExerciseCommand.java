@@ -3,6 +3,12 @@ package com.hydroyura.eta.exercise.api.exercise;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import java.util.Objects;
 
+/**
+ * Команда генерации упражнения.
+ *
+ * @param cefrLevel код уровня CEFR (A1–C2); валидность значения гарантируется источником
+ *                  (enum {@code CefrLevel} ученика в модуле student), поэтому здесь проверяется только непустота.
+ */
 public record GenerateExerciseCommand(
         ExerciseType type,
         String grammarRule,

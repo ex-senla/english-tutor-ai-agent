@@ -16,6 +16,8 @@ public class ChangeStudentLevelUseCase implements ChangeStudentLevel {
     @Override
     public void execute(ChangeStudentLevelCommand command) {
         Objects.requireNonNull(command, "command must not be null");
+        Objects.requireNonNull(command.studentId(), "studentId must not be null");
+        Objects.requireNonNull(command.level(), "level must not be null");
 
         var student = studentRepository.findById(command.studentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found: " + command.studentId()));

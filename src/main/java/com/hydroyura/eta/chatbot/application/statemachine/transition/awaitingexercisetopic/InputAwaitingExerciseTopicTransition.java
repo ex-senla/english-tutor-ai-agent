@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
@@ -15,7 +16,6 @@ import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdfCommand;
 import com.hydroyura.eta.generator.api.document.PdfRenderException;
-import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static com.hydroyura.eta.chatbot.view.Messages.NO_WORDS_IN_DICTIONARY;
@@ -44,15 +43,14 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     public ActionResult transit(Chat chat, Action.Input input) {
         var topic = input.text();
         var grammarRule = (String) chat.getContext().get("grammarRule");
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
-        var studentId = new StudentId(UUID.fromString(studentIdStr));
+        var studentId = StudentSupport.selectedStudentId(chat);
         var exerciseType = (ExerciseType) chat.getContext().get("exerciseType");
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
-                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
+                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentId));
 
         var cefrLevel = studentQuery.getCefrLevel(studentId)
-                .orElseThrow(() -> new IllegalStateException("No level for student " + studentIdStr));
+                .orElseThrow(() -> new IllegalStateException("No level for student " + studentId));
 
         ExerciseDto exercise;
         try {
