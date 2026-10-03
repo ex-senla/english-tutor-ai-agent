@@ -25,7 +25,7 @@ public class CreateStudentUseCase implements CreateStudent {
     public StudentId execute(CreateStudentCommand cmd) {
         var name = Objects.requireNonNull(cmd.name(), "Name must not be null");
         if (name.isBlank()) {
-            throw new IllegalArgumentException("Name must not be blank");
+                        throw new IllegalArgumentException("Name must not be blank");
         }
 
         var student = Student.create(StudentId.generate(), cmd.dictionaryId(), cmd.name(), cmd.level());
