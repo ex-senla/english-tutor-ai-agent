@@ -9,6 +9,8 @@ import com.hydroyura.eta.exercise.application.config.properties.ExerciseGenerati
 import com.hydroyura.eta.exercise.application.port.ExerciseGenerator;
 import com.hydroyura.eta.exercise.application.port.WordData;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -30,49 +32,11 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
     // TODO (техдолг): уровень CEFR должен стать входным параметром, а не хардкодом.
     private static final String DEFAULT_CEFR_LEVEL = "A2";
 
-    // language=json
-    private static final String FILL_IN_BLANK_SYSTEM =
-            """
-                    You are an English tutor creating a FILL_IN_THE_BLANK exercise for a student at CEFR level {level}.
+    private static final String PROMPTS_PATH = "/exercise/prompts/";
 
-                    Generate exactly {count} sentences. Each sentence tests the given grammar rule.
+    private static final String FILL_IN_BLANK_PROMPT = "fill-in-blank-system.txt";
 
-                    Rules:
-                    - Exactly ONE blank per sentence, written as ___.
-                    - The blank must test the specified grammar rule; the learner must apply the rule to determine the answer.
-                    - The grammar form must be essential: do NOT create a sentence where the answer can be guessed from context alone without applying the rule.
-                    - Each sentence has exactly one unambiguous correct answer (grammatically and semantically).
-                    - Use the target vocabulary to build natural context. Target words are NOT the missing words and do NOT determine the answer.
-                    - All sentences relate to the given general topic.
-
-                    Respond with ONLY a valid JSON object, no markdown, no commentary:
-                    {"items":[{"sentence":"... ___ ...","options":[],"correctAnswer":"travelled"}]}
-
-                    For FILL_IN_THE_BLANK, "options" must always be an empty array; "correctAnswer" is the exact word/phrase that fills the blank.
-                    """;
-
-    // language=json
-    private static final String MULTIPLE_CHOICE_SYSTEM =
-            """
-                    You are an English tutor creating a MULTIPLE_CHOICE exercise for a student at CEFR level {level}.
-
-                    Generate exactly {count} questions. Each question tests the given grammar rule.
-
-                    Rules:
-                    - Exactly ONE blank per sentence, written as ___.
-                    - The blank must test the specified grammar rule; the learner must apply the rule to choose the answer.
-                    - The grammar form must be essential: do NOT create a question where the correct option can be guessed from context alone without applying the rule.
-                    - Exactly FOUR options; exactly one is correct grammatically and semantically; the other three are incorrect.
-                    - The three incorrect options must be plausible grammar mistakes typical for learners (same part of speech), not words that can be eliminated by meaning alone.
-                    - Correct answers must be balanced across the four positions, not always the same one.
-                    - Use the target vocabulary to build natural context. Target words are NOT necessarily the options and do NOT determine the answer.
-                    - All questions relate to the given general topic.
-
-                    Respond with ONLY a valid JSON object, no markdown, no commentary:
-                    {"items":[{"sentence":"... ___ ...","options":["travel","travelled","travelling","travels"],"correctAnswer":"travelled"}]}
-
-                    "options" is an array of exactly 4 strings. "correctAnswer" must be the exact text of the correct option (one of the 4 strings).
-                    """;
+    private static final String MULTIPLE_CHOICE_PROMPT = "multiple-choice-system.txt";
 
     @Override
     public ExerciseDto generate(GenerateExerciseCommand command, Set<WordData> words) {
@@ -88,14 +52,9 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
                 + "\n\nTarget vocabulary (context only, NOT the answer):\n" + wordList;
 
         var count = properties.getSentenceCount();
-        var systemPrompt = switch (command.type()) {
-            case FILL_IN_THE_BLANK -> FILL_IN_BLANK_SYSTEM
-                    .replace("{count}", String.valueOf(count))
-                    .replace("{level}", DEFAULT_CEFR_LEVEL);
-            case MULTIPLE_CHOICE -> MULTIPLE_CHOICE_SYSTEM
-                    .replace("{count}", String.valueOf(count))
-                    .replace("{level}", DEFAULT_CEFR_LEVEL);
-        };
+        var systemPrompt = selectSystemPrompt(command.type())
+                .replace("{count}", String.valueOf(count))
+                .replace("{level}", DEFAULT_CEFR_LEVEL);
 
         log.info("Generating {} exercise on grammar '{}', topic '{}' with {} words",
                 command.type(), command.grammarRule(), command.topic(), words.size());
@@ -135,6 +94,25 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
                 items,
                 ExerciseStatus.GENERATED
         );
+    }
+
+    private String selectSystemPrompt(ExerciseType type) {
+        return switch (type) {
+            case FILL_IN_THE_BLANK -> loadPrompt(FILL_IN_BLANK_PROMPT);
+            case MULTIPLE_CHOICE -> loadPrompt(MULTIPLE_CHOICE_PROMPT);
+        };
+    }
+
+    private static String loadPrompt(String name) {
+        var path = PROMPTS_PATH + name;
+        try (var in = SpringAiExerciseGenerator.class.getResourceAsStream(path)) {
+            if (in == null) {
+                throw new IllegalStateException("Prompt resource not found: " + path);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load prompt: " + path, e);
+        }
     }
 
     private boolean isValid(AiExerciseResponse response, ExerciseType type) {

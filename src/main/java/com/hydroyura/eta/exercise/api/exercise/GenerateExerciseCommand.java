@@ -17,6 +17,9 @@ public record GenerateExerciseCommand(
             throw new IllegalArgumentException("grammarRule must not be blank");
         }
         Objects.requireNonNull(topic, "topic must not be null");
+        if (topic.isBlank()) {
+            throw new IllegalArgumentException("topic must not be blank");
+        }
         Objects.requireNonNull(dictionaryId, "dictionaryId must not be null");
     }
 }
