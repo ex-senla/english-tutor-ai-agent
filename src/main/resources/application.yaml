@@ -3,10 +3,10 @@ spring:
     name: eta
   ai:
     openai:
-      api-key: ${DEEPSEEK_API_KEY}
-      base-url: https://api.deepseek.com
+      api-key: ${AI_API_KEY}
+      base-url: ${AI_BASE_URL}
       chat:
-        model: deepseek-chat
+        model: ${AI_CHAT_MODEL}
     chat:
       client:
         observations:
