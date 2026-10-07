@@ -12,6 +12,10 @@ import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_NOT_FOUND;
 import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_FEEDBACK;
 
@@ -24,8 +28,8 @@ public class InputAwaitingExerciseAnswerTransition implements Transition<Action.
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
         var answer = input.text();
-        var exerciseId = (ExerciseId) chat.getContext().get("exerciseId");
-        var studentName = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
+        var exerciseId = (ExerciseId) chat.getContext().get(EXERCISE_ID.getValue());
+        var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
 
         if (exerciseId == null) {
             chat.updateState(ChatState.STUDENT_OPTIONS);
@@ -34,9 +38,9 @@ public class InputAwaitingExerciseAnswerTransition implements Transition<Action.
 
         var result = checkExercise.execute(new CheckExerciseCommand(exerciseId, answer));
 
-        chat.getContext().remove("exerciseId");
-        chat.getContext().remove("exerciseType");
-        chat.getContext().remove("exerciseTopic");
+        chat.getContext().remove(EXERCISE_ID.getValue());
+        chat.getContext().remove(EXERCISE_TYPE.getValue());
+        chat.getContext().remove(EXERCISE_TOPIC.getValue());
         chat.updateState(ChatState.STUDENT_OPTIONS);
 
         log.info("Exercise {} checked: correct={}", exerciseId, result.correct());

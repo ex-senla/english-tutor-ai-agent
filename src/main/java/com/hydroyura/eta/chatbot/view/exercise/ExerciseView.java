@@ -7,7 +7,7 @@ import java.util.List;
 
 import static com.hydroyura.eta.chatbot.view.Messages.FILL_IN_THE_BLANK;
 import static com.hydroyura.eta.chatbot.view.Messages.MULTIPLE_CHOICE;
-import static com.hydroyura.eta.chatbot.view.util.ItemUtils.createCallbackData;
+import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class ExerciseView {
 

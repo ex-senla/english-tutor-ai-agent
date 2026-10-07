@@ -10,6 +10,7 @@ import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TEACHER_NAME;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class InputAwaitingRegistrationNameTransition implements Transition<Actio
     public ActionResult transit(Chat chat, Action.Input input) {
         String name = input.text();
         registerTeacher.execute(new RegisterTeacherCommand(chat.getId().chatId(), name));
-        chat.getContext().put("teacherName", name);
+        chat.getContext().put(TEACHER_NAME.getValue(), name);
         chat.updateState(ChatState.ACTIVE);
         log.info("Teacher registered: chatId={}, name={}", chat.getId().chatId(), name);
         return MenuView.activeMenu();

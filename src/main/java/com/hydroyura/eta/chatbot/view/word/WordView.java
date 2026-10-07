@@ -8,7 +8,7 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 
 import java.util.List;
 
-import static com.hydroyura.eta.chatbot.view.util.ItemUtils.createCallbackData;
+import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class WordView {
 
