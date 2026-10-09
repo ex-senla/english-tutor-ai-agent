@@ -91,6 +91,19 @@ class GenerateExercisePdfUseCaseTest {
         assertThat(items.get(0).getSentence()).doesNotContain("<b>");
     }
 
+    @Test
+    void shouldNotBoldDictionaryWordsInOptions() {
+        useCase.execute(command(
+                exerciseWithOptions("We ___ home.", List.of("travel", "travelled", "travels")),
+                List.of(word("travel", "путешествовать"))));
+
+        var model = renderer.modelFor("exercise");
+        var items = (List<ExerciseItemView>) model.get("items");
+
+        assertThat(items.get(0).getOptions())
+                .allSatisfy(option -> assertThat(option).doesNotContain("<b>"));
+    }
+
     private ExerciseDto exercise(String sentence) {
         return new ExerciseDto(
                 ExerciseId.generate(),
@@ -99,6 +112,18 @@ class GenerateExercisePdfUseCaseTest {
                 "1. " + sentence,
                 List.of("travelled"),
                 List.of(new ExerciseItem(sentence, List.of(), "travelled")),
+                ExerciseStatus.GENERATED
+        );
+    }
+
+    private ExerciseDto exerciseWithOptions(String sentence, List<String> options) {
+        return new ExerciseDto(
+                ExerciseId.generate(),
+                ExerciseType.MULTIPLE_CHOICE,
+                "Travel",
+                "1. " + sentence,
+                List.of("travelled"),
+                List.of(new ExerciseItem(sentence, options, "travelled")),
                 ExerciseStatus.GENERATED
         );
     }
