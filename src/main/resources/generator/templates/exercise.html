@@ -1,27 +1,155 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Exercise</title>
+    <title>English practice · Student sheet</title>
     <style>
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12pt; }
-        h1 { font-size: 16pt; }
-        .options { list-style: none; padding-left: 0; }
-        ol.items > li { margin-bottom: 10pt; }
+        @page {
+            margin: 16mm 17mm 18mm;
+            @bottom-right {
+                content: "English practice · " counter(page);
+                font-family: 'DejaVu Sans';
+                font-size: 8pt;
+                color: #64748b;
+            }
+        }
+        body {
+            font-family: 'DejaVu Sans';
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #243449;
+            margin: 0;
+        }
+        .intro { page-break-inside: avoid; }
+        .header {
+            background: #2459a6;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 20px 24px 22px;
+        }
+        .eyebrow {
+            font-size: 8pt;
+            letter-spacing: 2px;
+            color: #dbeafe;
+            margin-bottom: 9px;
+        }
+        h1 { font-size: 27pt; line-height: 1.2; font-weight: normal; margin: 0 0 8px; }
+        .subtitle { font-size: 10pt; color: #dbeafe; margin: 0; }
+        .meta { margin: 15px 0 18px; }
+        .badge {
+            display: inline-block;
+            background: #edf4fd;
+            border: 1px solid #cbdcf3;
+            color: #2459a6;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 8.5pt;
+            margin: 0 6px 6px 0;
+        }
+        .details { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
+        .details td { width: 50%; padding: 0 16px 0 0; }
+        .details td:last-child { padding-right: 0; }
+        .field { border-bottom: 1px solid #b8c6d8; height: 29px; color: #64748b; font-size: 8pt; }
+        .directions {
+            border-left: 3px solid #2459a6;
+            padding: 2px 0 2px 12px;
+            margin: 0 0 19px;
+            font-size: 9pt;
+        }
+        .section-title {
+            font-size: 9pt;
+            font-weight: normal;
+            letter-spacing: 1px;
+            color: #2459a6;
+            margin: 0 0 10px;
+            page-break-after: avoid;
+        }
+        ol.items { list-style: none; padding: 0; margin: 0; }
+        ol.items > li {
+            border: 1px solid #d6e1ef;
+            border-radius: 9px;
+            background: #f8fafd;
+            padding: 15px 17px;
+            margin: 0 0 12px;
+            page-break-inside: avoid;
+        }
+        .question { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .question td { padding: 0; vertical-align: top; }
+        .question .number-cell { width: 42px; }
+        .number {
+            display: inline-block;
+            min-width: 28px;
+            padding: 2px 3px;
+            text-align: center;
+            background: #2459a6;
+            color: #ffffff;
+            border-radius: 6px;
+            font-size: 10pt;
+        }
+        .sentence { font-size: 11pt; line-height: 1.75; }
+        b {
+            color: #194783;
+            background: #e1ecfc;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        ul.options { list-style: none; margin: 10px 0 0; padding: 0; }
+        ul.options li {
+            background: #ffffff;
+            border: 1px solid #d6e1ef;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin: 0 0 5px;
+            font-size: 9.5pt;
+        }
+        .writing-line { height: 22px; border-bottom: 1px solid #cbdcf3; margin-top: 5px; }
+        .closing {
+            border-top: 1px solid #d6e1ef;
+            padding-top: 10px;
+            margin-top: 19px;
+            font-size: 8pt;
+            color: #64748b;
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>
-    <h1>Exercise</h1>
-    <p><strong>Type:</strong> <span th:text="${type}"></span></p>
-    <p><strong>Topic:</strong> <span th:text="${topic}"></span></p>
-
+    <div class="intro">
+        <div class="header">
+            <div class="eyebrow">ENGLISH / STUDENT SHEET</div>
+            <h1>Words in practice</h1>
+            <p class="subtitle">Read carefully. Use the context. Make your choice.</p>
+        </div>
+        <div class="meta">
+            <span class="badge" th:text="${type == 'FILL_IN_THE_BLANK' ? 'Fill in the blank' : 'Multiple choice'}">Fill in the blank</span>
+            <span class="badge" th:text="|Topic: ${topic}|">Topic</span>
+        </div>
+        <table class="details">
+            <tbody><tr>
+                <td><div class="field">Name</div></td>
+                <td><div class="field">Date</div></td>
+            </tr></tbody>
+        </table>
+        <p class="directions" th:text="${type == 'FILL_IN_THE_BLANK' ? 'Complete each sentence with the missing word or phrase.' : 'Read each sentence and select the correct option.'}">Complete each sentence with the missing word or phrase.</p>
+    </div>
+    <h2 class="section-title">YOUR PRACTICE</h2>
     <ol class="items">
-        <li th:each="item : ${items}">
-            <div th:utext="${item.sentence}"></div>
-            <ul class="options" th:if="${!item.options.isEmpty()}">
-                <li th:each="opt : ${item.options}" th:utext="${opt}"></li>
-            </ul>
+        <li th:each="item, iter : ${items}">
+            <table class="question">
+                <tbody><tr>
+                    <td class="number-cell"><span class="number" th:text="${iter.count}">1</span></td>
+                    <td>
+                        <div class="sentence" th:utext="${item.sentence}"></div>
+                        <ul class="options" th:if="${!item.options.isEmpty()}">
+                            <li th:each="opt : ${item.options}" th:utext="${opt}"></li>
+                        </ul>
+                        <div class="writing-line" th:if="${type == 'FILL_IN_THE_BLANK'}"></div>
+                    </td>
+                </tr></tbody>
+            </table>
         </li>
     </ol>
+    <p class="closing">Before you finish: read each completed sentence once more and check that it makes sense.</p>
 </body>
 </html>

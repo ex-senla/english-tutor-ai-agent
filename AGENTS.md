@@ -43,7 +43,7 @@ Modules talk to each other only through `api` packages, which expose
 | `shared` | — | Cross-module contracts in `shared.api`: `Specification<T>`, `DomainException`, `SnapshotProvider` |
 | `dictionary` | `shared` | Student dictionary, word validation (`WordSpecifications`) |
 | `student` | `dictionary` (`dictionary`, `word`), `shared` | Student aggregate; `Lesson` is part of it |
-| `teacher` | `dictionary`, `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation |
+| `teacher` | `dictionary` (`dictionary`, `word`), `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation |
 | `exercise` | `dictionary`, `shared` | AI exercise generation (Spring AI) |
 | `chatbot` | `teacher`, `student`, `dictionary`, `exercise`, `shared` | State machine, bot commands |
 | `debug` | `shared` | Debug REST endpoints (temporary) |

@@ -21,6 +21,11 @@ eta:
   exercise:
     generation:
       sentence-count: 5
+  demo-students:
+    enabled: false
+    student-count: 3
+    min-words-per-student: 3
+    max-words-per-student: 5
 
 telegram:
   bot:

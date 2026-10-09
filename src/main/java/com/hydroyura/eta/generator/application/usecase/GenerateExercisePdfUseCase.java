@@ -63,7 +63,7 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
             var options = new ArrayList<String>();
             for (var j = 0; j < item.options().size(); j++) {
                 var letter = (char) ('A' + j);
-                options.add(letter + ") " + bold(escapeHtml(item.options().get(j)), values));
+                options.add(letter + ") " + escapeHtml(item.options().get(j)));
             }
 
             items.add(new ExerciseItemView(sentence, options));
