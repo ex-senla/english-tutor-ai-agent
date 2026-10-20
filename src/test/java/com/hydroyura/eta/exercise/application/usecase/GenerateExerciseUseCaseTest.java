@@ -43,7 +43,8 @@ class GenerateExerciseUseCaseTest {
         var repository = new StubExerciseRepository();
         var useCase = new GenerateExerciseUseCase(repository, generator, findWords);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId);
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId,
+                "A2");
         useCase.execute(command);
 
         assertThat(generator.receivedWords).extracting(WordData::value)
@@ -60,7 +61,8 @@ class GenerateExerciseUseCaseTest {
 
         var useCase = new GenerateExerciseUseCase(new StubExerciseRepository(), new RecordingGenerator(), findWords);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId);
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId,
+                "A2");
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(IllegalArgumentException.class)

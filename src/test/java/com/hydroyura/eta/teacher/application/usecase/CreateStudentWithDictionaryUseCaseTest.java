@@ -2,6 +2,7 @@ package com.hydroyura.eta.teacher.application.usecase;
 
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
+import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.CreateStudent;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentDetails;
@@ -57,6 +58,10 @@ class CreateStudentWithDictionaryUseCaseTest {
                 return studentRepository.findById(sid).map(Student::getDictionaryId);
             }
 
+            public Optional<CefrLevel> getCefrLevel(StudentId sid) {
+                return studentRepository.findById(sid).map(Student::getLevel);
+            }
+
             public java.util.List<StudentInfo> findStudentsByIds(Set<StudentId> ids) {
                 return ids.stream()
                         .map(studentRepository::findById)
@@ -73,7 +78,7 @@ class CreateStudentWithDictionaryUseCaseTest {
         var createDictionary = (CreateDictionary) cmd -> DictionaryId.generate();
         var createStudent = (CreateStudent) cmd -> {
             var id = StudentId.generate();
-            studentRepository.save(Student.create(id, cmd.dictionaryId(), cmd.name()));
+            studentRepository.save(Student.create(id, cmd.dictionaryId(), cmd.name(), cmd.level()));
             return id;
         };
 
@@ -88,7 +93,7 @@ class CreateStudentWithDictionaryUseCaseTest {
         teacher.getIdentifiers().put(com.hydroyura.eta.teacher.api.teacher.IdentifierType.TELEGRAM, 123L);
         teacherRepository.save(teacher);
 
-        var cmd = new CreateStudentWithDictionaryCommand(teacherId, "Иван", "Словарь Ивана");
+        var cmd = new CreateStudentWithDictionaryCommand(teacherId, "Иван", "Словарь Ивана", CefrLevel.B1);
         var studentId = useCase.execute(cmd);
 
         assertThat(studentId).isNotNull();
@@ -98,7 +103,7 @@ class CreateStudentWithDictionaryUseCaseTest {
 
     @Test
     void shouldThrowWhenTeacherNotFound() {
-        var cmd = new CreateStudentWithDictionaryCommand(TeacherId.generate(), "Иван", "Словарь");
+        var cmd = new CreateStudentWithDictionaryCommand(TeacherId.generate(), "Иван", "Словарь", CefrLevel.A2);
 
         assertThatThrownBy(() -> useCase.execute(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -110,12 +115,12 @@ class CreateStudentWithDictionaryUseCaseTest {
         var teacherId = TeacherId.generate();
         var teacher = Teacher.create(teacherId, "John");
         teacher.getIdentifiers().put(IdentifierType.TELEGRAM, 123L);
-        var existingStudent = Student.create(StudentId.generate(), DictionaryId.generate(), "Иван");
+        var existingStudent = Student.create(StudentId.generate(), DictionaryId.generate(), "Иван", CefrLevel.A2);
         studentRepository.save(existingStudent);
         teacher.addStudent(existingStudent.getId());
         teacherRepository.save(teacher);
 
-        var cmd = new CreateStudentWithDictionaryCommand(teacherId, "Иван", "Словарь");
+        var cmd = new CreateStudentWithDictionaryCommand(teacherId, "Иван", "Словарь", CefrLevel.A2);
 
         assertThatThrownBy(() -> useCase.execute(cmd))
                 .isInstanceOf(IllegalArgumentException.class)

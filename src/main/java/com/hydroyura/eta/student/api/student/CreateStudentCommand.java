@@ -4,6 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 
 public record CreateStudentCommand(
         String name,
-        DictionaryId dictionaryId
+        DictionaryId dictionaryId,
+        CefrLevel level
 ) {
 }

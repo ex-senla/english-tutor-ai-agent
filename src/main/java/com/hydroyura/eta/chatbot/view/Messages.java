@@ -29,6 +29,10 @@ public final class Messages {
 
     public static final String FILL_IN_THE_BLANK = "✏️ Fill in the blank";
 
+    public static final String CHOOSE_LEVEL = "Выберите уровень ученика (CEFR):";
+
+    public static final String CHOOSE_NEW_LEVEL = "Выберите новый уровень (CEFR):";
+
     public static final String ENTER_ANOTHER_NAME = "❌ %s. Введите другое имя:";
 
     public static final String ENTER_STUDENT_NAME = "Введите имя ученика";

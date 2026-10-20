@@ -9,6 +9,7 @@ import com.hydroyura.eta.exercise.application.port.WordData;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.ai.chat.client.ChatClient;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SpringAiExerciseGeneratorTest {
@@ -93,14 +95,26 @@ class SpringAiExerciseGeneratorTest {
         when(callResponseSpec.entity(AiExerciseResponse.class)).thenReturn(response);
     }
 
+    @Test
+    void shouldUseCefrLevelFromCommandInSystemPrompt() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("Last summer, I ___ to the mountains.", List.of(), "travelled"))));
+
+        generator.generate(command(), words());
+
+        var captor = ArgumentCaptor.forClass(String.class);
+        verify(requestSpec).system(captor.capture());
+        assertThat(captor.getValue()).contains("level B1");
+    }
+
     private GenerateExerciseCommand command() {
         return new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", DictionaryId
-                .generate());
+                .generate(), "B1");
     }
 
     private GenerateExerciseCommand multipleChoiceCommand() {
         return new GenerateExerciseCommand(ExerciseType.MULTIPLE_CHOICE, "Past Simple", "Animals", DictionaryId
-                .generate());
+                .generate(), "B1");
     }
 
     private Set<WordData> words() {

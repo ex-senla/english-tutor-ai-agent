@@ -3,6 +3,7 @@ package com.hydroyura.eta.teacher.application.demo;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
+import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
@@ -80,7 +81,7 @@ public class DemoStudentsSeeder {
         var dictionaryName = "Словарь " + name;
 
         var studentId = createStudentWithDictionary.execute(
-                new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName));
+                new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName, CefrLevel.A2));
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("Dictionary not found for student " + studentId.value()));

@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
@@ -15,7 +16,6 @@ import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdfCommand;
 import com.hydroyura.eta.generator.api.document.PdfRenderException;
-import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static com.hydroyura.eta.chatbot.view.Messages.NO_WORDS_IN_DICTIONARY;
 
@@ -47,17 +46,19 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     public ActionResult transit(Chat chat, Action.Input input) {
         var topic = input.text();
         var grammarRule = (String) chat.getContext().get(GRAMMAR_RULE.getValue());
-        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
-        var studentId = new StudentId(UUID.fromString(studentIdStr));
+        var studentId = StudentSupport.selectedStudentId(chat);
         var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
-                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
+                .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentId));
+
+        var cefrLevel = studentQuery.getCefrLevel(studentId)
+                .orElseThrow(() -> new IllegalStateException("No level for student " + studentId));
 
         ExerciseDto exercise;
         try {
             exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
-                    dictionaryId));
+                    dictionaryId, cefrLevel.code()));
         } catch (IllegalArgumentException e) {
             log.warn("Cannot generate exercise: {}", e.getMessage());
             reset(chat);
@@ -70,7 +71,7 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         try {
             var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary));
             log.info("Exercise {} rendered to PDF (exercise + answers)", exercise.id());
-            var name = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
+            var name = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
             reset(chat);
             return new ActionResult.SendDocuments(List.of(
                     new ActionResult.SendDocument(bundle.exercise().fileName(), bundle.exercise().content(),
@@ -85,8 +86,8 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     }
 
     private void reset(Chat chat) {
-        chat.getContext().remove("grammarRule");
-        chat.getContext().remove("exerciseType");
+        chat.getContext().remove(GRAMMAR_RULE.getValue());
+        chat.getContext().remove(EXERCISE_TYPE.getValue());
         chat.updateState(ChatState.STUDENT_OPTIONS);
     }
 }

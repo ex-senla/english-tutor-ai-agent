@@ -9,6 +9,10 @@ public final class Callbacks {
 
     public static final String POS = "pos";
 
+    public static final String LEVEL = "level";
+
+    public static final String LEVEL_CHANGE = "levelchange";
+
     // ---- any ----
     public static final String BACK = "back";
 

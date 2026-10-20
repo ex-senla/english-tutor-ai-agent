@@ -4,6 +4,7 @@ import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.exercise.ExerciseView;
@@ -11,7 +12,6 @@ import com.hydroyura.eta.chatbot.view.lesson.LessonView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.lesson.StartLessonCommand;
-import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.BiFunction;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON_STARTED;
@@ -68,23 +66,17 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
 
     private ActionResult getStudentDetails(Chat chat, int messageId) {
         chat.updateState(ChatState.STUDENT_DETAILS);
-        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
-        var studentId = new StudentId(UUID.fromString(studentIdStr));
-        var studentDetails = studentQuery.findStudentDetails(studentId)
-                .orElseThrow(() -> new IllegalStateException("Student not found with studentId=" + studentIdStr));
-
-        return StudentView.studentDetails(messageId, studentDetails.name(), studentDetails.dictionaryStats());
+        return StudentSupport.studentDetails(studentQuery, chat, messageId);
     }
 
     private ActionResult startLesson(Chat chat, int messageId) {
-        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
-        var studentId = new StudentId(UUID.fromString(studentIdStr));
+        var studentId = StudentSupport.selectedStudentId(chat);
         var name = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
 
         var lessonId = startLesson.execute(new StartLessonCommand(studentId, LESSON.formatted(name)));
         chat.getContext().put(ACTIVE_LESSON_ID.getValue(), lessonId.value().toString());
         chat.updateState(ChatState.IN_LESSON);
-        log.info("Lesson {} started for student {}", lessonId, studentIdStr);
+        log.info("Lesson {} started for student {}", lessonId, studentId);
 
         return LessonView.lessonKeyboard(LESSON_STARTED.formatted(name), messageId);
     }

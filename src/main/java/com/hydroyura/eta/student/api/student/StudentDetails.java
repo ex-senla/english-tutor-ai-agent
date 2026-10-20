@@ -5,6 +5,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 public record StudentDetails(
         String name,
         DictionaryStats dictionaryStats,
-        boolean hasActiveLesson
+        boolean hasActiveLesson,
+        CefrLevel level
 ) {
 }

@@ -79,6 +79,11 @@ class DemoStudentsSeederTest {
             public Optional<StudentDetails> findStudentDetails(StudentId studentId) {
                 return Optional.empty();
             }
+
+            @Override
+            public Optional<com.hydroyura.eta.student.api.student.CefrLevel> getCefrLevel(StudentId studentId) {
+                return Optional.empty();
+            }
         };
 
         AddWordToDictionary addWordToDictionary = cmd -> {

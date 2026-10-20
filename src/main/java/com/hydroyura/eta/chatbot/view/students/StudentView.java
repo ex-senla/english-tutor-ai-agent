@@ -3,7 +3,8 @@ package com.hydroyura.eta.chatbot.view.students;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.view.Buttons;
 import com.hydroyura.eta.chatbot.view.Callbacks;
-import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
+import com.hydroyura.eta.student.api.student.CefrLevel;
+import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import lombok.RequiredArgsConstructor;
 
@@ -68,31 +69,50 @@ public class StudentView {
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
 
-    public static ActionResult studentDetails(int messageId, String studentName, DictionaryStats dictionaryStats) {
-        return new ActionResult.EditMessageText(
-                messageId,
-                """
-                        🧑‍🎓 Ученик: %s
+    public static ActionResult studentDetails(int messageId, StudentDetails details) {
+        var text = """
+                🧑‍🎓 Ученик: %s
+                📊 Уровень: %s
 
-                        📚 Словарь · всего %d
-                        ├ 🆕 Новые: %d
-                        ├ 🔄 В процессе: %d
-                        └ ✅ Выучено: %d""".formatted(
-                        studentName,
-                        dictionaryStats.totalWords(),
-                        dictionaryStats.newCount(),
-                        dictionaryStats.inProgressCount(),
-                        dictionaryStats.learnedCount()
-                ),
-                List.of(
-                        List.of(
-                                new ActionResult.InlineButton(
-                                        Buttons.BACK,
-                                        createCallbackData(Callbacks.DETAILS, Callbacks.BACK)
-                                )
-                        )
-                )
+                📚 Словарь · всего %d
+                ├ 🆕 Новые: %d
+                ├ 🔄 В процессе: %d
+                └ ✅ Выучено: %d%s""".formatted(
+                details.name(),
+                details.level().code(),
+                details.dictionaryStats().totalWords(),
+                details.dictionaryStats().newCount(),
+                details.dictionaryStats().inProgressCount(),
+                details.dictionaryStats().learnedCount(),
+                details.hasActiveLesson() ? "\n\n▶️ Активный урок: есть" : ""
         );
+
+        var keyboard = List.of(
+                List.of(new ActionResult.InlineButton(Buttons.CHANGE_LEVEL,
+                        createCallbackData(Callbacks.LEVEL_CHANGE))),
+                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS,
+                        Callbacks.BACK)))
+        );
+
+        return new ActionResult.EditMessageText(messageId, text, keyboard);
+    }
+
+    public static List<List<ActionResult.InlineButton>> levelKeyboard() {
+        return List.of(
+                List.of(levelButton(CefrLevel.A1), levelButton(CefrLevel.A2), levelButton(CefrLevel.B1)),
+                List.of(levelButton(CefrLevel.B2), levelButton(CefrLevel.C1), levelButton(CefrLevel.C2))
+        );
+    }
+
+    public static List<List<ActionResult.InlineButton>> levelKeyboardWithBack() {
+        var keyboard = new ArrayList<List<ActionResult.InlineButton>>(levelKeyboard());
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
+                Callbacks.MAIN))));
+        return keyboard;
+    }
+
+    private static ActionResult.InlineButton levelButton(CefrLevel level) {
+        return new ActionResult.InlineButton(level.code(), createCallbackData(Callbacks.LEVEL, level.code()));
     }
 
 }
