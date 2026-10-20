@@ -1,7 +1,9 @@
 package com.hydroyura.eta.chatbot.infrastructure.bot;
 
 import com.hydroyura.eta.chatbot.application.ChatService;
+import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
+import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
 import lombok.SneakyThrows;
@@ -13,8 +15,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+
+import static com.hydroyura.eta.chatbot.view.Messages.GENERATING_EXERCISE;
 
 @Slf4j
 @Component
@@ -66,10 +71,16 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         // 2. parse update to select action
         var action = updateParser.parseUpdate(update);
 
+        // 2.1 показать индикатор длительной обработки (если предстоит долгая операция)
+        var progressMessageId = showProcessingIndicator(chat, action, chatId);
+
         // 3. perform action in chat
         var oldState = chat.getState();
         var result = stateMachine.applyAction(chat, action);
         var newState = chat.getState();
+
+        // 3.1 удалить сообщение-индикатор после завершения обработки
+        deleteProcessingIndicator(chatId, progressMessageId);
 
         // 4. save chat
         chatService.save(chat);
@@ -123,5 +134,44 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             return update.getCallbackQuery().getMessage().getChatId();
         }
         throw new IllegalArgumentException("Update has neither message nor callback query");
+    }
+
+    /**
+     * Показывает в чате сообщение-индикатор длительной операции (например, «⏳ Генерирую…»),
+     * возвращая идентификатор отправленного сообщения, чтобы удалить его после завершения.
+     * Возвращает {@code null}, если индикатор не требуется.
+     */
+    private Integer showProcessingIndicator(Chat chat, Action action, Long chatId) {
+        if (chat.getState() != ChatState.AWAITING_EXERCISE_TOPIC || !(action instanceof Action.Input)) {
+            return null;
+        }
+        try {
+            var sent = execute(SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .text(GENERATING_EXERCISE)
+                    .build());
+            return sent.getMessageId();
+        } catch (Exception e) {
+            log.warn("Failed to send generation indicator for chatId={}: {}", chatId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Удаляет сообщение-индикатор, если оно было отправлено.
+     */
+    private void deleteProcessingIndicator(Long chatId, Integer messageId) {
+        if (messageId == null) {
+            return;
+        }
+        try {
+            execute(DeleteMessage.builder()
+                    .chatId(chatId.toString())
+                    .messageId(messageId)
+                    .build());
+        } catch (Exception e) {
+            log.warn("Failed to delete generation indicator for chatId={}, messageId={}: {}",
+                    chatId, messageId, e.getMessage());
+        }
     }
 }
