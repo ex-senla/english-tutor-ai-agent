@@ -66,6 +66,27 @@ class CheckExerciseUseCaseTest {
         assertThat(result.correct()).isFalse();
     }
 
+    @Test
+    void shouldKeepPositionsWhenAnswerSkipped() {
+        var exercise = createExercise(List.of("travelled", "went"));
+        repository.save(exercise);
+
+        var result = useCase.execute(new CheckExerciseCommand(exercise.getId(), "travelled,"));
+
+        assertThat(result.correct()).isFalse();
+        assertThat(result.feedback()).contains("1) ✅").contains("2) ❌");
+    }
+
+    @Test
+    void shouldCompareAnswersIgnoringCaseAndWhitespace() {
+        var exercise = createExercise(List.of("travelled", "went"));
+        repository.save(exercise);
+
+        var result = useCase.execute(new CheckExerciseCommand(exercise.getId(), "TRAVELLED,  WENT "));
+
+        assertThat(result.correct()).isTrue();
+    }
+
     private Exercise createExercise(List<String> expectedAnswers) {
         var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(WordId
                 .generate()));

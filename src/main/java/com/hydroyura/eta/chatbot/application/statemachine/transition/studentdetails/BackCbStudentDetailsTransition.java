@@ -10,6 +10,8 @@ import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import lombok.RequiredArgsConstructor;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 
 @RequiredArgsConstructor
 public class BackCbStudentDetailsTransition implements Transition<Action.Callback> {
@@ -21,7 +23,7 @@ public class BackCbStudentDetailsTransition implements Transition<Action.Callbac
     @Override
     public ActionResult transit(Chat chat, Action.Callback callback) {
         chat.updateState(ChatState.STUDENT_OPTIONS);
-        var studentId = (String) chat.getContext().get("selectedStudentId");
+        var studentId = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
 
         var studentIds = findTeacher.getStudentIds(chat.getId().chatId());
         var name = studentQuery.findStudentsByIds(studentIds).stream()
@@ -30,7 +32,7 @@ public class BackCbStudentDetailsTransition implements Transition<Action.Callbac
                 .findFirst()
                 .orElse("?");
 
-        chat.getContext().put("selectedStudentName", name);
+        chat.getContext().put(SELECTED_STUDENT_NAME.getValue(), name);
         return StudentView.options(callback.messageId(), name);
     }
 

@@ -27,15 +27,15 @@ public class CheckExerciseUseCase implements CheckExercise {
         exercise.markAnswered();
 
         var expectedAnswers = exercise.getExpectedAnswers();
-        var userAnswers = Arrays.stream(command.userAnswer().split(","))
+        var userAnswers = Arrays.stream(command.userAnswer().split(",", -1))
                 .map(String::strip)
-                .filter(s -> !s.isEmpty())
                 .toList();
 
         var feedbackLines = new ArrayList<String>();
         var correct = userAnswers.size() == expectedAnswers.size();
         for (var i = 0; i < expectedAnswers.size(); i++) {
-            var itemCorrect = i < userAnswers.size()
+            var hasAnswer = i < userAnswers.size() && !userAnswers.get(i).isEmpty();
+            var itemCorrect = hasAnswer
                     && normalize(userAnswers.get(i)).equals(normalize(expectedAnswers.get(i)));
             if (!itemCorrect) {
                 correct = false;

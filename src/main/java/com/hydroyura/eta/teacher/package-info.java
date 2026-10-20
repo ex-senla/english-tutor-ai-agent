@@ -5,6 +5,7 @@
  */
 @org.springframework.modulith.ApplicationModule(
         allowedDependencies = {"dictionary :: dictionary",
+                "dictionary :: word",
                 "student :: student",
                 "student :: lesson",
                 "shared :: shared"}

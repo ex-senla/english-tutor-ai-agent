@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.view.Messages.NO_STUDENTS;
-import static com.hydroyura.eta.chatbot.view.util.ItemUtils.createCallbackData;
+import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 @RequiredArgsConstructor
 public class StudentView {
@@ -50,24 +51,41 @@ public class StudentView {
     }
 
     public static ActionResult listEdit(int messageId, List<StudentInfo> students) {
-        var keyboard = new java.util.ArrayList<>(students.stream()
-                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
-                        .value().toString()))))
-                .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
-                Callbacks.MAIN))));
+        var keyboard = students.stream()
+                .map(
+                        info -> List.of(
+                                new ActionResult.InlineButton(
+                                        info.name(),
+                                        createCallbackData(Callbacks.STUDENT, info.id().value().toString())
+                                )
+                        )
+                )
+                .collect(Collectors.toList());
+
+        keyboard.add(
+                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN)))
+        );
 
         return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
     }
 
     public static ActionResult studentDetails(int messageId, StudentDetails details) {
-        var text = "Ученик: " + details.name()
-                + "\nУровень: " + details.level().code()
-                + "\n\nСлова: всего " + details.dictionaryStats().totalWords()
-                + ", новые " + details.dictionaryStats().newCount()
-                + ", в изучении " + details.dictionaryStats().inProgressCount()
-                + ", изучены " + details.dictionaryStats().learnedCount()
-                + (details.hasActiveLesson() ? "\n\nАктивный урок: есть" : "");
+        var text = """
+                🧑‍🎓 Ученик: %s
+                📊 Уровень: %s
+
+                📚 Словарь · всего %d
+                ├ 🆕 Новые: %d
+                ├ 🔄 В процессе: %d
+                └ ✅ Выучено: %d%s""".formatted(
+                details.name(),
+                details.level().code(),
+                details.dictionaryStats().totalWords(),
+                details.dictionaryStats().newCount(),
+                details.dictionaryStats().inProgressCount(),
+                details.dictionaryStats().learnedCount(),
+                details.hasActiveLesson() ? "\n\n▶️ Активный урок: есть" : ""
+        );
 
         var keyboard = List.of(
                 List.of(new ActionResult.InlineButton(Buttons.CHANGE_LEVEL,

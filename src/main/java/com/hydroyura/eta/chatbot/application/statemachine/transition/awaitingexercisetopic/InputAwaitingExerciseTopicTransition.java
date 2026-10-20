@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static com.hydroyura.eta.chatbot.view.Messages.NO_WORDS_IN_DICTIONARY;
 
@@ -42,9 +45,9 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
         var topic = input.text();
-        var grammarRule = (String) chat.getContext().get("grammarRule");
+        var grammarRule = (String) chat.getContext().get(GRAMMAR_RULE.getValue());
         var studentId = StudentSupport.selectedStudentId(chat);
-        var exerciseType = (ExerciseType) chat.getContext().get("exerciseType");
+        var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
 
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentId));
@@ -68,7 +71,7 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         try {
             var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary));
             log.info("Exercise {} rendered to PDF (exercise + answers)", exercise.id());
-            var name = (String) chat.getContext().getOrDefault("selectedStudentName", "?");
+            var name = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
             reset(chat);
             return new ActionResult.SendDocuments(List.of(
                     new ActionResult.SendDocument(bundle.exercise().fileName(), bundle.exercise().content(),
@@ -83,8 +86,8 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
     }
 
     private void reset(Chat chat) {
-        chat.getContext().remove("grammarRule");
-        chat.getContext().remove("exerciseType");
+        chat.getContext().remove(GRAMMAR_RULE.getValue());
+        chat.getContext().remove(EXERCISE_TYPE.getValue());
         chat.updateState(ChatState.STUDENT_OPTIONS);
     }
 }

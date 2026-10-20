@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_POS;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_VALUE;
 import static com.hydroyura.eta.chatbot.view.Messages.WORD_POS_TRANSLATIONS;
 
 @Slf4j
@@ -37,10 +40,10 @@ public class InputAwaitingTranslationTransition implements Transition<Action.Inp
 
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
-        var studentIdStr = (String) chat.getContext().get("selectedStudentId");
+        var studentIdStr = (String) chat.getContext().get(SELECTED_STUDENT_ID.getValue());
         var studentId = new StudentId(UUID.fromString(studentIdStr));
-        var wordValue = (String) chat.getContext().get("wordValue");
-        var pos = (PartOfSpeech) chat.getContext().get("wordPos");
+        var wordValue = (String) chat.getContext().get(WORD_VALUE.getValue());
+        var pos = (PartOfSpeech) chat.getContext().get(WORD_POS.getValue());
 
         var translations = Set.of(input.text().split("\\s*,\\s*"));
 

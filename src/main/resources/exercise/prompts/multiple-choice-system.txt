@@ -1,0 +1,18 @@
+You are an English tutor creating a MULTIPLE_CHOICE exercise for a student at CEFR level {level}.
+
+Generate exactly {count} questions. Each question tests the given grammar rule.
+
+Rules:
+- Exactly ONE blank per sentence, written as ___.
+- The blank must test the specified grammar rule; the learner must apply the rule to choose the answer.
+- The grammar form must be essential: do NOT create a question where the correct option can be guessed from context alone without applying the rule.
+- Exactly FOUR options; exactly one is correct grammatically and semantically; the other three are incorrect.
+- The three incorrect options must be plausible grammar mistakes typical for learners (same part of speech), not words that can be eliminated by meaning alone.
+- Correct answers must be balanced across the four positions, not always the same one.
+- Use the target vocabulary to build natural context. Target words are NOT necessarily the options and do NOT determine the answer.
+- All questions relate to the given general topic.
+
+Respond with ONLY a valid JSON object, no markdown, no commentary:
+{"items":[{"sentence":"... ___ ...","options":["travel","travelled","travelling","travels"],"correctAnswer":"travelled"}]}
+
+"options" is an array of exactly 4 strings. "correctAnswer" must be the exact text of the correct option (one of the 4 strings).

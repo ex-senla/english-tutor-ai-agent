@@ -1,33 +1,182 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <title>Answers</title>
+    <title>English practice · Teacher answer key</title>
     <style>
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12pt; }
-        h1 { font-size: 16pt; }
-        h2 { font-size: 13pt; margin-top: 16pt; }
-        ol.answers > li { margin-bottom: 6pt; }
+        @page {
+            margin: 16mm 17mm 18mm;
+            @bottom-right {
+                content: "Teacher key · " counter(page);
+                font-family: 'DejaVu Sans';
+                font-size: 8pt;
+                color: #627773;
+            }
+        }
+        body {
+            font-family: 'DejaVu Sans';
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #283e39;
+            margin: 0;
+        }
+        .intro { page-break-inside: avoid; }
+        .header {
+            background: #147568;
+            color: #ffffff;
+            border-radius: 10px;
+            padding: 20px 24px 22px;
+        }
+        .eyebrow {
+            font-size: 8pt;
+            letter-spacing: 2px;
+            color: #d4eee7;
+            margin-bottom: 9px;
+        }
+        h1 { font-size: 27pt; line-height: 1.2; font-weight: normal; margin: 0 0 8px; }
+        .subtitle { font-size: 10pt; color: #d4eee7; margin: 0; }
+        .meta { margin: 15px 0 18px; }
+        .badge {
+            display: inline-block;
+            background: #edf7f3;
+            border: 1px solid #c7e3da;
+            color: #147568;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 8.5pt;
+            margin: 0 6px 6px 0;
+        }
+        .reference-note {
+            border-left: 3px solid #147568;
+            padding: 2px 0 2px 12px;
+            margin: 0 0 20px;
+            font-size: 9pt;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: normal;
+            color: #147568;
+            margin: 20px 0 12px;
+            padding-bottom: 7px;
+            border-bottom: 1px solid #c7e3da;
+            page-break-after: avoid;
+        }
+        ol.answers { list-style: none; padding: 0; margin: 0; }
+        ol.answers > li {
+            border: 1px solid #c7e3da;
+            border-radius: 8px;
+            background: #f3f9f6;
+            padding: 10px 15px;
+            margin: 0 0 8px;
+            page-break-inside: avoid;
+        }
+        .answer-row { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .answer-row td { padding: 0; vertical-align: top; }
+        .answer-row .number-cell { width: 44px; }
+        .num {
+            display: inline-block;
+            min-width: 28px;
+            padding: 2px 3px;
+            background: #147568;
+            color: #ffffff;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 10pt;
+        }
+        .answer { color: #17574d; font-size: 11pt; padding-top: 2px; }
+        b {
+            color: #17574d;
+            background: #dcefe7;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        table.vocab {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            -fs-table-paginate: paginate;
+        }
+        .vocab thead { display: table-header-group; }
+        .vocab tr { page-break-inside: avoid; }
+        .vocab th {
+            background: #147568;
+            color: #ffffff;
+            font-size: 8.5pt;
+            font-weight: normal;
+            letter-spacing: 0.5px;
+            text-align: left;
+            padding: 9px 13px;
+        }
+        .vocab td {
+            text-align: left;
+            vertical-align: top;
+            padding: 10px 13px;
+            border-bottom: 1px solid #c7e3da;
+            font-size: 9.5pt;
+        }
+        .vocab .word-heading { width: 36%; }
+        .vocab td.word { background: #edf7f3; color: #17574d; }
+        .vocab td.translation { background: #f8fbfa; }
+        .empty {
+            background: #f3f9f6;
+            border: 1px solid #c7e3da;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 9pt;
+            color: #627773;
+            page-break-inside: avoid;
+        }
+        .closing {
+            border-top: 1px solid #c7e3da;
+            padding-top: 10px;
+            margin-top: 22px;
+            font-size: 8pt;
+            color: #627773;
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 <body>
-    <h1>Answers</h1>
-    <p><strong>Type:</strong> <span th:text="${type}"></span></p>
-    <p><strong>Topic:</strong> <span th:text="${topic}"></span></p>
-
+    <div class="intro">
+        <div class="header">
+            <div class="eyebrow">ENGLISH / TEACHER COPY</div>
+            <h1>Answer key</h1>
+            <p class="subtitle">Solutions and vocabulary for a focused lesson review.</p>
+        </div>
+        <div class="meta">
+            <span class="badge" th:text="${type == 'FILL_IN_THE_BLANK' ? 'Fill in the blank' : 'Multiple choice'}">Fill in the blank</span>
+            <span class="badge" th:text="|Topic: ${topic}|">Topic</span>
+        </div>
+        <p class="reference-note">Numbers match the student sheet. Use the vocabulary list to revisit words in context.</p>
+    </div>
     <h2>Correct answers</h2>
     <ol class="answers">
         <li th:each="a : ${answers}">
-            <span th:text="${a.number}"></span>. <span th:text="${a.answer}"></span>
+            <table class="answer-row">
+                <tbody><tr>
+                    <td class="number-cell"><span class="num" th:text="${a.number}">1</span></td>
+                    <td><div class="answer" th:text="${a.answer}"></div></td>
+                </tr></tbody>
+            </table>
         </li>
     </ol>
-
     <h2>Used vocabulary</h2>
-    <ul th:if="${!usedWords.isEmpty()}">
-        <li th:each="w : ${usedWords}">
-            <span th:text="${w.value}"></span> — <span th:text="${w.translations}"></span>
-        </li>
-    </ul>
-    <p th:if="${usedWords.isEmpty()}">No vocabulary words were used.</p>
+    <table class="vocab" th:if="${!usedWords.isEmpty()}">
+        <thead>
+            <tr>
+                <th class="word-heading" scope="col">WORD / PHRASE</th>
+                <th scope="col">TRANSLATION</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="w : ${usedWords}">
+                <td class="word" th:text="${w.value}"></td>
+                <td class="translation" th:text="${w.translations}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="empty" th:if="${usedWords.isEmpty()}">No vocabulary words were used.</p>
+    <p class="closing">Review prompt: ask the student to explain a choice, then use the word in a new sentence.</p>
 </body>
 </html>

@@ -30,6 +30,10 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,8 +65,8 @@ class InputAwaitingExerciseTopicTransitionTest {
                 generateExercisePdf);
 
         var chat = chat(studentId);
-        chat.getContext().put("grammarRule", "Past Simple");
-        chat.getContext().put("exerciseType", ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
 
         var result = transition.transit(chat, new Action.Input("Animals"));
 
@@ -97,8 +101,8 @@ class InputAwaitingExerciseTopicTransitionTest {
                 generateExercisePdf);
 
         var chat = chat(studentId);
-        chat.getContext().put("grammarRule", "Past Simple");
-        chat.getContext().put("exerciseType", ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
 
         var result = transition.transit(chat, new Action.Input("Animals"));
 
@@ -108,8 +112,8 @@ class InputAwaitingExerciseTopicTransitionTest {
 
     private Chat chat(StudentId studentId) {
         var chat = Chat.ofDefaults(new ChatId(1L));
-        chat.getContext().put("selectedStudentId", studentId.value().toString());
-        chat.getContext().put("selectedStudentName", "Alice");
+        chat.getContext().put(SELECTED_STUDENT_ID.getValue(), studentId.value().toString());
+        chat.getContext().put(SELECTED_STUDENT_NAME.getValue(), "Alice");
         return chat;
     }
 
