@@ -4,6 +4,7 @@ import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.generator.application.usecase.GenerateExercisePdfUseCase;
 import com.hydroyura.eta.generator.domain.document.ExercisePdfRenderer;
 import com.hydroyura.eta.generator.infrastructure.pdf.ThymeleafPdfRenderer;
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,6 +18,6 @@ public class GeneratorModuleConfig {
 
     @Bean
     GenerateExercisePdf generateExercisePdf(ExercisePdfRenderer renderer) {
-        return new GenerateExercisePdfUseCase(renderer);
+        return new GenerateExercisePdfUseCase(renderer, Clock.systemUTC());
     }
 }

@@ -60,16 +60,18 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         var vocabulary = new ArrayList<>(findWords.findByDictionaryId(dictionaryId));
         vocabulary.sort(Comparator.comparing(WordProjection::value, String.CASE_INSENSITIVE_ORDER));
 
+        var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
+
         try {
-            var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary));
+            var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary, studentName,
+                    cefrLevel.code()));
             log.info("Exercise {} rendered to PDF (exercise + answers)", exercise.id());
-            var name = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
             reset(chat);
             return new ActionResult.SendDocuments(List.of(
                     new ActionResult.SendDocument(bundle.exercise().fileName(), bundle.exercise().content(),
                             "Упражнение"),
                     new ActionResult.SendDocument(bundle.answers().fileName(), bundle.answers().content(), "Ответы")
-            ), "Ученик: " + name, StudentView.optionsKeyboard());
+            ), "Ученик: " + studentName, StudentView.optionsKeyboard());
         } catch (PdfRenderException e) {
             log.warn("PDF render failed for exercise {}: {}", exercise.id(), e.getMessage());
             reset(chat);

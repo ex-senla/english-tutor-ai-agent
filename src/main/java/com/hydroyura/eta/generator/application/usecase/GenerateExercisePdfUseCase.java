@@ -10,6 +10,8 @@ import com.hydroyura.eta.generator.application.view.AnswerItemView;
 import com.hydroyura.eta.generator.application.view.ExerciseItemView;
 import com.hydroyura.eta.generator.application.view.UsedWordView;
 import com.hydroyura.eta.generator.domain.document.ExercisePdfRenderer;
+import java.time.Clock;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -23,8 +25,11 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
 
     private final ExercisePdfRenderer renderer;
 
-    public GenerateExercisePdfUseCase(ExercisePdfRenderer renderer) {
+    private final Clock clock;
+
+    public GenerateExercisePdfUseCase(ExercisePdfRenderer renderer, Clock clock) {
         this.renderer = Objects.requireNonNull(renderer, "renderer must not be null");
+        this.clock = Objects.requireNonNull(clock, "clock must not be null");
     }
 
     @Override
@@ -34,8 +39,8 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
 
         var usedWords = determineUsedWords(exercise, vocabulary);
 
-        var exerciseDoc = renderExercise(exercise, usedWords);
-        var answersDoc = renderAnswers(exercise, usedWords);
+        var exerciseDoc = renderExercise(command, usedWords);
+        var answersDoc = renderAnswers(command, usedWords);
 
         return new ExercisePdfBundle(exerciseDoc, answersDoc);
     }
@@ -53,7 +58,8 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
                 .toList();
     }
 
-    private ExercisePdfDocument renderExercise(ExerciseDto exercise, List<WordProjection> usedWords) {
+    private ExercisePdfDocument renderExercise(GenerateExercisePdfCommand command, List<WordProjection> usedWords) {
+        var exercise = command.exercise();
         var values = usedWords.stream().map(WordProjection::value).toList();
 
         var items = new ArrayList<ExerciseItemView>();
@@ -76,10 +82,11 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
         );
 
         var bytes = renderer.render("exercise", model);
-        return new ExercisePdfDocument(fileName("exercise", exercise), bytes);
+        return new ExercisePdfDocument(fileName("exercise", command), bytes);
     }
 
-    private ExercisePdfDocument renderAnswers(ExerciseDto exercise, List<WordProjection> usedWords) {
+    private ExercisePdfDocument renderAnswers(GenerateExercisePdfCommand command, List<WordProjection> usedWords) {
+        var exercise = command.exercise();
         var answers = new ArrayList<AnswerItemView>();
         for (var i = 0; i < exercise.items().size(); i++) {
             var item = exercise.items().get(i);
@@ -99,15 +106,34 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
         );
 
         var bytes = renderer.render("answers", model);
-        return new ExercisePdfDocument(fileName("answers", exercise), bytes);
+        return new ExercisePdfDocument(fileName("answers", command), bytes);
     }
 
-    private static String fileName(String kind, ExerciseDto exercise) {
-        var topic = sanitize(exercise.topic());
-        if (topic.isBlank()) {
-            topic = "exercise";
+    private String fileName(String kind, GenerateExercisePdfCommand command) {
+        var topic = sanitize(command.exercise().topic());
+        var level = sanitize(command.cefrLevel());
+        var student = sanitize(command.studentName());
+
+        var parts = new ArrayList<String>();
+        parts.add(kind);
+        if (!topic.isBlank()) {
+            parts.add(topic);
         }
-        return kind + "_" + topic + ".pdf";
+        if (!level.isBlank()) {
+            parts.add(level);
+        }
+        if (!student.isBlank()) {
+            parts.add(student);
+        }
+        parts.add(timestamp());
+
+        return String.join("_", parts) + ".pdf";
+    }
+
+    private String timestamp() {
+        return DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")
+                .withZone(clock.getZone())
+                .format(clock.instant());
     }
 
     private static String sanitize(String value) {

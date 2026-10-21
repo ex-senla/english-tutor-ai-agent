@@ -114,6 +114,8 @@ class InputAwaitingExerciseTopicTransitionTest {
         var captor = ArgumentCaptor.forClass(GenerateExercisePdfCommand.class);
         verify(generateExercisePdf).execute(captor.capture());
         assertThat(captor.getValue().vocabularyWords()).isEmpty();
+        assertThat(captor.getValue().studentName()).isEqualTo("Alice");
+        assertThat(captor.getValue().cefrLevel()).isEqualTo("B1");
     }
 
     @Test
