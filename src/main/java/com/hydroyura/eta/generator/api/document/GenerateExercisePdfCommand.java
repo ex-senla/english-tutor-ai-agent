@@ -7,12 +7,16 @@ import java.util.Objects;
 
 public record GenerateExercisePdfCommand(
         ExerciseDto exercise,
-        List<WordProjection> vocabularyWords
+        List<WordProjection> vocabularyWords,
+        String studentName,
+        String cefrLevel
 ) {
 
     public GenerateExercisePdfCommand {
         Objects.requireNonNull(exercise, "exercise must not be null");
         Objects.requireNonNull(vocabularyWords, "vocabularyWords must not be null");
         vocabularyWords = List.copyOf(vocabularyWords);
+        studentName = studentName == null ? "" : studentName;
+        cefrLevel = cefrLevel == null ? "" : cefrLevel;
     }
 }

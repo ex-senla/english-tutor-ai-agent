@@ -14,6 +14,10 @@ import com.hydroyura.eta.generator.application.view.ExerciseItemView;
 import com.hydroyura.eta.generator.application.view.UsedWordView;
 import com.hydroyura.eta.generator.domain.document.ExercisePdfRenderer;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class GenerateExercisePdfUseCaseTest {
 
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-10-21T20:30:00.123Z"), ZoneOffset.UTC);
+
     private RecordingRenderer renderer;
 
     private GenerateExercisePdfUseCase useCase;
@@ -31,7 +37,7 @@ class GenerateExercisePdfUseCaseTest {
     @BeforeEach
     void setUp() {
         renderer = new RecordingRenderer();
-        useCase = new GenerateExercisePdfUseCase(renderer);
+        useCase = new GenerateExercisePdfUseCase(renderer, FIXED_CLOCK);
     }
 
     @Test
@@ -44,6 +50,34 @@ class GenerateExercisePdfUseCaseTest {
         assertThat(bundle.exercise().fileName()).isNotEqualTo(bundle.answers().fileName());
         assertThat(new String(bundle.exercise().content(), StandardCharsets.UTF_8)).startsWith("%PDF");
         assertThat(new String(bundle.answers().content(), StandardCharsets.UTF_8)).startsWith("%PDF");
+    }
+
+    @Test
+    void shouldIncludeMetadataInFileName() {
+        var bundle = useCase.execute(command(exercise("I travel to the mountains ___"),
+                List.of(word("travel", "путешествовать"))));
+
+        assertThat(bundle.exercise().fileName())
+                .startsWith("exercise_animals_b1_alice_")
+                .contains("20261021-203000-123")
+                .endsWith(".pdf");
+        assertThat(bundle.answers().fileName())
+                .startsWith("answers_animals_b1_alice_");
+    }
+
+    @Test
+    void shouldProduceUniqueFileNamesAcrossGenerations() {
+        var clock = new MutableClock(Instant.parse("2026-10-21T20:30:00.123Z"));
+        var localUseCase = new GenerateExercisePdfUseCase(renderer, clock);
+        var cmd = command(exercise("I travel to the mountains ___"),
+                List.of(word("travel", "путешествовать")));
+
+        var first = localUseCase.execute(cmd);
+        clock.set(Instant.parse("2026-10-21T20:30:01.456Z"));
+        var second = localUseCase.execute(cmd);
+
+        assertThat(first.exercise().fileName()).isNotEqualTo(second.exercise().fileName());
+        assertThat(first.answers().fileName()).isNotEqualTo(second.answers().fileName());
     }
 
     @Test
@@ -134,7 +168,37 @@ class GenerateExercisePdfUseCaseTest {
     }
 
     private GenerateExercisePdfCommand command(ExerciseDto exercise, List<WordProjection> vocabulary) {
-        return new GenerateExercisePdfCommand(exercise, vocabulary);
+        return new GenerateExercisePdfCommand(exercise, vocabulary, "Alice", "B1");
+    }
+
+    static final class MutableClock extends Clock {
+
+        private final ZoneId zone = ZoneOffset.UTC;
+
+        private Instant instant;
+
+        MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        void set(Instant instant) {
+            this.instant = instant;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return zone;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 
     static class RecordingRenderer implements ExercisePdfRenderer {
