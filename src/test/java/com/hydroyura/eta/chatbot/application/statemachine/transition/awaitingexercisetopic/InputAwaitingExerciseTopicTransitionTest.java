@@ -20,6 +20,7 @@ import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
 import com.hydroyura.eta.generator.api.document.ExercisePdfBundle;
 import com.hydroyura.eta.generator.api.document.ExercisePdfDocument;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
+import com.hydroyura.eta.generator.api.document.GenerateExercisePdfCommand;
 import com.hydroyura.eta.generator.api.document.PdfRenderException;
 import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.StudentId;
@@ -79,6 +80,40 @@ class InputAwaitingExerciseTopicTransitionTest {
         var captor = ArgumentCaptor.forClass(GenerateExerciseCommand.class);
         verify(generateExercise).execute(captor.capture());
         assertThat(captor.getValue().cefrLevel()).isEqualTo("B1");
+    }
+
+    @Test
+    void shouldSucceedWithEmptyDictionary() {
+        var studentQuery = mock(StudentQuery.class);
+        var generateExercise = mock(GenerateExercise.class);
+        var findWords = mock(FindWords.class);
+        var generateExercisePdf = mock(GenerateExercisePdf.class);
+
+        var studentId = StudentId.generate();
+        var dictionaryId = DictionaryId.generate();
+
+        when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
+        when(generateExercise.execute(any())).thenReturn(exercise());
+        when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of());
+        when(generateExercisePdf.execute(any())).thenReturn(new ExercisePdfBundle(
+                new ExercisePdfDocument("exercise_animals.pdf", new byte[]{1}),
+                new ExercisePdfDocument("answers_animals.pdf", new byte[]{2})));
+
+        var transition = new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise, findWords,
+                generateExercisePdf);
+
+        var chat = chat(studentId);
+        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
+
+        var result = transition.transit(chat, new Action.Input("Animals"));
+
+        assertThat(result).isInstanceOf(ActionResult.SendDocuments.class);
+
+        var captor = ArgumentCaptor.forClass(GenerateExercisePdfCommand.class);
+        verify(generateExercisePdf).execute(captor.capture());
+        assertThat(captor.getValue().vocabularyWords()).isEmpty();
     }
 
     @Test

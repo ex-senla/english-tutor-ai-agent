@@ -9,7 +9,7 @@ Rules:
 - Exactly FOUR options; exactly one is correct grammatically and semantically; the other three are incorrect.
 - The three incorrect options must be plausible grammar mistakes typical for learners (same part of speech), not words that can be eliminated by meaning alone.
 - Correct answers must be balanced across the four positions, not always the same one.
-- Use the target vocabulary to build natural context. Target words are NOT necessarily the options and do NOT determine the answer.
+- Use the target vocabulary (if provided) to build natural context. Target words are NOT necessarily the options and do NOT determine the answer. If no target vocabulary is provided, build sentences using only the grammar rule and the general topic.
 - All questions relate to the given general topic.
 
 Respond with ONLY a valid JSON object, no markdown, no commentary:

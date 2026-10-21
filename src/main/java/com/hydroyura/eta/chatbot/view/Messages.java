@@ -14,8 +14,6 @@ public final class Messages {
 
     public static final String EXERCISE_NOT_FOUND = "⚠️ Упражнение не найдено. Начните заново.";
 
-    public static final String NO_WORDS_IN_DICTIONARY = "⚠️ В словаре ученика нет слов.";
-
     public static final String EXERCISE_ENTER_ANSWER = """
             %s | Тема: %s
 

@@ -87,6 +87,29 @@ class SpringAiExerciseGeneratorTest {
         assertThat(dto.content()).contains("(AI service unavailable — using fallback)");
     }
 
+    @Test
+    void shouldSendNoVocabularyBlockWhenWordsEmpty() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("Last summer, I ___ to the mountains.", List.of(), "travelled"))));
+
+        generator.generate(command(), Set.of());
+
+        var captor = ArgumentCaptor.forClass(String.class);
+        verify(requestSpec).user(captor.capture());
+        assertThat(captor.getValue()).contains("Target vocabulary: none");
+        assertThat(captor.getValue()).doesNotContain("Target vocabulary (context only");
+    }
+
+    @Test
+    void shouldReturnFallbackWhenWordsEmptyAndChatClientThrows() {
+        when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
+
+        var dto = generator.generate(command(), Set.of());
+
+        assertThat(dto.content()).contains("(AI service unavailable — using fallback)");
+        assertThat(dto.expectedAnswers()).containsExactly("(fallback)");
+    }
+
     private void stubResponse(AiExerciseResponse response) {
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.system(anyString())).thenReturn(requestSpec);

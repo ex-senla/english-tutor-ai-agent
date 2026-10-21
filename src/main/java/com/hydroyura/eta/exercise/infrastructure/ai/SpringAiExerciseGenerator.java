@@ -40,13 +40,15 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
         Objects.requireNonNull(command, "command must not be null");
         Objects.requireNonNull(words, "words must not be null");
 
-        var wordList = words.stream()
-                .map(w -> "  - " + w.value() + " (" + w.partOfSpeech() + "): " + String.join(", ", w.translations()))
-                .collect(Collectors.joining("\n"));
+        var vocabularyBlock = words.isEmpty()
+                ? "Target vocabulary: none (build sentences using only the grammar rule and topic)"
+                : "Target vocabulary (context only, NOT the answer):\n" + words.stream()
+                        .map(w -> "  - " + w.value() + " (" + w.partOfSpeech() + "): " + String.join(", ", w.translations()))
+                        .collect(Collectors.joining("\n"));
 
         var userMessage = "Grammar rule: " + command.grammarRule()
                 + "\nGeneral topic: " + command.topic()
-                + "\n\nTarget vocabulary (context only, NOT the answer):\n" + wordList;
+                + "\n\n" + vocabularyBlock;
 
         var count = properties.getSentenceCount();
         var systemPrompt = selectSystemPrompt(command.type())

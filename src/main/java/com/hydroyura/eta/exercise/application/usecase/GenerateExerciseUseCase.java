@@ -35,11 +35,6 @@ public class GenerateExerciseUseCase implements GenerateExercise {
         // Вернуть фильтр по статусу IN_PROGRESS (roadmap: «слова в статусе на изучении»).
         var words = findWords.findByDictionaryId(command.dictionaryId());
 
-        if (words.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No words in dictionary: " + command.dictionaryId().value());
-        }
-
         var wordIds = words.stream()
                 .map(WordProjection::id)
                 .collect(Collectors.toSet());

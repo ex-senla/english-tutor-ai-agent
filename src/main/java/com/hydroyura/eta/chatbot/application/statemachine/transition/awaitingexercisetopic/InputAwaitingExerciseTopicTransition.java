@@ -28,7 +28,6 @@ import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
-import static com.hydroyura.eta.chatbot.view.Messages.NO_WORDS_IN_DICTIONARY;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,15 +54,8 @@ public class InputAwaitingExerciseTopicTransition implements Transition<Action.I
         var cefrLevel = studentQuery.getCefrLevel(studentId)
                 .orElseThrow(() -> new IllegalStateException("No level for student " + studentId));
 
-        ExerciseDto exercise;
-        try {
-            exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
-                    dictionaryId, cefrLevel.code()));
-        } catch (IllegalArgumentException e) {
-            log.warn("Cannot generate exercise: {}", e.getMessage());
-            reset(chat);
-            return new ActionResult.TextWithInlineKeyboard(NO_WORDS_IN_DICTIONARY, StudentView.optionsKeyboard());
-        }
+        var exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
+                dictionaryId, cefrLevel.code()));
 
         var vocabulary = new ArrayList<>(findWords.findByDictionaryId(dictionaryId));
         vocabulary.sort(Comparator.comparing(WordProjection::value, String.CASE_INSENSITIVE_ORDER));

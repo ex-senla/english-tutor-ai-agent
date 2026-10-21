@@ -7,7 +7,7 @@ Rules:
 - The blank must test the specified grammar rule; the learner must apply the rule to determine the answer.
 - The grammar form must be essential: do NOT create a sentence where the answer can be guessed from context alone without applying the rule.
 - Each sentence has exactly one unambiguous correct answer (grammatically and semantically).
-- Use the target vocabulary to build natural context. Target words are NOT the missing words and do NOT determine the answer.
+- Use the target vocabulary (if provided) to build natural context. Target words are NOT the missing words and do NOT determine the answer. If no target vocabulary is provided, build sentences using only the grammar rule and the general topic.
 - All sentences relate to the given general topic.
 
 Respond with ONLY a valid JSON object, no markdown, no commentary:
