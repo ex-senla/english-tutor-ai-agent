@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GenerateExerciseUseCaseTest {
 
@@ -55,18 +54,20 @@ class GenerateExerciseUseCaseTest {
     }
 
     @Test
-    void shouldThrowWhenDictionaryEmpty() {
+    void shouldGenerateWithEmptyDictionary() {
         var dictId = DictionaryId.generate();
         var findWords = new StubFindWords(Set.of());
 
-        var useCase = new GenerateExerciseUseCase(new StubExerciseRepository(), new RecordingGenerator(), findWords);
+        var generator = new RecordingGenerator();
+        var repository = new StubExerciseRepository();
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords);
 
         var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId,
                 "A2");
+        useCase.execute(command);
 
-        assertThatThrownBy(() -> useCase.execute(command))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("dictionary");
+        assertThat(generator.receivedWords).isEmpty();
+        assertThat(repository.saved.getWordIds()).isEmpty();
     }
 
     static class RecordingGenerator implements ExerciseGenerator {
