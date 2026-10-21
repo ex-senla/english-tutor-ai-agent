@@ -9,7 +9,6 @@ import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;

@@ -43,7 +43,8 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
         var vocabularyBlock = words.isEmpty()
                 ? "Target vocabulary: none (build sentences using only the grammar rule and topic)"
                 : "Target vocabulary (context only, NOT the answer):\n" + words.stream()
-                        .map(w -> "  - " + w.value() + " (" + w.partOfSpeech() + "): " + String.join(", ", w.translations()))
+                        .map(w -> "  - " + w.value() + " (" + w.partOfSpeech() + "): " + String.join(", ", w
+                                .translations()))
                         .collect(Collectors.joining("\n"));
 
         var userMessage = "Grammar rule: " + command.grammarRule()
