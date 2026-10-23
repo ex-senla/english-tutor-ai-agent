@@ -101,6 +101,7 @@ public final class SendMessageConverter {
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(telegramKeyboard)
                         .resizeKeyboard(true)
+                        .oneTimeKeyboard(true)
                         .build())
                 .build();
     }
