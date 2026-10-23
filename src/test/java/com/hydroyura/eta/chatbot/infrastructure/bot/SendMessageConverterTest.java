@@ -17,7 +17,7 @@ class SendMessageConverterTest {
     void shouldConvertSingleSendDocument() {
         var result = new ActionResult.SendDocument("exercise.pdf", "data".getBytes(StandardCharsets.UTF_8), "cap");
 
-        var doc = converter.convertDocument(result, 123L);
+        var doc = converter.convertDocument(result, 123L, false);
 
         assertThat(doc.getChatId()).isEqualTo("123");
         assertThat(doc.getCaption()).isEqualTo("cap");
@@ -28,7 +28,7 @@ class SendMessageConverterTest {
     void shouldConvertSingleSendDocumentViaConvert() {
         var result = new ActionResult.SendDocument("exercise.pdf", "data".getBytes(StandardCharsets.UTF_8), "cap");
 
-        var response = converter.convert(result, 123L);
+        var response = converter.convert(result, 123L, false);
 
         assertThat(response).isInstanceOf(SendDocument.class);
     }
@@ -37,7 +37,7 @@ class SendMessageConverterTest {
     void shouldRejectSendDocumentsInConvert() {
         var result = new ActionResult.SendDocuments(List.of(), "menu", List.of());
 
-        assertThatThrownBy(() -> converter.convert(result, 1L))
+        assertThatThrownBy(() -> converter.convert(result, 1L, false))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -16,7 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 import static com.hydroyura.eta.chatbot.view.Messages.GENERATING_EXERCISE;
 
@@ -96,26 +95,17 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             execute(delete);
         }
 
-        // 7. remove reply keyboard when leaving ACTIVE or IN_LESSON state
-        if ((oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
-                || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON)) {
-            var remove = SendMessage.builder()
-                    .chatId(chatId.toString())
-                    .text(".")
-                    .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
-                    .build();
-            execute(remove);
-        }
+        boolean shouldRemoveReplyKeyboard = isFromStateWithReplyKeyboard(oldState, newState);
 
         // 8. send documents / send/edit/delete message
         if (result instanceof ActionResult.SendDocuments sendDocuments) {
             for (var doc : sendDocuments.documents()) {
-                execute(converter.convertDocument(doc, chatId));
+                execute(converter.convertDocument(doc, chatId, shouldRemoveReplyKeyboard));
             }
             execute(converter.convertTextWithInlineKeyboard(sendDocuments.text(), sendDocuments.keyboard(), chatId));
             return;
         }
-        var response = converter.convert(result, chatId);
+        var response = converter.convert(result, chatId, shouldRemoveReplyKeyboard);
         switch (response) {
             case SendMessage msg -> execute(msg);
             case EditMessageText edit -> execute(edit);
@@ -123,6 +113,11 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             case SendDocument doc -> execute(doc);
             default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
         }
+    }
+
+    private static boolean isFromStateWithReplyKeyboard(ChatState oldState, ChatState newState) {
+        return (oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
+                || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON);
     }
 
     private Long extractChatId(Update update) {
