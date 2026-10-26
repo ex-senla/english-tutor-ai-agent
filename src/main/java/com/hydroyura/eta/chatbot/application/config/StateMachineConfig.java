@@ -35,6 +35,7 @@ import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.Commands;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.application.usecase.CheckLanguageUseCase;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
@@ -156,7 +157,7 @@ public class StateMachineConfig {
         stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
 
         // word flow: AWAITING_WORD -> AWAITING_POS -> AWAITING_TRANSLATION
-        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition());
+        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition(new CheckLanguageUseCase()));
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition());
         stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery,
                 addWordToDictionary, findActiveLesson, addWordToLesson));

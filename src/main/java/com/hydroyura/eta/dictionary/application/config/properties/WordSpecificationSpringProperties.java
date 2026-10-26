@@ -18,7 +18,7 @@ public class WordSpecificationSpringProperties implements WordSpecificationConfi
 
     private int valueMaxLength = 50;
 
-    private String translationAllowedPattern = "[а-яА-ЯёЁ ]+";
+    private String translationAllowedPattern = "[а-яА-ЯёЁ\\- ]+";
 
     private int translationMinLength = 1;
 
