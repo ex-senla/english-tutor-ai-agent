@@ -3,7 +3,7 @@
 AI assistant for an English tutor. UI is a Telegram bot. Version 1.0.0 goals: teacher starts a
 lesson and sends unknown words to the bot, bot links words to the student's dictionary, teacher can
 send the dictionary to the student and generate exercises on a topic using dictionary words.
-Core v1 bot flow (registration, students, lessons, add-word wizard) is implemented; exercise
+Core v1 bot flow (registration, students, lessons, add-wordInfo wizard) is implemented; exercise
 generation and student details are stubs (see `docs/TODO.md`).
 
 ## Tech Stack
@@ -34,16 +34,16 @@ Tests do not require Telegram/AI credentials.
 Modular monolith + DDD. Root package: `com.hydroyura.eta`. One Maven module; each Spring Modulith
 module declares `@ApplicationModule(allowedDependencies = ...)` in its `package-info.java`.
 Modules talk to each other only through `api` packages, which expose
-`@NamedInterface`s (`shared`, `dictionary`, `word`, `student`, `lesson`, `teacher`, `exercise`).
+`@NamedInterface`s (`shared`, `dictionary`, `wordInfo`, `student`, `lesson`, `teacher`, `exercise`).
 
 ### Module dependency rules (enforced by Modulith)
 
 | Module | May depend on (named interfaces) | Purpose |
 |---|---|---|
 | `shared` | — | Cross-module contracts in `shared.api`: `Specification<T>`, `DomainException`, `SnapshotProvider` |
-| `dictionary` | `shared` | Student dictionary, word validation (`WordSpecifications`) |
-| `student` | `dictionary` (`dictionary`, `word`), `shared` | Student aggregate; `Lesson` is part of it |
-| `teacher` | `dictionary` (`dictionary`, `word`), `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation |
+| `dictionary` | `shared` | Student dictionary, wordInfo validation (`WordInfoSpecifications`) |
+| `student` | `dictionary` (`dictionary`, `wordInfo`), `shared` | Student aggregate; `Lesson` is part of it |
+| `teacher` | `dictionary` (`dictionary`, `wordInfo`), `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation |
 | `exercise` | `dictionary`, `shared` | AI exercise generation (Spring AI) |
 | `chatbot` | `teacher`, `student`, `dictionary`, `exercise`, `shared` | State machine, bot commands |
 | `debug` | `shared` | Debug REST endpoints (temporary) |
@@ -57,7 +57,7 @@ Never introduce a dependency that is not in this table; update the table and the
 logic, no framework deps) → `infrastructure` (persistence, `ai`, `bot`, `rest` adapters).
 `chatbot` additionally has a `view` package — Telegram presentation vocabulary: `Commands`,
 `Buttons` (reply buttons), `Callbacks` (inline `prefix:payload`), `Messages`, and per-feature
-subpackages (`menu`, `students`, `lesson`, `word`, `exercise`).
+subpackages (`menu`, `students`, `lesson`, `wordInfo`, `exercise`).
 
 Domain layer stays framework-free. External integrations (Telegram, DeepSeek, future DB) live only
 in `infrastructure` packages — the chatbot state machine is platform-agnostic.
@@ -82,7 +82,7 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
   - Telegram adapters live in `chatbot.infrastructure.bot`: `UpdateParser` (Update → `Action`),
     `SendMessageConverter` (`ActionResult` → Telegram API), `EnglishTutorBot`, `BotInitializer`.
 - All module exceptions extend `shared` `DomainException`.
-- Use Specification pattern (from `shared`) for validation/filtering, see `WordSpecifications`.
+- Use Specification pattern (from `shared`) for validation/filtering, see `WordInfoSpecifications`.
 
 ## Docs
 
@@ -100,4 +100,4 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
   `chatbot` and `debug` currently have no dedicated unit tests.
 - Prefer records and sealed types for value objects; Lombok is available (`@Getter`,
   `@RequiredArgsConstructor`, ...).
-- Commits: short lowercase imperative messages (`word add update`, `finish lesson update logic`).
+- Commits: short lowercase imperative messages (`wordInfo add update`, `finish lesson update logic`).

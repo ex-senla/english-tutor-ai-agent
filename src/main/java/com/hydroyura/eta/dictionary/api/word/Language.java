@@ -1,4 +1,4 @@
-package com.hydroyura.eta.dictionary.api.dictionary;
+package com.hydroyura.eta.dictionary.api.word;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

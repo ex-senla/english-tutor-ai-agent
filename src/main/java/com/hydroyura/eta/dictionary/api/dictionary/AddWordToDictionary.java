@@ -1,8 +1,8 @@
 package com.hydroyura.eta.dictionary.api.dictionary;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 
 public interface AddWordToDictionary {
 
-    WordId execute(AddWordCommand command);
+    WordInfoId execute(AddWordCommand command);
 }

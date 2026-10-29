@@ -53,4 +53,10 @@ public class WordView {
                         pos)), List.of());
     }
 
+    public static ActionResult notValidWord() {
+        return new ActionResult.TextResponse(
+                """
+                        Введите слово на **английском**"""
+        );
+    }
 }

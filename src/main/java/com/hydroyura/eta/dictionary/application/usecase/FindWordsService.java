@@ -24,8 +24,8 @@ public class FindWordsService implements FindWords {
         var dictionary = dictionaryRepository.findById(dictionaryId)
                 .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId));
 
-        return dictionary.getWords().stream()
-                .map(w -> new WordProjection(w.getId(), w.getValue(), w.getTranslations(), w.getPartOfSpeech(), w
+        return dictionary.getWordInfos().stream()
+                .map(w -> new WordProjection(w.getId(), w.getWord().getValue(), w.getTranslations(), w.getPartOfSpeech(), w
                         .getStatus()))
                 .collect(Collectors.toSet());
     }
@@ -34,7 +34,7 @@ public class FindWordsService implements FindWords {
     public DictionaryStats getStats(DictionaryId dictionaryId) {
         var words = dictionaryRepository.findById(dictionaryId)
                 .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId))
-                .getWords();
+                .getWordInfos();
 
         var total = words.size();
         var newCount = words.stream().filter(w -> w.getStatus() == WordStatus.NEW).count();

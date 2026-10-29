@@ -128,7 +128,7 @@ StateMachine, handler'ы и остальные переходы не покры�
 ```java
 @ApplicationModule(allowedDependencies = {
     "teacher :: teacher", "student :: student",
-    "student :: lesson", "dictionary :: dictionary", "dictionary :: word",
+    "student :: lesson", "dictionary :: dictionary", "dictionary :: wordInfo",
     "shared :: shared", "exercise :: exercise",
     "generator :: document"
 })

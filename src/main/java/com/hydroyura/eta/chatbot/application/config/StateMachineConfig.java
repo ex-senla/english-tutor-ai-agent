@@ -35,7 +35,9 @@ import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.Commands;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
-import com.hydroyura.eta.dictionary.application.usecase.CheckLanguageUseCase;
+import com.hydroyura.eta.dictionary.application.usecase.CheckWordUseCase;
+import com.hydroyura.eta.dictionary.domain.word.WordFactory;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoSpecifications;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
@@ -84,13 +86,11 @@ public class StateMachineConfig {
 
     @Bean
     public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher,
-            StudentQuery studentQuery,
-            FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
+            StudentQuery studentQuery, FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
-            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
-            AddWordToLesson addWordToLesson, ChangeStudentLevel changeStudentLevel,
-            GenerateExercise generateExercise, CheckExercise checkExercise,
-            GenerateExercisePdf generateExercisePdf) {
+            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary, AddWordToLesson addWordToLesson,
+            ChangeStudentLevel changeStudentLevel, GenerateExercise generateExercise, CheckExercise checkExercise,
+            GenerateExercisePdf generateExercisePdf, WordFactory wordFactory) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
 
         // переходы, регистрируемые под несколькими ключами
@@ -157,7 +157,7 @@ public class StateMachineConfig {
         stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
 
         // word flow: AWAITING_WORD -> AWAITING_POS -> AWAITING_TRANSLATION
-        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition(new CheckLanguageUseCase()));
+        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition(new CheckWordUseCase(wordFactory)));
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition());
         stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery,
                 addWordToDictionary, findActiveLesson, addWordToLesson));
