@@ -1,6 +1,6 @@
 package com.hydroyura.eta.exercise.application.usecase;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.exercise.api.exercise.CheckExerciseCommand;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
@@ -88,7 +88,8 @@ class CheckExerciseUseCaseTest {
     }
 
     private Exercise createExercise(List<String> expectedAnswers) {
-        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(WordId
+        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(
+                WordInfoId
                 .generate()));
         exercise.setContent("1. Last summer, I ___ to the mountains.\n2. We ___ home late.");
         exercise.setExpectedAnswers(expectedAnswers);

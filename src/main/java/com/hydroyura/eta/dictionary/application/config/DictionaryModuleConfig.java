@@ -1,10 +1,12 @@
 package com.hydroyura.eta.dictionary.application.config;
 
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
 import com.hydroyura.eta.dictionary.application.usecase.AddWordToDictionaryUseCase;
+import com.hydroyura.eta.dictionary.application.usecase.CheckWordUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.CreateDictionaryUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.FindWordsService;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
@@ -55,6 +57,11 @@ public class DictionaryModuleConfig {
     AddWordToDictionary addWordToDictionary(DictionaryRepository repository, WordInfoFactory wordInfoFactory,
             WordFactory wordFactory) {
         return new AddWordToDictionaryUseCase(repository, wordInfoFactory, wordFactory);
+    }
+
+    @Bean
+    CheckWord checkWord(WordFactory wordFactory) {
+        return new CheckWordUseCase(wordFactory);
     }
 
     @Bean

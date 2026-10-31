@@ -5,9 +5,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.CheckWordCommand;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
 import com.hydroyura.eta.dictionary.domain.word.exception.WordValidationException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
 @RequiredArgsConstructor
 public class CheckWordUseCase implements CheckWord {
 

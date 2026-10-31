@@ -1,6 +1,6 @@
 package com.hydroyura.eta.student.domain.student;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.student.api.lesson.LessonId;
 import com.hydroyura.eta.student.api.student.StudentId;
 
@@ -18,17 +18,17 @@ class LessonTest {
         assertThat(lesson.getStatus()).isEqualTo(LessonStatus.ACTIVE);
         assertThat(lesson.getStartedAt()).isNotNull();
         assertThat(lesson.getEndedAt()).isNull();
-        assertThat(lesson.getWordIds()).isEmpty();
+        assertThat(lesson.getWordInfoIds()).isEmpty();
     }
 
     @Test
     void shouldAddWordToActiveLesson() {
         var lesson = Lesson.start(LessonId.generate(), StudentId.generate(), "Lesson 1");
-        var wordId = WordId.generate();
+        var wordId = WordInfoId.generate();
 
         lesson.addWord(wordId);
 
-        assertThat(lesson.getWordIds()).contains(wordId);
+        assertThat(lesson.getWordInfoIds()).contains(wordId);
     }
 
     @Test
@@ -36,7 +36,7 @@ class LessonTest {
         var lesson = Lesson.start(LessonId.generate(), StudentId.generate(), "Lesson 1");
         lesson.end();
 
-        assertThatThrownBy(() -> lesson.addWord(WordId.generate()))
+        assertThatThrownBy(() -> lesson.addWord(WordInfoId.generate()))
                 .isInstanceOf(IllegalStateException.class);
     }
 

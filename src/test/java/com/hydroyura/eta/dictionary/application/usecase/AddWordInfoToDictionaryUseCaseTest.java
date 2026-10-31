@@ -8,7 +8,8 @@ import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import com.hydroyura.eta.dictionary.domain.dictionary.exception.DictionaryNotFoundException;
 import com.hydroyura.eta.dictionary.domain.dictionary.exception.WordAlreadyExistsException;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
-import com.hydroyura.eta.dictionary.domain.word.WordSpecificationConfig;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoFactory;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoSpecifications;
 import com.hydroyura.eta.dictionary.domain.word.WordSpecifications;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,11 +19,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AddWordToDictionaryUseCaseTest {
+class AddWordInfoToDictionaryUseCaseTest {
 
     private AddWordToDictionaryUseCase useCase;
 
@@ -30,58 +32,15 @@ class AddWordToDictionaryUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        var config = new WordSpecificationConfig() {
-
-            @Override
-            public String valueAllowedPattern() {
-                return "[a-zA-Z'\\- ]+";
-            }
-
-            @Override
-            public int valueMinLength() {
-                return 2;
-            }
-
-            @Override
-            public int valueMaxLength() {
-                return 50;
-            }
-
-            @Override
-            public String translationAllowedPattern() {
-                return "[а-яА-ЯёЁ ]+";
-            }
-
-            @Override
-            public int translationMinLength() {
-                return 1;
-            }
-
-            @Override
-            public int translationMaxLength() {
-                return 100;
-            }
-
-            @Override
-            public int minTranslations() {
-                return 1;
-            }
-
-            @Override
-            public int maxTargetRepetitions() {
-                return 100;
-            }
-
-            @Override
-            public int defaultTargetRepetitions() {
-                return 10;
-            }
-        };
-        var specs = new WordSpecifications(config);
-        var factory = new WordFactory(specs, config);
+        var wordFactory = new WordFactory(new WordSpecifications(
+                Pattern.compile("[a-zA-Z'\\- ]+"), /* valueMinLength */ 2, /* valueMaxLength */ 50));
+        var wordInfoFactory = new WordInfoFactory(new WordInfoSpecifications(
+                Pattern.compile("[а-яА-ЯёЁ\\- ]+"), /* translationMinLength */ 1,
+                /* translationMaxLength */ 100, /* minTranslations */ 1,
+                /* maxTargetRepetitions */ 100), /* defaultTargetRepetitions */ 10);
         repository = new StubDictionaryRepository();
 
-        useCase = new AddWordToDictionaryUseCase(repository, factory);
+        useCase = new AddWordToDictionaryUseCase(repository, wordInfoFactory, wordFactory);
     }
 
     @Test
@@ -93,8 +52,8 @@ class AddWordToDictionaryUseCaseTest {
         useCase.execute(cmd);
 
         var saved = repository.findById(dictId).orElseThrow();
-        assertThat(saved.getWords()).hasSize(1);
-        assertThat(saved.getWords().iterator().next().getValue()).isEqualTo("apple");
+        assertThat(saved.getWordInfos()).hasSize(1);
+        assertThat(saved.getWordInfos().iterator().next().getWord().getValue()).isEqualTo("apple");
     }
 
     @Test
@@ -115,6 +74,16 @@ class AddWordToDictionaryUseCaseTest {
         assertThatThrownBy(() -> useCase.execute(new AddWordCommand(dictId, "apple", Set.of("яблочко"),
                 PartOfSpeech.NOUN)))
                 .isInstanceOf(WordAlreadyExistsException.class);
+    }
+
+    @Test
+    void shouldRejectInvalidWordValue() {
+        var dictId = DictionaryId.generate();
+        repository.save(new Dictionary(dictId, new HashSet<>(), "My Dictionary"));
+
+        assertThatThrownBy(() -> useCase.execute(
+                new AddWordCommand(dictId, "привет", Set.of("hello"), PartOfSpeech.NOUN)))
+                .isInstanceOf(com.hydroyura.eta.dictionary.domain.word.exception.WordValidationException.class);
     }
 
     // --- stub ---
