@@ -3,10 +3,8 @@ package com.hydroyura.eta.dictionary.domain.word;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.jmolecules.ddd.annotation.Entity;
 
 @Getter
-@Entity
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public final class Word {
 
