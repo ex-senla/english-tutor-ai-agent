@@ -34,6 +34,7 @@ import com.hydroyura.eta.chatbot.view.Buttons;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.Commands;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
+import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
@@ -83,13 +84,11 @@ public class StateMachineConfig {
 
     @Bean
     public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher,
-            StudentQuery studentQuery,
-            FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
+            StudentQuery studentQuery, FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
-            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary,
-            AddWordToLesson addWordToLesson, ChangeStudentLevel changeStudentLevel,
-            GenerateExercise generateExercise, CheckExercise checkExercise,
-            GenerateExercisePdf generateExercisePdf) {
+            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary, AddWordToLesson addWordToLesson,
+            ChangeStudentLevel changeStudentLevel, GenerateExercise generateExercise, CheckExercise checkExercise,
+            GenerateExercisePdf generateExercisePdf, CheckWord checkWord) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
 
         // переходы, регистрируемые под несколькими ключами
@@ -156,7 +155,7 @@ public class StateMachineConfig {
         stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
 
         // word flow: AWAITING_WORD -> AWAITING_POS -> AWAITING_TRANSLATION
-        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition());
+        stateMachine.onInput(AWAITING_WORD, new InputAwaitingWordTransition(checkWord));
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition());
         stateMachine.onInput(AWAITING_TRANSLATION, new InputAwaitingTranslationTransition(studentQuery,
                 addWordToDictionary, findActiveLesson, addWordToLesson));

@@ -8,6 +8,7 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 
 import java.util.List;
 
+import static com.hydroyura.eta.chatbot.view.Messages.INVALID_INPUT;
 import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class WordView {
@@ -51,6 +52,24 @@ public class WordView {
 
                         Введите переводы через запятую (например: дом, здание, строение)""".formatted(word, posLabel(
                         pos)), List.of());
+    }
+
+    public static ActionResult notValidWord() {
+        return new ActionResult.TextResponse(
+                """
+                        %s.
+                        
+                        Введите слово на английском""".formatted(INVALID_INPUT)
+        );
+    }
+
+    public static ActionResult notValidTranslations() {
+        return new ActionResult.TextResponse(
+                """
+                        %s.
+                        
+                        Введите переводы на русском""".formatted(INVALID_INPUT)
+        );
     }
 
 }

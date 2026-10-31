@@ -5,7 +5,7 @@
 ## Составляющие
 
 ### Dictionary (@AggregateRoot)
-- Корень агрегата, владеет списком `Word`.
+- Корень агрегата, владеет списком `WordInfo`.
 - Поля: `id` (@Identity), `words` (Set<Word>), `name`.
 - Инварианты: не допускает дубликатов слов по value (case-insensitive).
 - Связь со Student: Student ссылается на DictionaryId. Dictionary не знает про Student.
@@ -19,8 +19,8 @@
 - Нельзя удалить последний перевод (LastTranslationException).
 
 ### WordFactory
-- Фабрика для создания Word с валидацией через `WordSpecifications`.
-- Конфигурация спецификаций через `WordSpecificationConfig` → `WordSpecificationSpringProperties`.
+- Фабрика для создания Word с валидацией через `WordInfoSpecifications`.
+- Конфигурация спецификаций через `WordInfoSpecificationConfig` → `WordInfoSpecificationProperties`.
 
 ### WordStatus (Enum)
 NEW, IN_PROGRESS, LEARNED
@@ -52,7 +52,7 @@ NEW, IN_PROGRESS, LEARNED
 - При создании Teacher автоматически создаёт Dictionary для каждого Student.
 
 ### AddWordToDictionaryUseCase
-- Реализует `AddWordToDictionary`. Использует `WordFactory` + `DictionaryRepository`.
+- Реализует `AddWordToDictionary`. Использует `WordInfoFactory` + `DictionaryRepository`.
 
 ## Зависимости
 ```java

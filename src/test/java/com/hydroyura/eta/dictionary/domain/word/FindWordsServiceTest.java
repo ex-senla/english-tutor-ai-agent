@@ -2,7 +2,7 @@ package com.hydroyura.eta.dictionary.domain.word;
 
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.dictionary.application.usecase.FindWordsService;
 import com.hydroyura.eta.dictionary.domain.dictionary.Dictionary;
@@ -33,10 +33,10 @@ class FindWordsServiceTest {
     @Test
     void shouldMapWordStatusToProjection() {
         var dictId = DictionaryId.generate();
-        var words = new HashSet<Word>();
-        words.add(new Word(WordId.generate(), "apple", Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
-        words.add(new Word(WordId.generate(), "run", Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
-        words.add(new Word(WordId.generate(), "big", Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
+        var words = new HashSet<WordInfo>();
+        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var projections = service.findByDictionaryId(dictId);
@@ -49,10 +49,10 @@ class FindWordsServiceTest {
     @Test
     void shouldCountStatsByStatus() {
         var dictId = DictionaryId.generate();
-        var words = new HashSet<Word>();
-        words.add(new Word(WordId.generate(), "apple", Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
-        words.add(new Word(WordId.generate(), "run", Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
-        words.add(new Word(WordId.generate(), "big", Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
+        var words = new HashSet<WordInfo>();
+        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var stats = service.getStats(dictId);

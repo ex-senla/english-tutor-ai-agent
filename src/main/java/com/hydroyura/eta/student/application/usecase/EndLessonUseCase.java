@@ -19,7 +19,7 @@ public class EndLessonUseCase implements EndLesson {
                 .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + cmd.lessonId()));
 
         var startedAt = lesson.getStartedAt();
-        var wordIds = lesson.getWordIds();
+        var wordIds = lesson.getWordInfoIds();
 
         lesson.end();
         lessonRepository.save(lesson);

@@ -7,7 +7,7 @@ import com.hydroyura.eta.chatbot.domain.chat.ChatId;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
@@ -167,7 +167,7 @@ class InputAwaitingExerciseTopicTransitionTest {
     }
 
     private WordProjection word() {
-        return new WordProjection(WordId.generate(), "travel", Set.of("путешествовать"), PartOfSpeech.VERB,
+        return new WordProjection(WordInfoId.generate(), "travel", Set.of("путешествовать"), PartOfSpeech.VERB,
                 WordStatus.IN_PROGRESS);
     }
 }

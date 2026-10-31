@@ -4,18 +4,18 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
-import com.hydroyura.eta.dictionary.application.config.properties.WordSpecificationSpringProperties;
-import com.hydroyura.eta.dictionary.application.usecase.AddWordToDictionaryUseCase;
+import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
 import com.hydroyura.eta.dictionary.domain.dictionary.Dictionary;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
-import com.hydroyura.eta.dictionary.domain.word.WordSpecifications;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoFactory;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoSpecifications;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -29,18 +29,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DictionaryModuleConfigTest {
 
     @Configuration
-    @EnableConfigurationProperties(WordSpecificationSpringProperties.class)
+    @Import(DictionaryModuleConfig.class)
     static class TestConfig {
-
-        @Bean
-        WordSpecifications wordSpecifications(WordSpecificationSpringProperties config) {
-            return new WordSpecifications(config);
-        }
-
-        @Bean
-        WordFactory wordFactory(WordSpecifications specs, WordSpecificationSpringProperties config) {
-            return new WordFactory(specs, config);
-        }
 
         @Bean
         DictionaryRepository dictionaryRepository() {
@@ -60,21 +50,19 @@ class DictionaryModuleConfigTest {
                 }
             };
         }
-
-        @Bean
-        AddWordToDictionary addWordToDictionary(DictionaryRepository repo, WordFactory factory) {
-            return new AddWordToDictionaryUseCase(repo, factory);
-        }
     }
 
     @Autowired
-    private WordSpecifications wordSpecifications;
+    private WordInfoSpecifications wordInfoSpecifications;
+
+    @Autowired
+    private WordInfoFactory wordInfoFactory;
 
     @Autowired
     private WordFactory wordFactory;
 
     @Autowired
-    private WordSpecificationSpringProperties properties;
+    private WordInfoSpecificationProperties properties;
 
     @Autowired
     private AddWordToDictionary addWordToDictionary;
@@ -84,29 +72,30 @@ class DictionaryModuleConfigTest {
 
     @Test
     void shouldWireWordSpecifications() {
-        assertThat(wordSpecifications).isNotNull();
+        assertThat(wordInfoSpecifications).isNotNull();
     }
 
     @Test
     void shouldWireWordFactory() {
+        assertThat(wordInfoFactory).isNotNull();
         assertThat(wordFactory).isNotNull();
     }
 
     @Test
     void shouldBindPropertiesWithDefaults() {
-        assertThat(properties.defaultTargetRepetitions()).isEqualTo(10);
-        assertThat(properties.valueMinLength()).isEqualTo(1);
-        assertThat(properties.maxTargetRepetitions()).isEqualTo(100);
+        assertThat(properties.getDefaultTargetRepetitions()).isEqualTo(10);
+        assertThat(properties.getValueMinLength()).isEqualTo(1);
+        assertThat(properties.getMaxTargetRepetitions()).isEqualTo(100);
     }
 
     @Test
     void factoryShouldCreateWord() {
-        var word = wordFactory.create("hello", java.util.Set.of("привет"),
-                com.hydroyura.eta.dictionary.api.word.PartOfSpeech.NOUN);
+        var word = wordFactory.create("hello");
+        var wordInfo = wordInfoFactory.create(word, Set.of("привет"), PartOfSpeech.NOUN);
 
-        assertThat(word).isNotNull();
-        assertThat(word.getValue()).isEqualTo("hello");
-        assertThat(word.getTargetRepetitions()).isEqualTo(10);
+        assertThat(wordInfo).isNotNull();
+        assertThat(wordInfo.getWord().getValue()).isEqualTo("hello");
+        assertThat(wordInfo.getTargetRepetitions()).isEqualTo(10);
     }
 
     @Test
@@ -117,7 +106,7 @@ class DictionaryModuleConfigTest {
         addWordToDictionary.execute(new AddWordCommand(dictId, "hello", Set.of("привет"), PartOfSpeech.NOUN));
 
         var dict = dictionaryRepository.findById(dictId).orElseThrow();
-        assertThat(dict.getWords()).hasSize(1);
-        assertThat(dict.getWords().iterator().next().getValue()).isEqualTo("hello");
+        assertThat(dict.getWordInfos()).hasSize(1);
+        assertThat(dict.getWordInfos().iterator().next().getWord().getValue()).isEqualTo("hello");
     }
 }
