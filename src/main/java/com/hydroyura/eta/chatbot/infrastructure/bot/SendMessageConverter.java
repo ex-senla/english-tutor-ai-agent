@@ -3,7 +3,6 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -50,7 +49,6 @@ public final class SendMessageConverter {
     private SendMessage buildText(Long chatId, String text) {
         return SendMessage.builder()
                 .chatId(chatId.toString())
-                .parseMode(ParseMode.HTML)
                 .text(text)
                 .build();
     }
@@ -68,7 +66,6 @@ public final class SendMessageConverter {
 
         return SendMessage.builder()
                 .chatId(chatId.toString())
-                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(new InlineKeyboardMarkup(telegramKeyboard))
                 .build();
@@ -85,7 +82,6 @@ public final class SendMessageConverter {
 
         return SendMessage.builder()
                 .chatId(chatId.toString())
-                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(telegramKeyboard)
@@ -108,7 +104,6 @@ public final class SendMessageConverter {
         return EditMessageText.builder()
                 .chatId(chatId.toString())
                 .messageId(messageId)
-                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(new InlineKeyboardMarkup(telegramKeyboard))
                 .build();

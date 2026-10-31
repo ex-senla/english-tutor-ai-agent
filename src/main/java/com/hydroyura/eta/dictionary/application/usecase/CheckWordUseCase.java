@@ -13,10 +13,6 @@ public class CheckWordUseCase implements CheckWord {
 
     @Override
     public boolean check(CheckWordCommand command) {
-        //TODO использовать WordSpecifications
-        // не выделять languagePatternMap, оставить value и translation, но собирать их в паттерн
-        // в юзкейс передавать только строку. добавить проверки для длину и паттерн
-
         //FIXME сомневаюсь только нормальная ли идея, что здесь происходит "моковое" создание (попытка создания без
         // сохранения результата)
         try {
