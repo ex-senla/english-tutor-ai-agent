@@ -8,6 +8,7 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 
 import java.util.List;
 
+import static com.hydroyura.eta.chatbot.view.Messages.INVALID_INPUT;
 import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class WordView {
@@ -56,18 +57,19 @@ public class WordView {
     public static ActionResult notValidWord() {
         return new ActionResult.TextResponse(
                 """
-                        ❌ Некорректный ввод.
+                        %s.
                         
-                        Введите слово на английском"""
+                        Введите слово на английском""".formatted(INVALID_INPUT)
         );
     }
 
     public static ActionResult notValidTranslations() {
         return new ActionResult.TextResponse(
                 """
-                        ❌ Некорректный ввод.
+                        %s.
                         
-                        Введите переводы на русском"""
+                        Введите переводы на русском""".formatted(INVALID_INPUT)
         );
     }
+
 }

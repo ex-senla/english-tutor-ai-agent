@@ -20,7 +20,7 @@ public class InputAwaitingWordTransition implements Transition<Action.Input> {
     public ActionResult transit(Chat chat, Action.Input input) {
         String wordValue = input.text();
 
-        if (!checkWord.check(new CheckWordCommand(wordValue))) {
+        if (!checkWord.isValid(new CheckWordCommand(wordValue))) {
             return WordView.notValidWord();
         }
 

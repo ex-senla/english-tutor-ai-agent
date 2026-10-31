@@ -23,7 +23,7 @@ public final class WordInfoSpecifications {
         return word -> {
             boolean satisfied = spec.isSatisfiedBy(word);
             if (!satisfied) {
-                log.warn("Word validation failed: {} for word '{}'", name, word.getWord());
+                log.warn("Word validation failed: {} for word '{}'", name, word.getWord().getValue());
             }
             return satisfied;
         };

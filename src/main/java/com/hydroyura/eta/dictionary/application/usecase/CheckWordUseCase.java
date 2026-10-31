@@ -12,9 +12,7 @@ public class CheckWordUseCase implements CheckWord {
     private final WordFactory factory;
 
     @Override
-    public boolean check(CheckWordCommand command) {
-        //FIXME сомневаюсь только нормальная ли идея, что здесь происходит "моковое" создание (попытка создания без
-        // сохранения результата)
+    public boolean isValid(CheckWordCommand command) {
         try {
             factory.create(command.value());
         } catch (WordValidationException e) {
