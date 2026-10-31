@@ -74,7 +74,7 @@ The generator must produce exactly the specified number of sentences.
 
 ### 2.1. The blank must test the specified grammar rule
 
-The missing wordInfo or phrase must be directly related to the specified grammar topic.
+The missing word or phrase must be directly related to the specified grammar topic.
 
 The learner must apply the specified grammar rule to determine the correct answer.
 
@@ -133,7 +133,7 @@ Answer:
 
 `travelled`
 
-Here, `travel` is a wordInfo from the learner's vocabulary and is used in the sentence, while the blank tests the application of `Past Simple`.
+Here, `travel` is a word from the learner's vocabulary and is used in the sentence, while the blank tests the application of `Past Simple`.
 
 ---
 
@@ -143,7 +143,7 @@ Here, `travel` is a wordInfo from the learner's vocabulary and is used in the se
 
 ### 3.1. The blank must test the specified grammar rule
 
-The missing wordInfo or phrase must be directly related to the specified grammar topic.
+The missing word or phrase must be directly related to the specified grammar topic.
 
 The learner must apply the specified grammar rule to choose the correct answer.
 

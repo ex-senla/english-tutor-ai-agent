@@ -13,4 +13,4 @@ Rules:
 Respond with ONLY a valid JSON object, no markdown, no commentary:
 {"items":[{"sentence":"... ___ ...","options":[],"correctAnswer":"travelled"}]}
 
-For FILL_IN_THE_BLANK, "options" must always be an empty array; "correctAnswer" is the exact wordInfo/phrase that fills the blank.
+For FILL_IN_THE_BLANK, "options" must always be an empty array; "correctAnswer" is the exact word/phrase that fills the blank.

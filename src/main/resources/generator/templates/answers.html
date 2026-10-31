@@ -115,8 +115,8 @@
             border-bottom: 1px solid #c7e3da;
             font-size: 9.5pt;
         }
-        .vocab .wordInfo-heading { width: 36%; }
-        .vocab td.wordInfo { background: #edf7f3; color: #17574d; }
+        .vocab .word-heading { width: 36%; }
+        .vocab td.word { background: #edf7f3; color: #17574d; }
         .vocab td.translation { background: #f8fbfa; }
         .empty {
             background: #f3f9f6;
@@ -165,18 +165,18 @@
     <table class="vocab" th:if="${!usedWords.isEmpty()}">
         <thead>
             <tr>
-                <th class="wordInfo-heading" scope="col">WORD / PHRASE</th>
+                <th class="word-heading" scope="col">WORD / PHRASE</th>
                 <th scope="col">TRANSLATION</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="w : ${usedWords}">
-                <td class="wordInfo" th:text="${w.value}"></td>
+                <td class="word" th:text="${w.value}"></td>
                 <td class="translation" th:text="${w.translations}"></td>
             </tr>
         </tbody>
     </table>
     <p class="empty" th:if="${usedWords.isEmpty()}">No vocabulary words were used.</p>
-    <p class="closing">Review prompt: ask the student to explain a choice, then use the wordInfo in a new sentence.</p>
+    <p class="closing">Review prompt: ask the student to explain a choice, then use the word in a new sentence.</p>
 </body>
 </html>
