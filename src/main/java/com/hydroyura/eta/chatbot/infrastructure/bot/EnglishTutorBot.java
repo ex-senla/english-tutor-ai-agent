@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
 import static com.hydroyura.eta.chatbot.view.Messages.GENERATING_EXERCISE;
 
@@ -95,17 +96,26 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             execute(delete);
         }
 
-        boolean shouldRemoveReplyKeyboard = isFromStateWithReplyKeyboard(oldState, newState);
+        // 7. remove reply keyboard when leaving ACTIVE or IN_LESSON state
+        if (isFromStateWithReplyKeyboard(oldState, newState)) {
+            var remove = SendMessage.builder()
+                    .chatId(chatId.toString())
+                    .text("...")
+                    .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
+                    .build();
+            var removed = execute(remove);
+            execute(converter.buildDelete(chatId, removed.getMessageId()));
+        }
 
         // 8. send documents / send/edit/delete message
         if (result instanceof ActionResult.SendDocuments sendDocuments) {
             for (var doc : sendDocuments.documents()) {
-                execute(converter.convertDocument(doc, chatId, shouldRemoveReplyKeyboard));
+                execute(converter.convertDocument(doc, chatId));
             }
             execute(converter.convertTextWithInlineKeyboard(sendDocuments.text(), sendDocuments.keyboard(), chatId));
             return;
         }
-        var response = converter.convert(result, chatId, shouldRemoveReplyKeyboard);
+        var response = converter.convert(result, chatId);
         switch (response) {
             case SendMessage msg -> execute(msg);
             case EditMessageText edit -> execute(edit);

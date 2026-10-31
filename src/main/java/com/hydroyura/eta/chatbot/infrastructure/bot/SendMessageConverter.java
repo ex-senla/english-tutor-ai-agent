@@ -3,6 +3,7 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult.InlineButton;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -10,7 +11,6 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
@@ -20,52 +20,39 @@ import java.util.List;
 @Component
 public final class SendMessageConverter {
 
-    public Object convert(ActionResult result, Long chatId, boolean shouldRemoveReplyKeyboard) {
+    public Object convert(ActionResult result, Long chatId) {
         return switch (result) {
-            case ActionResult.TextResponse(var text) -> buildText(chatId, text, shouldRemoveReplyKeyboard);
+            case ActionResult.TextResponse(var text) -> buildText(chatId, text);
             case ActionResult.TextWithInlineKeyboard(var text, var keyboard) -> buildInline(chatId, text, keyboard);
             case ActionResult.TextWithReplyKeyboard(var text, var keyboard, var cleanupMessageId) -> buildReply(chatId,
                     text, keyboard);
             case ActionResult.EditMessageText(var messageId, var text, var keyboard) -> buildEdit(chatId, messageId,
                     text, keyboard);
             case ActionResult.DeleteMessage(var messageId) -> buildDelete(chatId, messageId);
-            case ActionResult.SendDocument doc -> buildDocument(doc, chatId, shouldRemoveReplyKeyboard);
+            case ActionResult.SendDocument doc -> convertDocument(doc, chatId);
             case ActionResult.SendDocuments ignored -> throw new IllegalArgumentException(
                     "SendDocuments must be handled separately");
         };
     }
 
-    public SendDocument convertDocument(ActionResult.SendDocument doc, Long chatId, boolean shouldRemoveReplyKeyboard) {
-        return buildDocument(doc, chatId, shouldRemoveReplyKeyboard);
-    }
-
-    private SendDocument buildDocument(ActionResult.SendDocument doc, Long chatId, boolean shouldRemoveReplyKeyboard) {
-        SendDocument.SendDocumentBuilder documentBuilder = SendDocument.builder()
+    public SendDocument convertDocument(ActionResult.SendDocument doc, Long chatId) {
+        return SendDocument.builder()
                 .chatId(chatId.toString())
                 .caption(doc.caption())
-                .document(new InputFile(new ByteArrayInputStream(doc.content()), doc.fileName()));
-
-        if (shouldRemoveReplyKeyboard) {
-            documentBuilder.replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-        }
-
-        return documentBuilder.build();
+                .document(new InputFile(new ByteArrayInputStream(doc.content()), doc.fileName()))
+                .build();
     }
 
     public SendMessage convertTextWithInlineKeyboard(String text, List<List<InlineButton>> keyboard, Long chatId) {
         return buildInline(chatId, text, keyboard);
     }
 
-    private SendMessage buildText(Long chatId, String text, boolean shouldRemoveReplyKeyboard) {
-        SendMessage.SendMessageBuilder textBuilder = SendMessage.builder()
+    private SendMessage buildText(Long chatId, String text) {
+        return SendMessage.builder()
                 .chatId(chatId.toString())
-                .text(text);
-
-        if (shouldRemoveReplyKeyboard) {
-            textBuilder.replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build());
-        }
-
-        return textBuilder.build();
+                .parseMode(ParseMode.HTML)
+                .text(text)
+                .build();
     }
 
     private SendMessage buildInline(Long chatId, String text, List<List<InlineButton>> keyboard) {
@@ -81,6 +68,7 @@ public final class SendMessageConverter {
 
         return SendMessage.builder()
                 .chatId(chatId.toString())
+                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(new InlineKeyboardMarkup(telegramKeyboard))
                 .build();
@@ -97,6 +85,7 @@ public final class SendMessageConverter {
 
         return SendMessage.builder()
                 .chatId(chatId.toString())
+                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(ReplyKeyboardMarkup.builder()
                         .keyboard(telegramKeyboard)
@@ -119,12 +108,13 @@ public final class SendMessageConverter {
         return EditMessageText.builder()
                 .chatId(chatId.toString())
                 .messageId(messageId)
+                .parseMode(ParseMode.HTML)
                 .text(text)
                 .replyMarkup(new InlineKeyboardMarkup(telegramKeyboard))
                 .build();
     }
 
-    private DeleteMessage buildDelete(Long chatId, int messageId) {
+    public DeleteMessage buildDelete(Long chatId, int messageId) {
         return DeleteMessage.builder()
                 .chatId(chatId.toString())
                 .messageId(messageId)
