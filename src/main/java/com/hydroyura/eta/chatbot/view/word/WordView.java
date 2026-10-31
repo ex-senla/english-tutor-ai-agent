@@ -56,7 +56,18 @@ public class WordView {
     public static ActionResult notValidWord() {
         return new ActionResult.TextResponse(
                 """
-                        Введите слово на **английском**"""
+                        ❌ Некорректный ввод.
+                        
+                        Введите слово на <b>английском</b>"""
+        );
+    }
+
+    public static ActionResult notValidTranslations() {
+        return new ActionResult.TextResponse(
+                """
+                        ❌ Некорректный ввод.
+                        
+                        Введите переводы на <b>русском</b>"""
         );
     }
 }
