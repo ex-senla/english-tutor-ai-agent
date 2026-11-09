@@ -32,7 +32,7 @@ class CreateDictionaryUseCaseTest {
         assertThat(id).isNotNull();
         var saved = repository.findById(id).orElseThrow();
         assertThat(saved.getName()).isEqualTo("My Dictionary");
-        assertThat(saved.getWords()).isEmpty();
+        assertThat(saved.getWordInfos()).isEmpty();
     }
 
     // --- stub ---

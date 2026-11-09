@@ -4,7 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
@@ -29,9 +29,9 @@ class GenerateExerciseUseCaseTest {
     @Test
     void shouldPassAllWordsToGenerator() {
         var dictId = DictionaryId.generate();
-        var appleId = WordId.generate();
-        var runId = WordId.generate();
-        var bigId = WordId.generate();
+        var appleId = WordInfoId.generate();
+        var runId = WordInfoId.generate();
+        var bigId = WordInfoId.generate();
 
         var findWords = new StubFindWords(Set.of(
                 new WordProjection(appleId, "apple", Set.of("яблоко"), PartOfSpeech.NOUN, WordStatus.NEW),
@@ -50,7 +50,7 @@ class GenerateExerciseUseCaseTest {
                 .containsExactlyInAnyOrder("apple", "run", "big");
 
         var saved = repository.saved;
-        assertThat(saved.getWordIds()).containsExactlyInAnyOrder(appleId, runId, bigId);
+        assertThat(saved.getWordInfoIds()).containsExactlyInAnyOrder(appleId, runId, bigId);
     }
 
     @Test
@@ -67,7 +67,7 @@ class GenerateExerciseUseCaseTest {
         useCase.execute(command);
 
         assertThat(generator.receivedWords).isEmpty();
-        assertThat(repository.saved.getWordIds()).isEmpty();
+        assertThat(repository.saved.getWordInfoIds()).isEmpty();
     }
 
     static class RecordingGenerator implements ExerciseGenerator {

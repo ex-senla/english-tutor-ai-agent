@@ -42,7 +42,7 @@
 ## Зависимости
 ```java
 @ApplicationModule(allowedDependencies = {
-    "dictionary :: dictionary", "dictionary :: word", "student :: student", "student :: lesson"
+    "dictionary :: dictionary", "dictionary :: wordInfo", "student :: student", "student :: lesson"
 })
 ```
 
@@ -57,10 +57,10 @@
 - `min-words-per-student` (default `3`) и `max-words-per-student` (default `5`) — диапазон слов в словаре.
 
 Демо-слова берутся из курируемого каталога `DemoWordCatalog`, который проходит валидацию
-`WordSpecifications`. Имена учеников — случайное базовое имя + порядковый суффикс, что гарантирует
+`WordInfoSpecifications`. Имена учеников — случайное базовое имя + порядковый суффикс, что гарантирует
 уникальность (иначе `CreateStudentWithDictionary` отклонит дубликат имени).
 
-Тип `PartOfSpeech` для наполнения словаря потребовал добавить зависимость `dictionary :: word`.
+Тип `PartOfSpeech` для наполнения словаря потребовал добавить зависимость `dictionary :: wordInfo`.
 
 ## Инфраструктура
 - `InMemoryTeacherRepository` — `ConcurrentHashMap<TeacherId, Teacher>`

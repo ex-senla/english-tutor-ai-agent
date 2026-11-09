@@ -4,13 +4,16 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.dictionary.domain.dictionary.exception.WordAlreadyExistsException;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
-import com.hydroyura.eta.dictionary.domain.word.WordSpecificationConfig;
+import com.hydroyura.eta.dictionary.domain.word.WordInfo;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoFactory;
+import com.hydroyura.eta.dictionary.domain.word.WordInfoSpecifications;
 import com.hydroyura.eta.dictionary.domain.word.WordSpecifications;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,76 +22,38 @@ class DictionaryTest {
 
     private WordFactory wordFactory;
 
+    private WordInfoFactory wordInfoFactory;
+
     @BeforeEach
     void setUp() {
-        var config = new WordSpecificationConfig() {
+        wordFactory = new WordFactory(new WordSpecifications(
+                Pattern.compile("[a-zA-Z'\\- ]+"), /* valueMinLength */ 1, /* valueMaxLength */ 50));
+        wordInfoFactory = new WordInfoFactory(new WordInfoSpecifications(
+                Pattern.compile("[а-яА-ЯёЁ\\- ]+"), /* translationMinLength */ 1,
+                /* translationMaxLength */ 100, /* minTranslations */ 1,
+                /* maxTargetRepetitions */ 100), /* defaultTargetRepetitions */ 10);
+    }
 
-            @Override
-            public String valueAllowedPattern() {
-                return "[a-zA-Z'\\- ]+";
-            }
-
-            @Override
-            public int valueMinLength() {
-                return 1;
-            }
-
-            @Override
-            public int valueMaxLength() {
-                return 50;
-            }
-
-            @Override
-            public String translationAllowedPattern() {
-                return "[а-яА-ЯёЁ ]+";
-            }
-
-            @Override
-            public int translationMinLength() {
-                return 1;
-            }
-
-            @Override
-            public int translationMaxLength() {
-                return 100;
-            }
-
-            @Override
-            public int minTranslations() {
-                return 1;
-            }
-
-            @Override
-            public int maxTargetRepetitions() {
-                return 100;
-            }
-
-            @Override
-            public int defaultTargetRepetitions() {
-                return 10;
-            }
-        };
-        var specs = new WordSpecifications(config);
-        wordFactory = new WordFactory(specs, config);
+    private WordInfo wordInfo(String value, String translation, PartOfSpeech partOfSpeech) {
+        return wordInfoFactory.create(wordFactory.create(value), Set.of(translation), partOfSpeech);
     }
 
     @Test
     void shouldAddWord() {
         var dictionary = new Dictionary(DictionaryId.generate(), new HashSet<>(), "My Dictionary");
-        var word = wordFactory.create("apple", Set.of("яблоко"), PartOfSpeech.NOUN);
+        var word = wordInfo("apple", "яблоко", PartOfSpeech.NOUN);
 
         dictionary.addWord(word);
 
-        assertThat(dictionary.getWords()).containsExactly(word);
+        assertThat(dictionary.getWordInfos()).containsExactly(word);
     }
 
     @Test
     void shouldRejectDuplicateWordByValue() {
         var dictionary = new Dictionary(DictionaryId.generate(), new HashSet<>(), "My Dictionary");
-        dictionary.addWord(wordFactory.create("apple", Set.of("яблоко"), PartOfSpeech.NOUN));
+        dictionary.addWord(wordInfo("apple", "яблоко", PartOfSpeech.NOUN));
 
-        assertThatThrownBy(() -> dictionary.addWord(
-                wordFactory.create("APPLE", Set.of("яблочко"), PartOfSpeech.NOUN)))
+        assertThatThrownBy(() -> dictionary.addWord(wordInfo("APPLE", "яблочко", PartOfSpeech.NOUN)))
                 .isInstanceOf(WordAlreadyExistsException.class);
     }
 

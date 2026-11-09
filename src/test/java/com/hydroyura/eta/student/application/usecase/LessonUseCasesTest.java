@@ -1,8 +1,7 @@
 package com.hydroyura.eta.student.application.usecase;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.student.api.lesson.*;
-import com.hydroyura.eta.student.api.student.*;
 import com.hydroyura.eta.student.domain.student.Lesson;
 import com.hydroyura.eta.student.domain.student.LessonRepository;
 import com.hydroyura.eta.student.api.student.StudentId;
@@ -42,10 +41,10 @@ class LessonUseCasesTest {
         assertThat(lessonId).isNotNull();
 
         // add word
-        addWordToLesson.execute(new AddWordToLessonCommand(lessonId, WordId.generate()));
+        addWordToLesson.execute(new AddWordToLessonCommand(lessonId, WordInfoId.generate()));
 
         var lesson = repository.findById(lessonId).orElseThrow();
-        assertThat(lesson.getWordIds()).hasSize(1);
+        assertThat(lesson.getWordInfoIds()).hasSize(1);
 
         // end
         endLesson.execute(new EndLessonCommand(lessonId));

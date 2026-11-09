@@ -2,7 +2,7 @@ package com.hydroyura.eta.teacher.application.demo;
 
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
@@ -89,7 +89,7 @@ class DemoStudentsSeederTest {
         AddWordToDictionary addWordToDictionary = cmd -> {
             addedWords.computeIfAbsent(cmd.dictionaryId(), k -> new ArrayList<>())
                     .add(new DemoWord(cmd.value(), cmd.translations(), cmd.partOfSpeech()));
-            return WordId.generate();
+            return WordInfoId.generate();
         };
 
         seeder = new DemoStudentsSeeder(config, createStudentWithDictionary, studentQuery, addWordToDictionary,
