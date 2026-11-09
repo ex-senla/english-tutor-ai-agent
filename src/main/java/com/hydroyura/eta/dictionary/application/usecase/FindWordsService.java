@@ -25,7 +25,7 @@ public class FindWordsService implements FindWords {
                 .orElseThrow(() -> new DictionaryNotFoundException(dictionaryId));
 
         return dictionary.getWordInfos().stream()
-                .map(w -> new WordProjection(w.getId(), w.getWord().getValue(), w.getTranslations(), w.getPartOfSpeech(), w
+                .map(w -> new WordProjection(w.getId(), w.getWord().value(), w.getTranslations(), w.getPartOfSpeech(), w
                         .getStatus()))
                 .collect(Collectors.toSet());
     }

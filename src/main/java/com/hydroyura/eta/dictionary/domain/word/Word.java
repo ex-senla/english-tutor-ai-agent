@@ -1,13 +1,8 @@
 package com.hydroyura.eta.dictionary.domain.word;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import org.jmolecules.ddd.annotation.ValueObject;
 
-@Getter
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-public final class Word {
-
-    private final String value;
+@ValueObject
+public record Word(String value) {
 
 }

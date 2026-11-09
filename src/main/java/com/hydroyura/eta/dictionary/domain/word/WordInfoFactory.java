@@ -37,7 +37,7 @@ public final class WordInfoFactory {
         );
 
         if (!specifications.validForCreation().isSatisfiedBy(wordInfo)) {
-            throw new WordValidationException(word.getValue());
+            throw new WordValidationException(word.value());
         }
 
         return wordInfo;

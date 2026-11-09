@@ -53,7 +53,7 @@ class AddWordInfoToDictionaryUseCaseTest {
 
         var saved = repository.findById(dictId).orElseThrow();
         assertThat(saved.getWordInfos()).hasSize(1);
-        assertThat(saved.getWordInfos().iterator().next().getWord().getValue()).isEqualTo("apple");
+        assertThat(saved.getWordInfos().iterator().next().getWord().value()).isEqualTo("apple");
     }
 
     @Test

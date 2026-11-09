@@ -94,7 +94,7 @@ class DictionaryModuleConfigTest {
         var wordInfo = wordInfoFactory.create(word, Set.of("привет"), PartOfSpeech.NOUN);
 
         assertThat(wordInfo).isNotNull();
-        assertThat(wordInfo.getWord().getValue()).isEqualTo("hello");
+        assertThat(wordInfo.getWord().value()).isEqualTo("hello");
         assertThat(wordInfo.getTargetRepetitions()).isEqualTo(10);
     }
 
@@ -107,6 +107,6 @@ class DictionaryModuleConfigTest {
 
         var dict = dictionaryRepository.findById(dictId).orElseThrow();
         assertThat(dict.getWordInfos()).hasSize(1);
-        assertThat(dict.getWordInfos().iterator().next().getWord().getValue()).isEqualTo("hello");
+        assertThat(dict.getWordInfos().iterator().next().getWord().value()).isEqualTo("hello");
     }
 }

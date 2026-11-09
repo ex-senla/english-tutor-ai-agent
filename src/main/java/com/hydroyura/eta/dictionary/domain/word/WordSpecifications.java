@@ -19,7 +19,7 @@ public final class WordSpecifications {
         return word -> {
             boolean satisfied = spec.isSatisfiedBy(word);
             if (!satisfied) {
-                log.warn("Word validation failed: {} for word '{}'", name, word.getValue());
+                log.warn("Word validation failed: {} for word '{}'", name, word.value());
             }
             return satisfied;
         };
@@ -27,20 +27,20 @@ public final class WordSpecifications {
 
     public Specification<Word> valueNotBlank() {
         return warnFalse("valueNotBlank",
-                word -> word.getValue() != null && !word.getValue().isBlank());
+                word -> word.value() != null && !word.value().isBlank());
     }
 
     public Specification<Word> valueMatchesPattern() {
         return warnFalse("valueMatchesPattern",
-                word -> word.getValue() != null
-                        && valueAllowedPattern.matcher(word.getValue()).matches());
+                word -> word.value() != null
+                        && valueAllowedPattern.matcher(word.value()).matches());
     }
 
     public Specification<Word> valueLengthInRange() {
         return warnFalse("valueLengthInRange",
-                word -> word.getValue() != null
-                        && word.getValue().length() >= valueMinLength
-                        && word.getValue().length() <= valueMaxLength);
+                word -> word.value() != null
+                        && word.value().length() >= valueMinLength
+                        && word.value().length() <= valueMaxLength);
     }
 
     public Specification<Word> validForCreation() {

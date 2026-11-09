@@ -25,8 +25,8 @@ public final class Dictionary {
 
     public void addWord(WordInfo wordInfo) {
         Objects.requireNonNull(wordInfo, "Word must not be null");
-        if (wordInfos.stream().anyMatch(w -> w.getWord().getValue().equalsIgnoreCase(wordInfo.getWord().getValue()))) {
-            throw new WordAlreadyExistsException(wordInfo.getWord().getValue());
+        if (wordInfos.stream().anyMatch(w -> w.getWord().value().equalsIgnoreCase(wordInfo.getWord().value()))) {
+            throw new WordAlreadyExistsException(wordInfo.getWord().value());
         }
         this.wordInfos.add(wordInfo);
     }

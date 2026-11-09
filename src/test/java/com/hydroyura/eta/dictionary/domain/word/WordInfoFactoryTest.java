@@ -31,7 +31,7 @@ class WordInfoFactoryTest {
         var wordInfo = factory.create(new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN);
 
         assertThat(wordInfo.getId()).isNotNull();
-        assertThat(wordInfo.getWord().getValue()).isEqualTo("apple");
+        assertThat(wordInfo.getWord().value()).isEqualTo("apple");
         assertThat(wordInfo.getTranslations()).containsExactly("яблоко");
         assertThat(wordInfo.getPartOfSpeech()).isEqualTo(PartOfSpeech.NOUN);
         assertThat(wordInfo.getTargetRepetitions()).isEqualTo(10); // default from config

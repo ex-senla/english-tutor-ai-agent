@@ -26,7 +26,7 @@ class WordFactoryTest {
     void shouldCreateValidWord() {
         var word = factory.create("apple");
 
-        assertThat(word.getValue()).isEqualTo("apple");
+        assertThat(word.value()).isEqualTo("apple");
     }
 
     @Test
