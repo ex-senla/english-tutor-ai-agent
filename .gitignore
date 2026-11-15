@@ -36,3 +36,4 @@ build/
 ### Pi agent / OpenSpec ###
 .pi/
 openspec/
+docs/agentcraft/
