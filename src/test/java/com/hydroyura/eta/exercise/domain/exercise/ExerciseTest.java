@@ -14,7 +14,7 @@ class ExerciseTest {
     void shouldCreateExercise() {
         var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(
                 WordInfoId
-                .generate()));
+                        .generate()));
         assertThat(exercise.getId()).isNotNull();
         assertThat(exercise.getType()).isEqualTo(ExerciseType.FILL_IN_THE_BLANK);
         assertThat(exercise.getTopic()).isEqualTo("Animals");

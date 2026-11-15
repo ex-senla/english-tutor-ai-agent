@@ -58,7 +58,7 @@ public class WordView {
         return new ActionResult.TextResponse(
                 """
                         %s.
-                        
+
                         Введите слово на английском""".formatted(INVALID_INPUT)
         );
     }
@@ -67,7 +67,7 @@ public class WordView {
         return new ActionResult.TextResponse(
                 """
                         %s.
-                        
+
                         Введите переводы на русском""".formatted(INVALID_INPUT)
         );
     }

@@ -36,7 +36,8 @@ class FindWordsServiceTest {
         var words = new HashSet<WordInfo>();
         words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
         words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
-        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10,
+                10));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var projections = service.findByDictionaryId(dictId);
@@ -52,7 +53,8 @@ class FindWordsServiceTest {
         var words = new HashSet<WordInfo>();
         words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
         words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
-        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10,
+                10));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var stats = service.getStats(dictId);
