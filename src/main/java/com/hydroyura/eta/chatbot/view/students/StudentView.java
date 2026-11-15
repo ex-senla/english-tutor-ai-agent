@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.view.Messages.NO_STUDENTS;
+import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_NOTHING_FOUND;
+import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_PROMPT;
 import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 @RequiredArgsConstructor
@@ -33,6 +35,29 @@ public class StudentView {
         return new ActionResult.TextWithInlineKeyboard("Ваши ученики:", keyboard);
     }
 
+    public static ActionResult searchPrompt() {
+        return new ActionResult.TextWithInlineKeyboard(SEARCH_PROMPT, List.of(backButton()));
+    }
+
+    public static ActionResult searchResults(List<StudentInfo> students, int limit) {
+        var keyboard = new ArrayList<>(students.stream()
+                .limit(limit)
+                .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
+                        .value().toString()))))
+                .toList());
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
+                Callbacks.MAIN))));
+        return new ActionResult.TextWithInlineKeyboard("Найдено:", keyboard);
+    }
+
+    public static ActionResult searchNothingFound() {
+        return new ActionResult.TextWithInlineKeyboard(SEARCH_NOTHING_FOUND, List.of(backButton()));
+    }
+
+    private static List<ActionResult.InlineButton> backButton() {
+        return List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN)));
+    }
+
     public static List<List<ActionResult.InlineButton>> optionsKeyboard() {
         return List.of(
                 List.of(new ActionResult.InlineButton(Buttons.START_LESSON, createCallbackData(Callbacks.ACTION,
@@ -48,6 +73,10 @@ public class StudentView {
 
     public static ActionResult options(int messageId, String name) {
         return new ActionResult.EditMessageText(messageId, "Ученик: " + name, optionsKeyboard());
+    }
+
+    public static ActionResult optionsFresh(String name) {
+        return new ActionResult.TextWithInlineKeyboard("Ученик: " + name, optionsKeyboard());
     }
 
     public static ActionResult listEdit(int messageId, List<StudentInfo> students) {
@@ -70,7 +99,15 @@ public class StudentView {
     }
 
     public static ActionResult studentDetails(int messageId, StudentDetails details) {
-        var text = """
+        return new ActionResult.EditMessageText(messageId, studentDetailsText(details), detailsKeyboard());
+    }
+
+    public static ActionResult studentDetailsFresh(StudentDetails details) {
+        return new ActionResult.TextWithInlineKeyboard(studentDetailsText(details), detailsKeyboard());
+    }
+
+    private static String studentDetailsText(StudentDetails details) {
+        return """
                 🧑‍🎓 Ученик: %s
                 📊 Уровень: %s
 
@@ -86,15 +123,15 @@ public class StudentView {
                 details.dictionaryStats().learnedCount(),
                 details.hasActiveLesson() ? "\n\n▶️ Активный урок: есть" : ""
         );
+    }
 
-        var keyboard = List.of(
+    private static List<List<ActionResult.InlineButton>> detailsKeyboard() {
+        return List.of(
                 List.of(new ActionResult.InlineButton(Buttons.CHANGE_LEVEL,
                         createCallbackData(Callbacks.LEVEL_CHANGE))),
                 List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS,
                         Callbacks.BACK)))
         );
-
-        return new ActionResult.EditMessageText(messageId, text, keyboard);
     }
 
     public static List<List<ActionResult.InlineButton>> levelKeyboard() {

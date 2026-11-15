@@ -5,18 +5,18 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
-import static com.hydroyura.eta.chatbot.view.Messages.ENTER_TRANSLATIONS;
+import static com.hydroyura.eta.chatbot.view.Messages.USE_BUTTONS_BELOW;
 
 @Component
-public class AwaitingTranslationHandler implements Handler {
+public class AwaitingTranslationChoiceHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse(ENTER_TRANSLATIONS);
+        return new ActionResult.TextResponse(USE_BUTTONS_BELOW);
     }
 
     @Override
     public ChatState getChatState() {
-        return ChatState.AWAITING_TRANSLATION;
+        return ChatState.AWAITING_TRANSLATION_CHOICE;
     }
 }

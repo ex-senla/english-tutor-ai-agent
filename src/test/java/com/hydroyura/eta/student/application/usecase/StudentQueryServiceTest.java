@@ -5,7 +5,9 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.student.CefrLevel;
+import com.hydroyura.eta.student.api.student.SearchStudentsQuery;
 import com.hydroyura.eta.student.api.student.StudentId;
+import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +61,49 @@ class StudentQueryServiceTest {
 
         assertThat(details.name()).isEqualTo("Иван");
         assertThat(details.level()).isEqualTo(CefrLevel.C1);
+    }
+
+    @Test
+    void shouldSearchByNameFragmentCaseInsensitive() {
+        var anna = saveStudent("Anna");
+        var joan = saveStudent("Joan");
+        var tom = saveStudent("Tom");
+
+        var result = service.searchByNameFragment(
+                new SearchStudentsQuery(Set.of(anna, joan, tom), "AN"));
+
+        assertThat(result).extracting(StudentInfo::name).containsExactlyInAnyOrder("Anna", "Joan");
+        assertThat(result).extracting(StudentInfo::name).doesNotContain("Tom");
+    }
+
+    @Test
+    void shouldExcludeForeignStudentIds() {
+        var anna = saveStudent("Anna");
+        var foreign = saveStudent("Bob");
+
+        var result = service.searchByNameFragment(new SearchStudentsQuery(Set.of(anna), "b"));
+
+        assertThat(result).isEmpty();
+        assertThat(repository.findById(foreign)).isPresent();
+    }
+
+    @Test
+    void shouldReturnStableNameOrder() {
+        var aaron = saveStudent("Aaron");
+        var alice = saveStudent("alice");
+        var anna = saveStudent("ANNA");
+
+        var result = service.searchByNameFragment(
+                new SearchStudentsQuery(Set.of(anna, alice, aaron), "a"));
+
+        assertThat(result).extracting(StudentInfo::name)
+                .containsExactly("Aaron", "alice", "ANNA");
+    }
+
+    private StudentId saveStudent(String name) {
+        var student = Student.create(StudentId.generate(), DictionaryId.generate(), name, CefrLevel.B1);
+        repository.save(student);
+        return student.getId();
     }
 
     static class StubStudentRepository implements StudentRepository {

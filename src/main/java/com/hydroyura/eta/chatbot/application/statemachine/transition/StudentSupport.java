@@ -32,4 +32,11 @@ public final class StudentSupport {
                 .orElseThrow(() -> new IllegalStateException("No details for student " + studentId));
         return StudentView.studentDetails(messageId, details);
     }
+
+    public static ActionResult studentDetailsFresh(StudentQuery studentQuery, Chat chat) {
+        var studentId = selectedStudentId(chat);
+        var details = studentQuery.findStudentDetails(studentId)
+                .orElseThrow(() -> new IllegalStateException("No details for student " + studentId));
+        return StudentView.studentDetailsFresh(details);
+    }
 }

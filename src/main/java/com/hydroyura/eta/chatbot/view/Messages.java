@@ -10,6 +10,21 @@ public final class Messages {
 
     public static final String CHOOSE_STUDENT = "Выберите ученика кнопками ниже";
 
+    public static final String CANCELLED = "✅ Действие отменено";
+
+    public static final String NOTHING_TO_CANCEL = "Нет активного действия для отмены";
+
+    public static final String SEARCH_PROMPT = "🔍 Введите фрагмент имени ученика";
+
+    public static final String SEARCH_NOTHING_FOUND = "Ничего не найдено";
+
+    public static final String TRANSLATION_SUGGESTIONS_FAILED =
+            "⚠️ Не удалось предложить переводы. Введите перевод вручную.";
+
+    public static final String TRANSLATION_PROMPT = "Введите переводы через запятую (например: дом, здание, строение)";
+
+    public static final String WORD_NOT_FOUND = "⚠️ Слово не найдено. Начните заново.";
+
     public static final String CHOOSE_POS = "Выберите часть речи кнопками ниже";
 
     public static final String EXERCISE_NOT_FOUND = "⚠️ Упражнение не найдено. Начните заново.";
@@ -56,10 +71,13 @@ public final class Messages {
     public static final String LESSON = "Урок %s";
 
     public static final String LESSON_INSTRUCTION = """
-            %s — добавить слово
-            %s — завершить урок""".formatted(Buttons.ADD_WORD, Buttons.FINISH_LESSON);
+            Просто отправьте слово — добавим его в словарь.
+            %s — завершить урок""".formatted(Buttons.FINISH_LESSON);
 
-    public static final String LESSON_STARTED = "Урок начат для %s!";
+    public static final String LESSON_STARTED = """
+            Урок начат для %s!
+
+            """ + LESSON_INSTRUCTION;
 
     public static final String STUDENT_ADDED = "✅ Ученик '%s' добавлен!";
 
@@ -86,6 +104,9 @@ public final class Messages {
 
     public static final String WORD_POS_TRANSLATIONS = """
             ✅ Слово '%s' (%s)
-            Переводы: %s""";
+            Переводы: %s
+
+            Отправьте следующее слово.
+            """ + Buttons.FINISH_LESSON + " — завершить урок";
 
 }

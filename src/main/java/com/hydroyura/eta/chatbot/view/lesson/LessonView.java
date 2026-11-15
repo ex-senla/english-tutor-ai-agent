@@ -16,7 +16,7 @@ public class LessonView {
 
     public static ActionResult lessonKeyboard(String message, Integer cleanupMessageId) {
         var keyboard = List.of(
-                List.of(Buttons.ADD_WORD, Buttons.FINISH_LESSON)
+                List.of(Buttons.FINISH_LESSON)
         );
         return new ActionResult.TextWithReplyKeyboard(message, keyboard, cleanupMessageId);
     }

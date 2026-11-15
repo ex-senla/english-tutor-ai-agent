@@ -21,6 +21,12 @@ eta:
   exercise:
     generation:
       sentence-count: 5
+  dictionary:
+    translation:
+      variant-count: 3
+  chatbot:
+    search:
+      suggestions-limit: 10
   demo-students:
     enabled: true
     student-count: 3

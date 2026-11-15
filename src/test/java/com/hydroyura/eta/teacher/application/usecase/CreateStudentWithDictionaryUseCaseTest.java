@@ -9,6 +9,7 @@ import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
+import com.hydroyura.eta.student.api.student.SearchStudentsQuery;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -72,6 +74,10 @@ class CreateStudentWithDictionaryUseCaseTest {
 
             public Optional<StudentDetails> findStudentDetails(StudentId studentId) {
                 return Optional.empty();
+            }
+
+            public List<StudentInfo> searchByNameFragment(SearchStudentsQuery query) {
+                return List.of();
             }
         };
 

@@ -39,6 +39,7 @@ NEW, IN_PROGRESS, LEARNED
 |-----------|-------|
 | `CreateDictionary` | `DictionaryId execute(CreateDictionaryCommand)` |
 | `AddWordToDictionary` | `WordId execute(AddWordCommand)` |
+| `WordTranslator` (в `api.word`) | `List<String> translate(WordTranslationCommand)` |
 
 ## Use Cases (Application)
 
@@ -61,3 +62,4 @@ NEW, IN_PROGRESS, LEARNED
 
 ## Инфраструктура
 - `InMemoryDictionaryRepository` — `ConcurrentHashMap<DictionaryId, Dictionary>`
+- `SpringAiWordTranslator` (`infrastructure.ai`, `@Component`) — адаптер порта `WordTranslator` на Spring AI `ChatClient`; читает `WordTranslationProperties` (`eta.dictionary.translation.variant-count`, default 3) и `WordInfoSpecificationProperties`, валидирует и дедуплицирует варианты, отбрасывает невалидные, при ошибке/пустом ответе AI возвращает пустой список. Использует существующий bean `ChatClient` из `exercise.infrastructure.ai.AiConfig` (скрытая bean-связка `dictionary → exercise`, невидимая для Modulith-verify; перенос `AiConfig` — отдельная задача при третьем потребителе).

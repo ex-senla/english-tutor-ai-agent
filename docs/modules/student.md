@@ -26,7 +26,7 @@ ACTIVE, ENDED
 | Интерфейс | Метод |
 |-----------|-------|
 | `CreateStudent` | `StudentId execute(CreateStudentCommand)` |
-| `StudentQuery` | `existsByName(query)`, `findByNameIn(query)`, `getDictionaryId(studentId)` |
+| `StudentQuery` | `existsByName(query)`, `findByNameIn(query)`, `getDictionaryId(studentId)`, `findStudentsByIds(ids)`, `searchByNameFragment(query)`, `findStudentDetails(studentId)`, `getCefrLevel(studentId)` |
 
 ### Lesson
 | Интерфейс | Метод |
@@ -46,6 +46,9 @@ ACTIVE, ENDED
 | `EndLesson` | ✅ |
 | `FindActiveLessonService` | ✅ |
 | `StudentQueryService` | ✅ |
+
+### StudentQueryService
+- `searchByNameFragment(SearchStudentsQuery)` — ищет учеников по подстроке имени без учёта регистра среди заданного множества `studentIds`, возвращает `List<StudentInfo>` в стабильном порядке (по имени). Лимит подсказок не входит в query — это UI-параметр чат-бота.
 
 ## Зависимости
 ```java

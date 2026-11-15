@@ -9,6 +9,8 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import java.util.List;
 
 import static com.hydroyura.eta.chatbot.view.Messages.INVALID_INPUT;
+import static com.hydroyura.eta.chatbot.view.Messages.TRANSLATION_PROMPT;
+import static com.hydroyura.eta.chatbot.view.Messages.TRANSLATION_SUGGESTIONS_FAILED;
 import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 public class WordView {
@@ -44,14 +46,34 @@ public class WordView {
         };
     }
 
-    public static ActionResult enterTranslation(Action.Callback callback, String word, PartOfSpeech pos) {
+    public static ActionResult translationChoice(Action.Callback callback, String word, PartOfSpeech pos,
+            List<String> translations) {
+        var keyboard = new java.util.ArrayList<List<ActionResult.InlineButton>>();
+        for (var i = 0; i < translations.size(); i++) {
+            var index = i;
+            keyboard.add(List.of(new ActionResult.InlineButton(translations.get(index),
+                    createCallbackData(Callbacks.TRANSLATION, String.valueOf(index)))));
+        }
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.OWN_TRANSLATION,
+                createCallbackData(Callbacks.TRANSLATION, Callbacks.OWN))));
+
         return new ActionResult.EditMessageText(callback.messageId(),
                 """
                         Слово: %s
                         Часть речи: %s
 
-                        Введите переводы через запятую (например: дом, здание, строение)""".formatted(word, posLabel(
-                        pos)), List.of());
+                        Выберите перевод: """.formatted(word, posLabel(pos)), keyboard);
+    }
+
+    public static ActionResult manualTranslationPrompt(Action.Callback callback, String word, PartOfSpeech pos) {
+        return new ActionResult.EditMessageText(callback.messageId(),
+                """
+                        Слово: %s
+                        Часть речи: %s
+
+                        %s
+                        %s""".formatted(word, posLabel(pos), TRANSLATION_SUGGESTIONS_FAILED, TRANSLATION_PROMPT),
+                List.of());
     }
 
     public static ActionResult notValidWord() {

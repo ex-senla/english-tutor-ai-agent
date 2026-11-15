@@ -15,8 +15,10 @@ public enum ContextKey {
     SELECTED_STUDENT_ID("selectedStudentId"),
     SELECTED_STUDENT_NAME("selectedStudentName"),
     TEACHER_NAME("teacherName"),
+    PENDING_STUDENT_NAME("pendingStudentName"),
     WORD_POS("wordPos"),
-    WORD_VALUE("wordValue");
+    WORD_VALUE("wordValue"),
+    WORD_TRANSLATIONS("wordTranslations");
 
     private final String value;
 

@@ -6,14 +6,14 @@ import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.view.lesson.LessonView;
 import org.springframework.stereotype.Component;
 
-import static com.hydroyura.eta.chatbot.view.Messages.USE_BUTTONS_BELOW;
+import static com.hydroyura.eta.chatbot.view.Messages.LESSON_INSTRUCTION;
 
 @Component
 public class InLessonHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return LessonView.lessonKeyboard(USE_BUTTONS_BELOW);
+        return LessonView.lessonKeyboard(LESSON_INSTRUCTION);
     }
 
     @Override

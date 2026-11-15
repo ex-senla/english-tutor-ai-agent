@@ -5,6 +5,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
+import com.hydroyura.eta.dictionary.application.config.properties.WordTranslationProperties;
 import com.hydroyura.eta.dictionary.application.usecase.AddWordToDictionaryUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.CheckWordUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.CreateDictionaryUseCase;
@@ -20,7 +21,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.regex.Pattern;
 
 @Configuration
-@EnableConfigurationProperties(WordInfoSpecificationProperties.class)
+@EnableConfigurationProperties({WordInfoSpecificationProperties.class,
+        WordTranslationProperties.class})
 public class DictionaryModuleConfig {
 
     @Bean

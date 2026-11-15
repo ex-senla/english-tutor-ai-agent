@@ -23,16 +23,16 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `ChatState state` — текущее состояние
 - `Map<String, Object> context` — key-value хранилище. Ключи типизированы enum'ом `ContextKey`
   (`TEACHER_NAME`, `SELECTED_STUDENT_ID`, `SELECTED_STUDENT_NAME`, `ACTIVE_LESSON_ID`,
-  `WORD_VALUE`, `WORD_POS`, `EXERCISE_TYPE`, `GRAMMAR_RULE`, `EXERCISE_ID`, `EXERCISE_TOPIC`);
-  временный ключ `pendingStudentName` заводится «сырой» строкой
+  `PENDING_STUDENT_NAME`, `WORD_VALUE`, `WORD_POS`, `WORD_TRANSLATIONS`, `EXERCISE_TYPE`,
+  `GRAMMAR_RULE`, `EXERCISE_ID`, `EXERCISE_TOPIC`)
 - `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
 ### ChatState (Enum, `domain/chat`)
-17 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+18 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
 `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`,
-`AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_WORD`, `AWAITING_POS`,
-`AWAITING_TRANSLATION`, `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`,
-`AWAITING_EXERCISE_TOPIC`, `AWAITING_EXERCISE_ANSWER`.
+`AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`,
+`AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`, `AWAITING_EXERCISE_TYPE`,
+`AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`, `AWAITING_EXERCISE_ANSWER`.
 
 `AWAITING_EXERCISE_ANSWER` (интерактивные ответы) в текущем PDF-потоке не достигается —
 ни один переход в него не ведёт; переход и `CheckExercise` сохранены как задел.
@@ -57,7 +57,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 `Transition<T>` — обработчик одного (состояние, триггер): `transit(Chat, T)`.
 Типизация по триггеру: `Transition<Action.Command|Input|Callback|Button>`; если логика не
 зависит от триггера (общая для кнопки и команды) — `Transition<Action>`
-(`AddWordInLessonTransition`, `FinishLessonInLessonTransition`).
+(`FinishLessonInLessonTransition`, `StudentSearchTransition`).
 
 Переход — application-оркестратор: вызывает use case-порты других модулей (`RegisterTeacher`,
 `StartLesson`, `AddWordToDictionary`, `GenerateExercise`, `GenerateExercisePdf`, ...),
@@ -65,13 +65,19 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 Именование: `<Что><Триггер><Состояние>Transition`, триггеры: `Cmd` / `Inp` / `Cb` / `Btn`.
 Например `NewCmdActiveTransition`, `StudentListTransition`, `PosCbAwaitingPosTransition`.
-Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, ...). В корне пакета — общие
+Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, `studentsearch/`, `cancel/`,
+`awaitingtranslationchoice/`, `awaitingmanualtranslation/`, ...). В корне пакета — общие
 артефакты: `TransitionKey`, `StudentSupport` (работа с выбранным учеником в контексте),
 `NewStudentTransition` и `StudentListTransition` (регистрируются под несколькими ключами).
 
+Флоу слова переиспользует `transition/word/LessonWordSupport` — общий код добавления слова в
+словарь и активный урок (через порты `AddWordToDictionary` + `AddWordToLesson`) с обработкой
+дубликата (`WordAlreadyExistsException`). Перевод предлагает порт `WordTranslator` из
+`dictionary.api.word` (адаптер на Spring AI — `dictionary.infrastructure.ai.SpringAiWordTranslator`).
+
 ### Handler (Application, `application/statemachine/handler`)
 Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
-«Используйте кнопки ниже», ...). Один `@Component` на состояние (17 штук), собираются в
+«Используйте кнопки ниже», ...). Один `@Component` на состояние (18 штук), собираются в
 `Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
 
 ### StateMachineConfig (`application/config`)
@@ -81,18 +87,23 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - таблица регистрации: `onCommand(state, команда, transition)`, `onButton(state, кнопка, transition)`,
   `onCallback(state, префикс, transition)`, `onInput(state, transition)`
 - ключи Cmd/Btn — текст (`"/new"`, `Buttons.NEW_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`,
-  `"pos"`, `"level"`, `"levelchange"`, `"exercise"`, `"details"`, `"back"`)
+  `"pos"`, `"level"`, `"levelchange"`, `"exercise"`, `"details"`, `"back"`, `"translation"`);
+  команда `/cancel` регистрируется для всех 18 состояний через `CancelRule`/`CancelScreenRenderer`
+  (12 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
+  `ChatbotSearchProperties` включаются через `@EnableConfigurationProperties`
 
 ### View (презентация, `view/`)
-Статические билдеры `ActionResult`: `MenuView` (главное меню), `StudentView` (список/опции/карточка
-ученика, клавиатуры уровней CEFR, `optionsKeyboard()`), `WordView` (`posMenu`, `posLabel`,
-маппинг payload → `PartOfSpeech`), `LessonView` (клавиатура урока, сводка завершения),
-`ExerciseView` (выбор типа упражнения).
+Статические билдеры `ActionResult`: `MenuView` (главное меню с «🔍 Найти ученика»),
+`StudentView` (список/опции/карточка ученика, поиск `searchPrompt`/`searchResults`,
+клавиатуры уровней CEFR, `optionsKeyboard()`), `WordView` (`posMenu`, `translationChoice`,
+`manualTranslationPrompt`, `posLabel`, маппинг payload → `PartOfSpeech`), `LessonView`
+(клавиатура урока — только «🏁 Завершить урок», сводка завершения), `ExerciseView` (выбор типа).
 
 Словари констант — единый источник для рендера и парсинга:
 - `Buttons` — тексты кнопок + `REPLY_BUTTONS` (множество reply-кнопок для `UpdateParser`)
-- `Callbacks` — префиксы и payload колбэков (`"student"`, `"action"`, `"pos"`, `"level"`, ...)
-- `Commands` — команды (`"/register"`, `"/new"`, ...)
+- `Callbacks` — префиксы и payload колбэков (`"student"`, `"action"`, `"pos"`, `"level"`,
+  `"translation"`, `"own"`, ...)
+- `Commands` — команды (`"/register"`, `"/new"`, `"/find"`, `"/cancel"`, ...)
 - `Messages` — тексты сообщений
 - `util/ViewUtils.createCallbackData(...)` — сборка `"prefix:payload"`
 
@@ -113,6 +124,8 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   Служебные update (`my_chat_member` — кик, смена статуса) пропускаются
 - `BotInitializer`, `SendMessageConverter` (в т.ч. `convertDocument` /
   `convertTextWithInlineKeyboard`; `SendDocuments` конвертером не разбирается — обрабатывается ботом)
+- `BotCommands` — публичные команды Telegram-меню; `BotInitializer` регистрирует их через
+  `SetMyCommands` (ошибка — log warn, не ломает стартап)
 
 Персистентность: `InMemoryChatRepository` (+ `SnapshotProvider` для debug-эндпоинтов;
 план: PostgreSQL + Flyway).
@@ -120,21 +133,24 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 ## Тесты
 
 Юнит-тесты зеркалируют структуру модуля (`src/test/java/.../chatbot`):
-переходы `InputAwaitingExerciseTopicTransition`, `LevelCbAwaitingStudentLevelTransition`,
-`BackCb`/`LevelCb` из `awaitingstudentlevelchange` + `SendMessageConverterTest`.
-StateMachine, handler'ы и остальные переходы не покрыты.
+переходы флоу слова (`InputInLessonTransition`, `PosCbAwaitingPosTransition`,
+`TranslationCbAwaitingTranslationChoiceTransition`, `InputAwaitingManualTranslationTransition`,
+`LessonWordSupport`), поиска (`studentsearch`), отмены (`cancel`, `StateMachineCancelTest`),
+а также существующие `InputAwaitingExerciseTopicTransition`, `LevelCbAwaitingStudentLevelTransition`,
+`BackCb`/`LevelCb` из `awaitingstudentlevelchange`, `SendMessageConverterTest`, `BotCommandsTest`.
 
 ## Зависимости
 ```java
 @ApplicationModule(allowedDependencies = {
     "teacher :: teacher", "student :: student",
-    "student :: lesson", "dictionary :: dictionary", "dictionary :: wordInfo",
+    "student :: lesson", "dictionary :: dictionary", "dictionary :: word",
     "shared :: shared", "exercise :: exercise",
     "generator :: document"
 })
 ```
 
-`generator :: document` используется только в `InputAwaitingExerciseTopicTransition`
+`dictionary :: word` используется портом `WordTranslator` (перевод слова) в флоу урока;
+`generator :: document` — только в `InputAwaitingExerciseTopicTransition`
 (`GenerateExercisePdf` — пара PDF: упражнение + ответы).
 
 ## Известные долги
@@ -143,8 +159,8 @@ StateMachine, handler'ы и остальные переходы не покры�
 - Опечатка в именах `AwatingExerciseAnswerHandler` / `AwatingExerciseTopicHandler` /
   `AwatingExerciseTypeHandler` (→ `Awaiting...`)
 - Поиск имени ученика: загрузка всех студентов учителя и фильтрация в Java (нужен `FindStudentById`)
-- Контекст чата остаётся stringly-typed: `Map<String, Object>` + касты, несмотря на `ContextKey`;
-  сырые строковые ключи — `pendingStudentName` и `"selectedStudentId"` в `StudentSupport`
+- Контекст чата остаётся stringly-typed: `Map<String, Object>` + касты, несмотря на `ContextKey`
+  (`StudentSupport` использует строку `"selectedStudentId"`)
 - `AWAITING_EXERCISE_ANSWER` недостижим (legacy-ветка интерактивных ответов) — решить судьбу
 - Ошибки `IllegalStateException` без обработки на уровне бота
 - `ChatService.getOrCreate` и `InMemoryChatRepository.findById` дублируют логику создания чата

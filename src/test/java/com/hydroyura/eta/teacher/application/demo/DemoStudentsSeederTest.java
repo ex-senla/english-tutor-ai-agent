@@ -4,6 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
+import com.hydroyura.eta.student.api.student.SearchStudentsQuery;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentId;
@@ -72,6 +73,11 @@ class DemoStudentsSeederTest {
 
             @Override
             public List<StudentInfo> findStudentsByIds(Set<StudentId> ids) {
+                return List.of();
+            }
+
+            @Override
+            public List<StudentInfo> searchByNameFragment(SearchStudentsQuery query) {
                 return List.of();
             }
 

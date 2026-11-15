@@ -12,7 +12,9 @@ public final class Commands {
 
     public static final String LIST = "/list";
 
-    public static final String ADD_WORD = "/addword";
+    public static final String FIND = "/find";
+
+    public static final String CANCEL = "/cancel";
 
     public static final String FINISH_LESSON = "/finishlesson";
 

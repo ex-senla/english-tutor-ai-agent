@@ -9,7 +9,7 @@
 | 3 | **Список учеников** | ✅ done | кнопка `👥 Мои студенты` или `/list` | Inline-кнопки, редактирование сообщения |
 | 4 | **Детали ученика** | ❌ stub | кнопка `📋 Details` | Показывает "Детали ученика (TODO)" |
 | 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в InMemoryLessonRepository |
-| 6 | **Добавление слов на уроке** | ✅ done | кнопка `➕ Добавить слово` → слово → POS → переводы | 3 шага: AWAITING_WORD → AWAITING_POS → AWAITING_TRANSLATION |
+| 6 | **Добавление слов на уроке** | ✅ done | в `IN_LESSON` просто отправьте слово → POS → AI-переводы/свой перевод | `IN_LESSON` — режим ввода; кнопка «➕ Добавить слово» и `/addword` удалены (#42) |
 | 7 | **Завершение урока** | ✅ done | кнопка `🏁 Завершить урок` | EndLesson, возврат в STUDENT_OPTIONS |
 | 8 | **Генерация упражнений** | ❌ stub | кнопка `🎯 Exercise` | Выбор типа → ввод темы (stub), ответ (stub) |
 | 9 | **Обработка дубляжа слова** | ❌ | добавление слова, которое уже есть в словаре | Сейчас бросает исключение, нужно переиспользовать существующее
@@ -18,7 +18,7 @@
 
 | # | Компонент | Статус | Заметки |
 |---|-----------|--------|---------|
-| C1 | State machine: 14 состояний | ✅ done | Enum State, все 14 |
+| C1 | State machine: 18 состояний | ✅ done | Enum State, все 18 |
 | C2 | StateMachine entity + repository | ✅ done | StateMachineId, InMemoryStateMachineRepository |
 | C3 | `EnglishTutorBot` | ✅ done | Обработка SendMessage / EditMessageText / DeleteMessage / ReplyKeyboardRemove |
 | C4 | `ActionHandler` | ✅ done | Центральный обработчик, switch по состояниям |

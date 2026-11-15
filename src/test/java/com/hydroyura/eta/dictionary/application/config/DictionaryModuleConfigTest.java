@@ -5,6 +5,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
+import com.hydroyura.eta.dictionary.application.config.properties.WordTranslationProperties;
 import com.hydroyura.eta.dictionary.domain.dictionary.Dictionary;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
@@ -65,6 +66,9 @@ class DictionaryModuleConfigTest {
     private WordInfoSpecificationProperties properties;
 
     @Autowired
+    private WordTranslationProperties wordTranslationProperties;
+
+    @Autowired
     private AddWordToDictionary addWordToDictionary;
 
     @Autowired
@@ -86,6 +90,11 @@ class DictionaryModuleConfigTest {
         assertThat(properties.getDefaultTargetRepetitions()).isEqualTo(10);
         assertThat(properties.getValueMinLength()).isEqualTo(1);
         assertThat(properties.getMaxTargetRepetitions()).isEqualTo(100);
+    }
+
+    @Test
+    void shouldBindTranslationPropertiesWithDefaultVariantCount() {
+        assertThat(wordTranslationProperties.getVariantCount()).isEqualTo(3);
     }
 
     @Test

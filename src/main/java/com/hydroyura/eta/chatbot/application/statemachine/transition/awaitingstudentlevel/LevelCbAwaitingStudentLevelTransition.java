@@ -15,6 +15,7 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.PENDING_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.ENTER_ANOTHER_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_ADDED;
 import static com.hydroyura.eta.chatbot.view.Messages.USE_BUTTONS_BELOW;
@@ -36,7 +37,7 @@ public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.
                     StudentView.levelKeyboard());
         }
 
-        var name = Objects.requireNonNull((String) chat.getContext().get("pendingStudentName"),
+        var name = Objects.requireNonNull((String) chat.getContext().get(PENDING_STUDENT_NAME.getValue()),
                 "pendingStudentName must be present in chat context");
         var teacherId = findTeacher.findByTelegramChatId(chat.getId().chatId())
                 .orElseThrow(() -> new IllegalStateException("Teacher not found for chatId=" + chat.getId().chatId()));
@@ -47,12 +48,12 @@ public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.
                     new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName, level.get()));
             log.info("Student created: name={}, id={}, teacherId={}, level={}",
                     name, studentId, teacherId, level.get());
-            chat.getContext().remove("pendingStudentName");
+            chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
             chat.updateState(ChatState.ACTIVE);
             return MenuView.activeMenuWithMessage(STUDENT_ADDED.formatted(name));
         } catch (IllegalArgumentException e) {
             log.warn("Failed to create student '{}': {}", name, e.getMessage());
-            chat.getContext().remove("pendingStudentName");
+            chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
             chat.updateState(ChatState.AWAITING_STUDENT_NAME);
             return new ActionResult.TextResponse(ENTER_ANOTHER_NAME.formatted(e.getMessage()));
         }

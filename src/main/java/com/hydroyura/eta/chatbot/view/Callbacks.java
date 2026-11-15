@@ -13,6 +13,8 @@ public final class Callbacks {
 
     public static final String LEVEL_CHANGE = "levelchange";
 
+    public static final String TRANSLATION = "translation";
+
     // ---- any ----
     public static final String BACK = "back";
 
@@ -34,5 +36,7 @@ public final class Callbacks {
     public static final String VERB = "verb";
 
     public static final String ADJECTIVE = "adjective";
+
+    public static final String OWN = "own";
 
 }

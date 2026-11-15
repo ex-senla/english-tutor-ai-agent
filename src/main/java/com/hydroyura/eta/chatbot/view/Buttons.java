@@ -8,7 +8,7 @@ public final class Buttons {
 
     public static final String LIST_STUDENT = "👥 Мои студенты";
 
-    public static final String ADD_WORD = "➕ Добавить слово";
+    public static final String FIND_STUDENT = "🔍 Найти ученика";
 
     public static final String FINISH_LESSON = "🏁 Завершить урок";
 
@@ -28,7 +28,9 @@ public final class Buttons {
 
     public static final String ADJECTIVE = "🎨 Adjective";
 
-    public static final Set<String> REPLY_BUTTONS = Set.of(NEW_STUDENT, LIST_STUDENT, ADD_WORD, FINISH_LESSON);
+    public static final String OWN_TRANSLATION = "✍️ Свой перевод";
+
+    public static final Set<String> REPLY_BUTTONS = Set.of(NEW_STUDENT, LIST_STUDENT, FIND_STUDENT, FINISH_LESSON);
 
     public static Set<String> getReplyButtons() {
         return REPLY_BUTTONS;

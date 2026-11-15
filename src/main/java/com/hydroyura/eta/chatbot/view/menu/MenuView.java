@@ -14,7 +14,8 @@ public class MenuView {
     public static ActionResult activeMenu(Integer cleanupMessageId) {
         var text = activeMenuText();
         var keyboard = List.of(
-                List.of(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT)
+                List.of(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT),
+                List.of(Buttons.FIND_STUDENT)
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard, cleanupMessageId);
     }
@@ -22,7 +23,8 @@ public class MenuView {
     public static ActionResult activeMenuWithMessage(String message) {
         var text = message + "\n\n" + activeMenuText();
         var keyboard = List.of(
-                List.of(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT)
+                List.of(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT),
+                List.of(Buttons.FIND_STUDENT)
         );
         return new ActionResult.TextWithReplyKeyboard(text, keyboard, null);
     }
@@ -32,6 +34,7 @@ public class MenuView {
                 Главное меню
 
                 %s — добавить ученика
-                %s — список учеников""".formatted(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT);
+                %s — список учеников
+                %s — найти ученика""".formatted(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT, Buttons.FIND_STUDENT);
     }
 }
