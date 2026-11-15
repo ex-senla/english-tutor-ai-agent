@@ -9,7 +9,7 @@
 ### Specification\<T\> (Interface)
 - Паттерн Specification для валидации и фильтрации.
 - Методы: `isSatisfiedBy(T)`, `and()`, `or()`, `not()`.
-- Используется в `dictionary` для `WordSpecifications` (валидация слов).
+- Используется в `dictionary` для `WordInfoSpecifications` (валидация слов).
 
 ### DomainException (Abstract Class)
 - Базовый класс для всех доменных исключений.

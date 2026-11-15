@@ -1,7 +1,7 @@
 package com.hydroyura.eta.generator.application.usecase;
 
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
@@ -163,7 +163,7 @@ class GenerateExercisePdfUseCaseTest {
     }
 
     private WordProjection word(String value, String translation) {
-        return new WordProjection(WordId.generate(), value, java.util.Set.of(translation), PartOfSpeech.VERB,
+        return new WordProjection(WordInfoId.generate(), value, java.util.Set.of(translation), PartOfSpeech.VERB,
                 WordStatus.IN_PROGRESS);
     }
 

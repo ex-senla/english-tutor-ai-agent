@@ -3,13 +3,13 @@ package com.hydroyura.eta.dictionary.api.word;
 import java.util.Objects;
 import java.util.UUID;
 
-public record WordId(UUID value) {
+public record WordInfoId(UUID value) {
 
-    public WordId {
+    public WordInfoId {
         Objects.requireNonNull(value, "WordId must not be null");
     }
 
-    public static WordId generate() {
-        return new WordId(UUID.randomUUID());
+    public static WordInfoId generate() {
+        return new WordInfoId(UUID.randomUUID());
     }
 }

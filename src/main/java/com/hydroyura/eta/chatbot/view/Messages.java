@@ -51,6 +51,8 @@ public final class Messages {
 
     public static final String ENTER_EXERCISE_GRAMMAR = "Введите грамматическое правило";
 
+    public static final String INVALID_INPUT = "❌ Некорректный ввод";
+
     public static final String LESSON = "Урок %s";
 
     public static final String LESSON_INSTRUCTION = """
@@ -66,10 +68,6 @@ public final class Messages {
 
             %s""";
 
-    public static final String WORD_POS_TRANSLATIONS = """
-            ✅ Слово '%s' (%s)
-            Переводы: %s""";
-
     public static final String MULTIPLE_CHOICE = "🔤 Multiple choice";
 
     public static final String NO_STUDENTS = """
@@ -81,5 +79,13 @@ public final class Messages {
     public static final String USE_BUTTONS_BELOW = "Используйте кнопки ниже";
 
     public static final String WELCOME = "Добро пожаловать! Для начала зарегистрируйтесь: /register";
+
+    public static final String WORD_ALREADY_EXISTS = """
+            🔄 Слово уже есть в словаре '%s' (%s)
+            Переводы: %s""";
+
+    public static final String WORD_POS_TRANSLATIONS = """
+            ✅ Слово '%s' (%s)
+            Переводы: %s""";
 
 }

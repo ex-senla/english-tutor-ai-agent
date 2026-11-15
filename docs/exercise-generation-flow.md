@@ -26,7 +26,7 @@
              ▼
    GenerateExerciseUseCase
      ├── findWords.findByDictionaryId(dictId) → Set<WordProjection>
-     ├── Exercise.create(id, type, topic, wordIds)
+     ├── Exercise.create(id, type, topic, wordInfoIds)
      ├── generator.generate(command, Set<WordData>) → ExerciseDto (content + expectedAnswer)
      │     └── SpringAiExerciseGenerator (скелет, будет Spring AI)
      ├── exercise.setContent(dto.content())
@@ -98,7 +98,7 @@
 ### Зависимости
 ```java
 // exercise/package-info.java
-@ApplicationModule(allowedDependencies = {"dictionary :: dictionary", "dictionary :: word"})
+@ApplicationModule(allowedDependencies = {"dictionary :: dictionary", "dictionary :: wordInfo"})
 
 // chatbot/package-info.java
 allowedDependencies = {..., "exercise :: exercise"}

@@ -10,6 +10,9 @@ import com.hydroyura.eta.chatbot.view.word.WordView;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
+import com.hydroyura.eta.dictionary.domain.dictionary.exception.WordAlreadyExistsException;
+import com.hydroyura.eta.dictionary.domain.word.exception.WordValidationException;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
@@ -24,6 +27,7 @@ import java.util.UUID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_POS;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_VALUE;
+import static com.hydroyura.eta.chatbot.view.Messages.WORD_ALREADY_EXISTS;
 import static com.hydroyura.eta.chatbot.view.Messages.WORD_POS_TRANSLATIONS;
 
 @Slf4j
@@ -50,8 +54,17 @@ public class InputAwaitingTranslationTransition implements Transition<Action.Inp
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
 
-        var wordId = addWordToDictionary.execute(
-                new AddWordCommand(dictionaryId, wordValue, translations, pos));
+        WordInfoId wordId = null;
+        try {
+            wordId = addWordToDictionary.execute(new AddWordCommand(dictionaryId, wordValue, translations, pos));
+        } catch (WordValidationException e) {
+            return WordView.notValidTranslations();
+        } catch (WordAlreadyExistsException e) {
+            chat.updateState(ChatState.IN_LESSON);
+            return LessonView.lessonKeyboard(
+                    WORD_ALREADY_EXISTS.formatted(wordValue, WordView.posLabel(pos), String.join(", ", translations))
+            );
+        }
 
         var lessonId = findActiveLesson.findByStudentId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No active lesson for student " + studentIdStr));
@@ -60,8 +73,9 @@ public class InputAwaitingTranslationTransition implements Transition<Action.Inp
         log.info("Word '{}' added to lesson {} for student {}", wordValue, lessonId, studentIdStr);
 
         chat.updateState(ChatState.IN_LESSON);
-        return LessonView.lessonKeyboard(WORD_POS_TRANSLATIONS.formatted(wordValue, WordView.posLabel(pos), String.join(
-                ", ", translations)));
+        return LessonView.lessonKeyboard(
+                WORD_POS_TRANSLATIONS.formatted(wordValue, WordView.posLabel(pos), String.join(", ", translations))
+        );
     }
 
 }

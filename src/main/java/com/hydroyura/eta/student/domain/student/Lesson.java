@@ -1,6 +1,6 @@
 package com.hydroyura.eta.student.domain.student;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.student.api.lesson.LessonId;
 import com.hydroyura.eta.student.api.student.StudentId;
 import java.time.Instant;
@@ -26,7 +26,7 @@ public class Lesson {
     private String name;
 
     @Association
-    private Set<WordId> wordIds = new HashSet<>();
+    private Set<WordInfoId> wordInfoIds = new HashSet<>();
 
     private LessonStatus status;
 
@@ -51,12 +51,12 @@ public class Lesson {
         return lesson;
     }
 
-    public void addWord(WordId wordId) {
-        Objects.requireNonNull(wordId, "WordId must not be null");
+    public void addWord(WordInfoId wordInfoId) {
+        Objects.requireNonNull(wordInfoId, "WordId must not be null");
         if (this.status != LessonStatus.ACTIVE) {
             throw new IllegalStateException("Lesson is not active");
         }
-        this.wordIds.add(wordId);
+        this.wordInfoIds.add(wordInfoId);
     }
 
     public void end() {
@@ -67,7 +67,7 @@ public class Lesson {
         this.endedAt = Instant.now();
     }
 
-    public Set<WordId> getWordIds() {
-        return Collections.unmodifiableSet(wordIds);
+    public Set<WordInfoId> getWordInfoIds() {
+        return Collections.unmodifiableSet(wordInfoIds);
     }
 }

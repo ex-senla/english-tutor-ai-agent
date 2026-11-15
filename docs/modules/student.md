@@ -10,7 +10,7 @@
 - Статическая фабрика: `Student.create(id, dictionaryId, name)`.
 
 ### Lesson (@Entity, внутри агрегата Student)
-- `id` (@Identity), `studentId` (@Association), `name`, `wordIds` (@Association Set<WordId>).
+- `id` (@Identity), `studentId` (@Association), `name`, `wordInfoIds` (@Association Set<WordId>).
 - `status`: ACTIVE / ENDED.
 - `startedAt`, `endedAt` (Instant).
 - Статическая фабрика: `Lesson.start(id, studentId, name)`.
@@ -50,7 +50,7 @@ ACTIVE, ENDED
 ## Зависимости
 ```java
 @ApplicationModule(allowedDependencies = {
-    "dictionary :: dictionary", "dictionary :: word"
+    "dictionary :: dictionary", "dictionary :: wordInfo"
 })
 ```
 

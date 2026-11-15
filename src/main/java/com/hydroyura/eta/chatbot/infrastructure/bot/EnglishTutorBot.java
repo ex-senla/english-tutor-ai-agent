@@ -97,14 +97,14 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
         }
 
         // 7. remove reply keyboard when leaving ACTIVE or IN_LESSON state
-        if ((oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
-                || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON)) {
+        if (isFromStateWithReplyKeyboard(oldState, newState)) {
             var remove = SendMessage.builder()
                     .chatId(chatId.toString())
-                    .text(".")
+                    .text("...")
                     .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
                     .build();
-            execute(remove);
+            var removed = execute(remove);
+            execute(converter.buildDelete(chatId, removed.getMessageId()));
         }
 
         // 8. send documents / send/edit/delete message
@@ -123,6 +123,11 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             case SendDocument doc -> execute(doc);
             default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
         }
+    }
+
+    private static boolean isFromStateWithReplyKeyboard(ChatState oldState, ChatState newState) {
+        return (oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
+                || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON);
     }
 
     private Long extractChatId(Update update) {

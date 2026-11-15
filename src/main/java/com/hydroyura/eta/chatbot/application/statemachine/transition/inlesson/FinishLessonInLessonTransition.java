@@ -54,7 +54,7 @@ public class FinishLessonInLessonTransition implements Transition<Action> {
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentIdStr));
 
         var wordValues = findWords.findByDictionaryId(dictionaryId).stream()
-                .filter(wp -> result.wordIds().contains(wp.id()))
+                .filter(wp -> result.wordInfoIds().contains(wp.id()))
                 .map(WordProjection::value)
                 .toList();
 

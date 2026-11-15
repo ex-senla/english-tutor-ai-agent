@@ -1,6 +1,6 @@
 package com.hydroyura.eta.exercise.domain.exercise;
 
-import com.hydroyura.eta.dictionary.api.word.WordId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
@@ -27,7 +27,7 @@ public class Exercise {
     private String topic;
 
     @Association
-    private Set<WordId> wordIds = new HashSet<>();
+    private Set<WordInfoId> wordInfoIds = new HashSet<>();
 
     private String content;
 
@@ -40,17 +40,17 @@ public class Exercise {
     private Exercise() {
     }
 
-    public static Exercise create(ExerciseId id, ExerciseType type, String topic, Set<WordId> wordIds) {
+    public static Exercise create(ExerciseId id, ExerciseType type, String topic, Set<WordInfoId> wordInfoIds) {
         Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(type, "type must not be null");
         Objects.requireNonNull(topic, "topic must not be null");
-        Objects.requireNonNull(wordIds, "wordIds must not be null");
+        Objects.requireNonNull(wordInfoIds, "wordIds must not be null");
 
         var exercise = new Exercise();
         exercise.id = id;
         exercise.type = type;
         exercise.topic = topic;
-        exercise.wordIds = new HashSet<>(wordIds);
+        exercise.wordInfoIds = new HashSet<>(wordInfoIds);
         exercise.status = ExerciseStatus.GENERATED;
         return exercise;
     }
@@ -86,7 +86,7 @@ public class Exercise {
         return Collections.unmodifiableList(items);
     }
 
-    public Set<WordId> getWordIds() {
-        return Collections.unmodifiableSet(wordIds);
+    public Set<WordInfoId> getWordInfoIds() {
+        return Collections.unmodifiableSet(wordInfoIds);
     }
 }

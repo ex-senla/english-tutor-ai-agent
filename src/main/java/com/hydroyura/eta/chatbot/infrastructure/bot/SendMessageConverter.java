@@ -109,7 +109,7 @@ public final class SendMessageConverter {
                 .build();
     }
 
-    private DeleteMessage buildDelete(Long chatId, int messageId) {
+    public DeleteMessage buildDelete(Long chatId, int messageId) {
         return DeleteMessage.builder()
                 .chatId(chatId.toString())
                 .messageId(messageId)
