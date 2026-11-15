@@ -25,7 +25,8 @@ eta:
     translation:
       variant-count: 3
     word:
-под  chatbot:
+      default-target-repetitions: 2
+  chatbot:
     search:
       suggestions-limit: 10
     pagination:
