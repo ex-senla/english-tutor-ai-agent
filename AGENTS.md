@@ -139,6 +139,13 @@ Development follows eight stages coordinated by the Orchestrator (the leading co
 - Quality-gate pass conditions: `docs/agentcraft/quality-gates.md`
 - Current workflow position: `.pi/agentcraft-state.md` (maintained by the Orchestrator)
 
+### Model assignments (project rule)
+
+Stages 3 (Architect), 6 (Reviewer), and 7 (QA Testing) MUST be delegated to the
+`ollama/glm-5.3` model (GLM 5.3, Ollama Cloud). Other stages use the session's default model.
+The Orchestrator passes `model: "ollama/glm-5.3"` when launching the `architect`, `dev-reviewer`,
+and `qa-tester` subagents.
+
 ## Quality gates
 
 | Gate | What it checks |
