@@ -1,150 +1,74 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatId;
+import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
-import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
-import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
-import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
-import com.hydroyura.eta.generator.api.document.ExercisePdfBundle;
-import com.hydroyura.eta.generator.api.document.ExercisePdfDocument;
-import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
-import com.hydroyura.eta.generator.api.document.GenerateExercisePdfCommand;
-import com.hydroyura.eta.generator.api.document.PdfRenderException;
-import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
-import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_SELECTION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class InputAwaitingExerciseTopicTransitionTest {
 
     @Test
-    void shouldReturnSendDocumentsOnSuccess() {
+    void shouldMoveToWordSelectionAndPreselectInProgressWords() {
         var studentQuery = mock(StudentQuery.class);
-        var generateExercise = mock(GenerateExercise.class);
         var findWords = mock(FindWords.class);
-        var generateExercisePdf = mock(GenerateExercisePdf.class);
 
         var studentId = StudentId.generate();
         var dictionaryId = DictionaryId.generate();
+        var inProgressId = WordInfoId.generate();
+        var newId = WordInfoId.generate();
+        var learnedId = WordInfoId.generate();
 
         when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
-        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
-        when(generateExercise.execute(any())).thenReturn(exercise());
-        when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of(word()));
-        when(generateExercisePdf.execute(any())).thenReturn(new ExercisePdfBundle(
-                new ExercisePdfDocument("exercise_animals.pdf", new byte[]{1}),
-                new ExercisePdfDocument("answers_animals.pdf", new byte[]{2})));
+        when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of(
+                new WordProjection(inProgressId, "travel", Set.of("путешествовать"), PartOfSpeech.VERB,
+                        WordStatus.IN_PROGRESS),
+                new WordProjection(newId, "apple", Set.of("яблоко"), PartOfSpeech.NOUN, WordStatus.NEW),
+                new WordProjection(learnedId, "big", Set.of("большой"), PartOfSpeech.ADJECTIVE, WordStatus.LEARNED)));
 
-        var transition = new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise, findWords,
-                generateExercisePdf);
+        var transition = new InputAwaitingExerciseTopicTransition(studentQuery, findWords,
+                new ChatbotPaginationProperties());
 
         var chat = chat(studentId);
         chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(EXERCISE_TYPE.getValue(),
+                com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
 
         var result = transition.transit(chat, new Action.Input("Animals"));
 
-        assertThat(result).isInstanceOf(ActionResult.SendDocuments.class);
-        var sendDocuments = (ActionResult.SendDocuments) result;
-        assertThat(sendDocuments.documents()).hasSize(2);
-        assertThat(sendDocuments.text()).isEqualTo("Ученик: Alice");
-        assertThat(sendDocuments.keyboard()).isNotEmpty();
+        assertThat(chat.getState()).isEqualTo(ChatState.AWAITING_EXERCISE_WORD_SELECTION);
+        assertThat(chat.getContext().get(EXERCISE_TOPIC.getValue())).isEqualTo("Animals");
+        assertThat(chat.getContext().get(WORD_FILTER.getValue())).isEqualTo("IN_PROGRESS");
+        assertThat(chat.getContext().get(SELECTION_PAGE.getValue())).isEqualTo(0);
 
-        var captor = ArgumentCaptor.forClass(GenerateExerciseCommand.class);
-        verify(generateExercise).execute(captor.capture());
-        assertThat(captor.getValue().cefrLevel()).isEqualTo("B1");
-    }
-
-    @Test
-    void shouldSucceedWithEmptyDictionary() {
-        var studentQuery = mock(StudentQuery.class);
-        var generateExercise = mock(GenerateExercise.class);
-        var findWords = mock(FindWords.class);
-        var generateExercisePdf = mock(GenerateExercisePdf.class);
-
-        var studentId = StudentId.generate();
-        var dictionaryId = DictionaryId.generate();
-
-        when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
-        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
-        when(generateExercise.execute(any())).thenReturn(exercise());
-        when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of());
-        when(generateExercisePdf.execute(any())).thenReturn(new ExercisePdfBundle(
-                new ExercisePdfDocument("exercise_animals.pdf", new byte[]{1}),
-                new ExercisePdfDocument("answers_animals.pdf", new byte[]{2})));
-
-        var transition = new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise, findWords,
-                generateExercisePdf);
-
-        var chat = chat(studentId);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-
-        var result = transition.transit(chat, new Action.Input("Animals"));
-
-        assertThat(result).isInstanceOf(ActionResult.SendDocuments.class);
-
-        var captor = ArgumentCaptor.forClass(GenerateExercisePdfCommand.class);
-        verify(generateExercisePdf).execute(captor.capture());
-        assertThat(captor.getValue().vocabularyWords()).isEmpty();
-        assertThat(captor.getValue().studentName()).isEqualTo("Alice");
-        assertThat(captor.getValue().cefrLevel()).isEqualTo("B1");
-    }
-
-    @Test
-    void shouldReturnErrorMessageOnRenderFailure() {
-        var studentQuery = mock(StudentQuery.class);
-        var generateExercise = mock(GenerateExercise.class);
-        var findWords = mock(FindWords.class);
-        var generateExercisePdf = mock(GenerateExercisePdf.class);
-
-        var studentId = StudentId.generate();
-        var dictionaryId = DictionaryId.generate();
-
-        when(studentQuery.getDictionaryId(studentId)).thenReturn(Optional.of(dictionaryId));
-        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
-        when(generateExercise.execute(any())).thenReturn(exercise());
-        when(findWords.findByDictionaryId(dictionaryId)).thenReturn(Set.of(word()));
-        when(generateExercisePdf.execute(any())).thenThrow(new PdfRenderException("boom"));
-
-        var transition = new InputAwaitingExerciseTopicTransition(studentQuery, generateExercise, findWords,
-                generateExercisePdf);
-
-        var chat = chat(studentId);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-
-        var result = transition.transit(chat, new Action.Input("Animals"));
+        var selection = (Set<String>) chat.getContext().get(WORD_SELECTION.getValue());
+        assertThat(selection).containsExactlyInAnyOrder(inProgressId.value().toString());
 
         assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
-        assertThat(((ActionResult.TextWithInlineKeyboard) result).text()).isEqualTo(EXERCISE_PDF_ERROR);
     }
 
     private Chat chat(StudentId studentId) {
@@ -152,22 +76,5 @@ class InputAwaitingExerciseTopicTransitionTest {
         chat.getContext().put(SELECTED_STUDENT_ID.getValue(), studentId.value().toString());
         chat.getContext().put(SELECTED_STUDENT_NAME.getValue(), "Alice");
         return chat;
-    }
-
-    private ExerciseDto exercise() {
-        return new ExerciseDto(
-                ExerciseId.generate(),
-                ExerciseType.FILL_IN_THE_BLANK,
-                "Animals",
-                "1. I travel ___",
-                List.of("travelled"),
-                List.of(new ExerciseItem("I travel ___", List.of(), "travelled")),
-                ExerciseStatus.GENERATED
-        );
-    }
-
-    private WordProjection word() {
-        return new WordProjection(WordInfoId.generate(), "travel", Set.of("путешествовать"), PartOfSpeech.VERB,
-                WordStatus.IN_PROGRESS);
     }
 }

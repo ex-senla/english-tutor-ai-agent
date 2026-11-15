@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.config;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
 import com.hydroyura.eta.chatbot.domain.action.Action;
@@ -11,6 +12,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.api.dictionary.ResetWordLearning;
 import com.hydroyura.eta.dictionary.api.word.WordTranslator;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
@@ -29,14 +31,22 @@ import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TEACHER_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_SELECTION;
 import static com.hydroyura.eta.chatbot.view.Messages.CANCELLED;
 import static com.hydroyura.eta.chatbot.view.Messages.NOTHING_TO_CANCEL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +80,7 @@ class StateMachineCancelTest {
         var generateExercisePdf = mock(GenerateExercisePdf.class);
         var checkWord = mock(CheckWord.class);
         var wordTranslator = mock(WordTranslator.class);
+        var resetWordLearning = mock(ResetWordLearning.class);
 
         when(studentQuery.findStudentDetails(any())).thenReturn(Optional.of(
                 new StudentDetails("Anna", new DictionaryStats(0, 0, 0, 0), false, CefrLevel.B1)));
@@ -77,7 +88,7 @@ class StateMachineCancelTest {
         stateMachine = new StateMachineConfig().stateMachine(Map.of(), findTeacher, studentQuery, findActiveLesson,
                 endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
                 addWordToLesson, changeStudentLevel, generateExercise, checkExercise, generateExercisePdf, checkWord,
-                wordTranslator, new ChatbotSearchProperties());
+                wordTranslator, resetWordLearning, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
     }
 
     @Test
@@ -94,7 +105,9 @@ class StateMachineCancelTest {
                 new Case(ChatState.AWAITING_EXERCISE_TYPE, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_GRAMMAR, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_TOPIC, ChatState.STUDENT_OPTIONS),
-                new Case(ChatState.AWAITING_EXERCISE_ANSWER, ChatState.STUDENT_OPTIONS));
+                new Case(ChatState.AWAITING_EXERCISE_WORD_SELECTION, ChatState.STUDENT_OPTIONS),
+                new Case(ChatState.AWAITING_EXERCISE_ANSWER, ChatState.STUDENT_OPTIONS),
+                new Case(ChatState.STUDENT_DICTIONARY, ChatState.STUDENT_DETAILS));
 
         for (var dialog : dialogStates) {
             var chat = chatWithSharedKeys(dialog.from());
@@ -106,6 +119,40 @@ class StateMachineCancelTest {
             assertThat(textOf(result)).contains(CANCELLED);
             assertSharedKeysPreserved(chat);
         }
+    }
+
+    @Test
+    void cancelFromDictionaryShouldClearDictionaryPage() {
+        var chat = chatWithSharedKeys(ChatState.STUDENT_DICTIONARY);
+        chat.getContext().put(DICTIONARY_PAGE.getValue(), 2);
+
+        var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_DETAILS);
+        assertThat(chat.getContext()).doesNotContainKey(DICTIONARY_PAGE.getValue());
+        assertSharedKeysPreserved(chat);
+        assertThat(textOf(result)).contains(CANCELLED);
+    }
+
+    @Test
+    void cancelFromWordSelectionShouldClearFlowKeys() {
+        var chat = chatWithSharedKeys(ChatState.AWAITING_EXERCISE_WORD_SELECTION);
+        chat.getContext().put(EXERCISE_TYPE.getValue(),
+                com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(WORD_SELECTION.getValue(), Set.of("8a86f6a5-85d4-4b9f-9c6b-5f0f4d0a6f6b"));
+        chat.getContext().put(WORD_FILTER.getValue(), "IN_PROGRESS");
+        chat.getContext().put(SELECTION_PAGE.getValue(), 1);
+
+        var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue(),
+                EXERCISE_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(), SELECTION_PAGE
+                        .getValue());
+        assertSharedKeysPreserved(chat);
+        assertThat(textOf(result)).contains(CANCELLED);
     }
 
     @Test

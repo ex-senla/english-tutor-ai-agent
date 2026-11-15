@@ -10,7 +10,7 @@
 | S4 | `AWAITING_STUDENT_NAME` | Ожидание имени нового ученика | Из S3 или S6 по `/new`/кнопке, из S5 при ошибке валидации имени | Ввод имени → S5, `/cancel` → S3 |
 | S5 | `AWAITING_STUDENT_LEVEL` | Выбор CEFR-уровня нового ученика (inline-кнопки) | Из S4 вводом имени | `level:<код>` → S3 (ошибка → S4), `/cancel` → S3 |
 | S6 | `STUDENTS_LIST` | Inline-кнопки со списком учеников | Из S3 по `/list`, из S7 по `action:back` | `student:<id>` → S7, `/new` → S4, `back:main` → S3 |
-| S7 | `STUDENT_OPTIONS` | Меню действий для выбранного ученика | Из S6/S14 по `student:<id>`, из S8/S10/S17 (legacy: S18) | `action:*` → S8/S10/S15/S6 |
+| S7 | `STUDENT_OPTIONS` | Меню действий для выбранного ученика | Из S6/S14 по `student:<id>`, из S8/S10/S17 (legacy: S18), из S20 | `action:*` → S8/S10/S15/S19/S6 |
 | S8 | `STUDENT_DETAILS` | Карточка ученика: уровень, статистика словаря, активный урок | Из S7 по `action:details`, из S9 | `details:back` → S7, `levelchange` → S9 |
 | S9 | `AWAITING_STUDENT_LEVEL_CHANGE` | Выбор нового CEFR-уровня ученика | Из S8 по `levelchange` | `level:<код>` → S8, `back:main` → S8, `/cancel` → S8 |
 | S10 | `IN_LESSON` | Активный урок, режим ввода слов | Из S7 по `action:startlesson`, из S11/S12/S13 после слова | Слово → S11, кнопка/`/finishlesson` → S7 (сводка урока) |
@@ -20,17 +20,19 @@
 | S14 | `STUDENT_SEARCH` | Инкрементальный поиск ученика по фрагменту имени | Из S3 по `/find`/кнопке | Фрагмент → S14, `student:<id>` → S7, `back:main` → S3, `/cancel` → S3 |
 | S15 | `AWAITING_EXERCISE_TYPE` | Выбор типа упражнения (inline-кнопки) | Из S7 по `action:exercise` | `exercise:*` → S16, `/cancel` → S7 |
 | S16 | `AWAITING_EXERCISE_GRAMMAR` | Ввод грамматического правила | Из S15 | Ввод правила → S17, `/cancel` → S7 |
-| S17 | `AWAITING_EXERCISE_TOPIC` | Ввод темы упражнения; генерация + PDF | Из S16 | Ввод темы → генерация PDF → S7, `/cancel` → S7 |
+| S17 | `AWAITING_EXERCISE_TOPIC` | Ввод темы упражнения | Из S16 | Ввод темы → сохранить тему + предвыбор слов → S20, `/cancel` → S7 |
 | S18 | `AWAITING_EXERCISE_ANSWER` | Ожидание ответа на упражнение (legacy) | — в текущем PDF-потоке **не достигается** | Ввод ответа → S7, `/cancel` → S7 |
+| S19 | `STUDENT_DICTIONARY` | Меню «Словарь»: все слова ученика с пагинацией и сбросом | Из S7 по `action:dictionary` | `wdpg:prev/next` → S19, `wdreset:<uuid>` → S19, `wdback` → S8, `/cancel` → S8 |
+| S20 | `AWAITING_EXERCISE_WORD_SELECTION` | Шаг выбора слов для упражнения | Из S17 вводом темы | `exword:<uuid>`/`exfilter:<status>`/`expg:prev/next`/`exback` → S20, `exdone`/`excont` → генерация + PDF → S7, `exselback`/`/cancel` → S7 |
 
 > **Примечание к S18.** Переход `InputAwaitingExerciseAnswerTransition` и дефолтный `Handler`
 > зарегистрированы, но ни один переход больше не переводит чат в `AWAITING_EXERCISE_ANSWER`:
-> интерактивный поток заменён отправкой упражнения PDF-документами (S17 → S7).
+> интерактивный поток заменён отправкой упражнения PDF-документами (S17 → S20 → S7).
 
 ## Конфиг состояний
 
 Каждое состояние определяет, какие триггеры обработаны переходами; всё остальное уходит
-в дефолтный `Handler` состояния. Команда `/cancel` зарегистрирована во всех 18 состояниях.
+в дефолтный `Handler` состояния. Команда `/cancel` зарегистрирована во всех 20 состояниях.
 
 | # | Состояние | Команды | Кнопки (reply) | Ввод | Callback |
 |---|-----------|---------|----------------|------|----------|
@@ -40,7 +42,7 @@
 | S4 | `AWAITING_STUDENT_NAME` | `/cancel` → S3 | — | ✅ сохранить `pendingStudentName` → S5 | — |
 | S5 | `AWAITING_STUDENT_LEVEL` | `/cancel` → S3 | — | дефолт | `level:<A1…C2>` → `CreateStudentWithDictionary` → S3 (ошибка → S4) |
 | S6 | `STUDENTS_LIST` | `/new` → S4, `/list`,`/help` → обновить список, `/cancel` → «Нет активного действия» | — | дефолт | `student:<id>` → S7, `back:main` → S3 |
-| S7 | `STUDENT_OPTIONS` | `/cancel` → «Нет активного действия» | — | дефолт | `action:startlesson` → S10, `action:details` → S8, `action:exercise` → S15, `action:back` → S6 |
+| S7 | `STUDENT_OPTIONS` | `/cancel` → «Нет активного действия» | — | дефолт | `action:startlesson` → S10, `action:details` → S8, `action:dictionary` → S19, `action:exercise` → S15, `action:back` → S6 |
 | S8 | `STUDENT_DETAILS` | `/cancel` → «Нет активного действия» | — | дефолт | `details:back` → S7, `levelchange` → S9 |
 | S9 | `AWAITING_STUDENT_LEVEL_CHANGE` | `/cancel` → S8 | — | дефолт | `level:<A1…C2>` → `ChangeStudentLevel` → S8, `back:main` → S8 |
 | S10 | `IN_LESSON` | `/finishlesson` → S7 (сводка), `/help` → подсказка, `/cancel` → «Нет активного действия» | «🏁 Завершить урок» → S7 | ✅ `CheckWord` → S11 (невалидное слово — остаёмся) | — |
@@ -50,12 +52,14 @@
 | S14 | `STUDENT_SEARCH` | `/cancel` → S3 | — | ✅ `searchByNameFragment` → S14 | `student:<id>` → S7, `back:main` → S3 |
 | S15 | `AWAITING_EXERCISE_TYPE` | `/cancel` → S7 | — | дефолт | `exercise:fillintheblank`, `exercise:multiplechoice` → S16 |
 | S16 | `AWAITING_EXERCISE_GRAMMAR` | `/cancel` → S7 | — | ✅ сохранить `grammarRule` → S17 | — |
-| S17 | `AWAITING_EXERCISE_TOPIC` | `/cancel` → S7 | — | ✅ `GenerateExercise` + `GenerateExercisePdf` → S7 (документы) | — |
+| S17 | `AWAITING_EXERCISE_TOPIC` | `/cancel` → S7 | — | ✅ сохранить `exerciseTopic` + предвыбор `IN_PROGRESS` → S20 | — |
 | S18 | `AWAITING_EXERCISE_ANSWER` | `/cancel` → S7 | — | ✅ `CheckExercise` → S7 (legacy) | — |
+| S19 | `STUDENT_DICTIONARY` | `/cancel` → S8 | — | дефолт | `wdpg:prev/next` → S19, `wdreset:<uuid>` → S19, `wdback` → S8 |
+| S20 | `AWAITING_EXERCISE_WORD_SELECTION` | `/cancel` → S7 | — | дефолт | `exword:<uuid>`/`exfilter:<status>`/`expg:prev/next`/`exback` → S20, `exdone`/`excont` → `GenerateExercise` + `GenerateExercisePdf` → S7, `exselback` → S7 |
 
 ### Команда `/cancel`
 
-Регистрируется во всех 18 состояниях через `CancelCmdTransition` (12 диалоговых состояний) и
+Регистрируется во всех 20 состояниях через `CancelCmdTransition` (14 диалоговых состояний) и
 `NoCancelCmdTransition` (6 не-диалоговых). Правила отмены:
 
 | Состояние | Возврат | Удаляемые ключи |
@@ -72,6 +76,8 @@
 | S16 `AWAITING_EXERCISE_GRAMMAR` | S7 | `exerciseType` |
 | S17 `AWAITING_EXERCISE_TOPIC` | S7 | `exerciseType`, `grammarRule` |
 | S18 `AWAITING_EXERCISE_ANSWER` | S7 | `exerciseId`, `exerciseTopic`, `exerciseType` |
+| S19 `STUDENT_DICTIONARY` | S8 | `dictionaryPage` |
+| S20 `AWAITING_EXERCISE_WORD_SELECTION` | S7 | `exerciseType`, `grammarRule`, `exerciseTopic`, `wordSelection`, `wordFilter`, `selectionPage` |
 
 Общие ключи (`selectedStudentId`, `selectedStudentName`, `activeLessonId`, `teacherName`)
 никогда не удаляются.
@@ -98,6 +104,8 @@
 | S16 `AWAITING_EXERCISE_GRAMMAR` | «Введите грамматическое правило» |
 | S17 `AWAITING_EXERCISE_TOPIC` | «Введите тему упражнения» |
 | S18 `AWAITING_EXERCISE_ANSWER` | «Введите ваш ответ на упражнение» |
+| S19 `STUDENT_DICTIONARY` | «Используйте кнопки ниже» |
+| S20 `AWAITING_EXERCISE_WORD_SELECTION` | «Используйте кнопки ниже» |
 
 ## Принцип работы
 
@@ -126,7 +134,8 @@ send documents / convert -> SendMessage | EditMessageText | DeleteMessage | Send
 
 ## Контекст состояния (Map<String, Object>)
 
-Типизированные ключи — enum `ContextKey` (включая `PENDING_STUDENT_NAME`, `WORD_TRANSLATIONS`).
+Типизированные ключи — enum `ContextKey` (включая `PENDING_STUDENT_NAME`, `WORD_TRANSLATIONS`,
+`DICTIONARY_PAGE`, `WORD_SELECTION`, `WORD_FILTER`, `SELECTION_PAGE`).
 
 | Состояние | Ключи |
 |-----------|-------|
@@ -140,8 +149,10 @@ send documents / convert -> SendMessage | EditMessageText | DeleteMessage | Send
 | S13 `AWAITING_MANUAL_TRANSLATION` | `WORD_VALUE`, `WORD_POS` (может оставаться `WORD_TRANSLATIONS`) |
 | S15 | `SELECTED_*`; после выбора — `EXERCISE_TYPE` |
 | S16 | + `GRAMMAR_RULE` |
-| S17 | `EXERCISE_TYPE`, `GRAMMAR_RULE` |
+| S17 | `EXERCISE_TYPE`, `GRAMMAR_RULE`; после ввода темы — `EXERCISE_TOPIC` |
 | S18 | `EXERCISE_ID`, `EXERCISE_TOPIC`, `EXERCISE_TYPE` (legacy) |
+| S19 `STUDENT_DICTIONARY` | + `DICTIONARY_PAGE` |
+| S20 `AWAITING_EXERCISE_WORD_SELECTION` | `EXERCISE_TYPE`, `GRAMMAR_RULE`, `EXERCISE_TOPIC`, `WORD_SELECTION`, `WORD_FILTER`, `SELECTION_PAGE` |
 
 ## Inline-кнопки и callback data
 
@@ -149,8 +160,10 @@ send documents / convert -> SendMessage | EditMessageText | DeleteMessage | Send
 |-------|--------|---------------|
 | S5/S9: уровень | `[A1] … [C2]` | `level:<код>` |
 | S6: список учеников | `[имя]` + `[◀ Back]` | `student:<uuid>`, `back:main` |
-| S7: меню ученика | `[▶ Start Lesson]` `[📋 Details]` `[🎯 Exercise]` `[◀ Back]` | `action:*` |
+| S7: меню ученика | `[▶ Start Lesson]` `[📋 Details]` `[📚 Словарь]` `[🎯 Exercise]` `[◀ Back]` | `action:*` |
 | S8: карточка ученика | `[🔄 Изменить уровень]` `[◀ Back]` | `levelchange`, `details:back` |
+| S19: словарь | `[↺ значение]` (LEARNED), `[◀]` `[▶]`, `[🔙 Назад]` | `wdreset:<uuid>`, `wdpg:prev/next`, `wdback` |
+| S20: выбор слов | `[✓/· значение (POS, статус)]`, `[🔄 In progress]` `[🆕 New]` `[✅ Learned]` `[📋 All]`, `[◀]` `[▶]`, `[✔️ Готово]`, `[🔙 Назад]` | `exword:<uuid>`, `exfilter:<status>`, `expg:prev/next`, `exdone`, `exselback` |
 | S11: часть речи | `[📛 Noun]` `[🏃 Verb]` `[🎨 Adjective]` | `pos:noun`, `pos:verb`, `pos:adjective` |
 | S12: переводы | `[вариант]` + `[✍️ Свой перевод]` | `translation:<index>`, `translation:own` |
 | S14: поиск | `[имя]` + `[◀ Back]` | `student:<uuid>`, `back:main` |

@@ -36,6 +36,7 @@ class WordInfoFactoryTest {
         assertThat(wordInfo.getPartOfSpeech()).isEqualTo(PartOfSpeech.NOUN);
         assertThat(wordInfo.getTargetRepetitions()).isEqualTo(10); // default from config
         assertThat(wordInfo.getCurrentRepetitions()).isEqualTo(0);
+        assertThat(wordInfo.getResetCount()).isEqualTo(0);
     }
 
     @Test
@@ -43,6 +44,7 @@ class WordInfoFactoryTest {
         var wordInfo = factory.create(new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 20);
 
         assertThat(wordInfo.getTargetRepetitions()).isEqualTo(20);
+        assertThat(wordInfo.getResetCount()).isEqualTo(0);
     }
 
     @Test

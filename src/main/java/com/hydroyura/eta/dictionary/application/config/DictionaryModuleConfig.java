@@ -4,12 +4,16 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.api.dictionary.IncrementWordRepetitions;
+import com.hydroyura.eta.dictionary.api.dictionary.ResetWordLearning;
 import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
 import com.hydroyura.eta.dictionary.application.config.properties.WordTranslationProperties;
 import com.hydroyura.eta.dictionary.application.usecase.AddWordToDictionaryUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.CheckWordUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.CreateDictionaryUseCase;
 import com.hydroyura.eta.dictionary.application.usecase.FindWordsService;
+import com.hydroyura.eta.dictionary.application.usecase.IncrementWordRepetitionsUseCase;
+import com.hydroyura.eta.dictionary.application.usecase.ResetWordLearningUseCase;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import com.hydroyura.eta.dictionary.domain.word.WordFactory;
 import com.hydroyura.eta.dictionary.domain.word.WordInfoFactory;
@@ -74,5 +78,15 @@ public class DictionaryModuleConfig {
     @Bean
     FindWords findWords(DictionaryRepository repository) {
         return new FindWordsService(repository);
+    }
+
+    @Bean
+    ResetWordLearning resetWordLearning(DictionaryRepository repository) {
+        return new ResetWordLearningUseCase(repository);
+    }
+
+    @Bean
+    IncrementWordRepetitions incrementWordRepetitions(DictionaryRepository repository) {
+        return new IncrementWordRepetitionsUseCase(repository);
     }
 }

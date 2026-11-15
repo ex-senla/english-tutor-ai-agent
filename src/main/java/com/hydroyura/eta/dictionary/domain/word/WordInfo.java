@@ -5,6 +5,7 @@ import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import java.util.Objects;
 import com.hydroyura.eta.dictionary.domain.word.exception.LastTranslationException;
+import com.hydroyura.eta.dictionary.domain.word.exception.WordResetNotAllowedException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,6 +31,8 @@ public final class WordInfo {
     private Integer targetRepetitions;
 
     private Integer currentRepetitions;
+
+    private Integer resetCount;
 
     public WordStatus getStatus() {
         if (currentRepetitions == null || targetRepetitions == null) {
@@ -62,5 +65,17 @@ public final class WordInfo {
     public void setPartOfSpeech(PartOfSpeech partOfSpeech) {
         Objects.requireNonNull(partOfSpeech, "PartOfSpeech must not be null");
         this.partOfSpeech = partOfSpeech;
+    }
+
+    public void incrementRepetition() {
+        this.currentRepetitions += 1;
+    }
+
+    public void resetLearning() {
+        if (getStatus() != WordStatus.LEARNED) {
+            throw new WordResetNotAllowedException(getStatus());
+        }
+        this.currentRepetitions = 0;
+        this.resetCount += 1;
     }
 }

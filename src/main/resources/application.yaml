@@ -24,9 +24,12 @@ eta:
   dictionary:
     translation:
       variant-count: 3
-  chatbot:
+    word:
+под  chatbot:
     search:
       suggestions-limit: 10
+    pagination:
+      page-size: 8
   demo-students:
     enabled: true
     student-count: 3

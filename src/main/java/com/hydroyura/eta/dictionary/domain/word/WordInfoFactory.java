@@ -33,6 +33,7 @@ public final class WordInfoFactory {
                 Set.copyOf(translations),
                 partOfSpeech,
                 targetRepetitions,
+                0,
                 0
         );
 

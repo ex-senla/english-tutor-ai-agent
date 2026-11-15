@@ -18,7 +18,11 @@ public enum ContextKey {
     PENDING_STUDENT_NAME("pendingStudentName"),
     WORD_POS("wordPos"),
     WORD_VALUE("wordValue"),
-    WORD_TRANSLATIONS("wordTranslations");
+    WORD_TRANSLATIONS("wordTranslations"),
+    DICTIONARY_PAGE("dictionaryPage"),
+    WORD_SELECTION("wordSelection"),
+    WORD_FILTER("wordFilter"),
+    SELECTION_PAGE("selectionPage");
 
     private final String value;
 

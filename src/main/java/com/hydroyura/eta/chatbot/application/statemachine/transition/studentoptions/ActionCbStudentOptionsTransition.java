@@ -4,12 +4,15 @@ import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdictionary.StudentDictionarySupport;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.exercise.ExerciseView;
 import com.hydroyura.eta.chatbot.view.lesson.LessonView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
+import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.lesson.StartLessonCommand;
 import com.hydroyura.eta.student.api.student.StudentQuery;
@@ -22,6 +25,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON;
 import static com.hydroyura.eta.chatbot.view.Messages.LESSON_STARTED;
@@ -41,9 +45,14 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
 
     private final StudentQuery studentQuery;
 
+    private final FindWords findWords;
+
+    private final ChatbotPaginationProperties paginationProperties;
+
     private final Map<String, BiFunction<Chat, Integer, ActionResult>> methodStrategy = Map.of(
             Callbacks.START_LESSON, this::startLesson,
             Callbacks.DETAILS, this::getStudentDetails,
+            Callbacks.DICTIONARY, this::openDictionary,
             Callbacks.EXERCISE, this::defineExerciseType,
             Callbacks.BACK, this::studentsListEdit
     );
@@ -67,6 +76,13 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
     private ActionResult getStudentDetails(Chat chat, int messageId) {
         chat.updateState(ChatState.STUDENT_DETAILS);
         return StudentSupport.studentDetails(studentQuery, chat, messageId);
+    }
+
+    private ActionResult openDictionary(Chat chat, int messageId) {
+        chat.updateState(ChatState.STUDENT_DICTIONARY);
+        chat.getContext().put(DICTIONARY_PAGE.getValue(), 0);
+        return new StudentDictionarySupport(studentQuery, findWords, paginationProperties)
+                .render(chat, messageId);
     }
 
     private ActionResult startLesson(Chat chat, int messageId) {

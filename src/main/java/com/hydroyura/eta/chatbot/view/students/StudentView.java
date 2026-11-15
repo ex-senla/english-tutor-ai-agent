@@ -64,6 +64,8 @@ public class StudentView {
                         Callbacks.START_LESSON))),
                 List.of(new ActionResult.InlineButton(Buttons.DETAILS, createCallbackData(Callbacks.ACTION,
                         Callbacks.DETAILS))),
+                List.of(new ActionResult.InlineButton(Buttons.DICTIONARY, createCallbackData(Callbacks.ACTION,
+                        Callbacks.DICTIONARY))),
                 List.of(new ActionResult.InlineButton(Buttons.EXERCISE, createCallbackData(Callbacks.ACTION,
                         Callbacks.EXERCISE))),
                 List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.ACTION,

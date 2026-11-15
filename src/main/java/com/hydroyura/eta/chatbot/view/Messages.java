@@ -102,6 +102,13 @@ public final class Messages {
             🔄 Слово уже есть в словаре '%s' (%s)
             Переводы: %s""";
 
+    public static final String DICTIONARY_EMPTY = "📚 Словарь пуст.";
+
+    public static final String WORD_SELECTION_PROMPT = "Выберите слова для упражнения:";
+
+    public static final String WORD_SELECTION_EMPTY_WARNING =
+            "⚠️ Вы не выбрали ни одного слова. Упражнение будет сгенерировано только по теме, без слов из словаря.";
+
     public static final String WORD_POS_TRANSLATIONS = """
             ✅ Слово '%s' (%s)
             Переводы: %s

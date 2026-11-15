@@ -24,15 +24,17 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `Map<String, Object> context` — key-value хранилище. Ключи типизированы enum'ом `ContextKey`
   (`TEACHER_NAME`, `SELECTED_STUDENT_ID`, `SELECTED_STUDENT_NAME`, `ACTIVE_LESSON_ID`,
   `PENDING_STUDENT_NAME`, `WORD_VALUE`, `WORD_POS`, `WORD_TRANSLATIONS`, `EXERCISE_TYPE`,
-  `GRAMMAR_RULE`, `EXERCISE_ID`, `EXERCISE_TOPIC`)
+  `GRAMMAR_RULE`, `EXERCISE_ID`, `EXERCISE_TOPIC`, `DICTIONARY_PAGE`, `WORD_SELECTION`,
+  `WORD_FILTER`, `SELECTION_PAGE`)
 - `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
 ### ChatState (Enum, `domain/chat`)
-18 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+20 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
 `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`,
-`AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`,
-`AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`, `AWAITING_EXERCISE_TYPE`,
-`AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`, `AWAITING_EXERCISE_ANSWER`.
+`STUDENT_DICTIONARY`, `AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_POS`,
+`AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
+`AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`,
+`AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`.
 
 `AWAITING_EXERCISE_ANSWER` (интерактивные ответы) в текущем PDF-потоке не достигается —
 ни один переход в него не ведёт; переход и `CheckExercise` сохранены как задел.
@@ -66,9 +68,10 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 Именование: `<Что><Триггер><Состояние>Transition`, триггеры: `Cmd` / `Inp` / `Cb` / `Btn`.
 Например `NewCmdActiveTransition`, `StudentListTransition`, `PosCbAwaitingPosTransition`.
 Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, `studentsearch/`, `cancel/`,
-`awaitingtranslationchoice/`, `awaitingmanualtranslation/`, ...). В корне пакета — общие
-артефакты: `TransitionKey`, `StudentSupport` (работа с выбранным учеником в контексте),
-`NewStudentTransition` и `StudentListTransition` (регистрируются под несколькими ключами).
+`awaitingtranslationchoice/`, `awaitingmanualtranslation/`, `studentdictionary/`,
+`awaitingexercisewordselection/`, ...). В корне пакета — общие артефакты: `TransitionKey`,
+`StudentSupport` (работа с выбранным учеником в контексте), `NewStudentTransition` и
+`StudentListTransition` (регистрируются под несколькими ключами).
 
 Флоу слова переиспользует `transition/word/LessonWordSupport` — общий код добавления слова в
 словарь и активный урок (через порты `AddWordToDictionary` + `AddWordToLesson`) с обработкой
@@ -77,7 +80,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 ### Handler (Application, `application/statemachine/handler`)
 Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
-«Используйте кнопки ниже», ...). Один `@Component` на состояние (18 штук), собираются в
+«Используйте кнопки ниже», ...). Один `@Component` на состояние (20 штук), собираются в
 `Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
 
 ### StateMachineConfig (`application/config`)
@@ -87,17 +90,23 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - таблица регистрации: `onCommand(state, команда, transition)`, `onButton(state, кнопка, transition)`,
   `onCallback(state, префикс, transition)`, `onInput(state, transition)`
 - ключи Cmd/Btn — текст (`"/new"`, `Buttons.NEW_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`,
-  `"pos"`, `"level"`, `"levelchange"`, `"exercise"`, `"details"`, `"back"`, `"translation"`);
-  команда `/cancel` регистрируется для всех 18 состояний через `CancelRule`/`CancelScreenRenderer`
-  (12 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
-  `ChatbotSearchProperties` включаются через `@EnableConfigurationProperties`
+  `"pos"`, `"level"`, `"levelchange"`, `"exercise"`, `"details"`, `"back"`, `"translation"`,
+  `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`, `"exdone"`,
+  `"excont"`, `"exback"`, `"exselback"`);
+  команда `/cancel` регистрируется для всех 20 состояний через `CancelRule`/`CancelScreenRenderer`
+  (14 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
+  `ChatbotSearchProperties` и `ChatbotPaginationProperties` включаются через
+  `@EnableConfigurationProperties`
 
 ### View (презентация, `view/`)
 Статические билдеры `ActionResult`: `MenuView` (главное меню с «🔍 Найти ученика»),
 `StudentView` (список/опции/карточка ученика, поиск `searchPrompt`/`searchResults`,
-клавиатуры уровней CEFR, `optionsKeyboard()`), `WordView` (`posMenu`, `translationChoice`,
-`manualTranslationPrompt`, `posLabel`, маппинг payload → `PartOfSpeech`), `LessonView`
-(клавиатура урока — только «🏁 Завершить урок», сводка завершения), `ExerciseView` (выбор типа).
+клавиатуры уровней CEFR, `optionsKeyboard()`), `StudentDictionaryView` (меню «Словарь»:
+пагинация, кнопка «↺» только для LEARNED), `WordView` (`posMenu`, `translationChoice`,
+`manualTranslationPrompt`, `posLabel`, `statusLabel`, маппинг payload → `PartOfSpeech`),
+`LessonView` (клавиатура урока — только «🏁 Завершить урок», сводка завершения),
+`ExerciseView` (выбор типа), `ExerciseWordSelectionView` (шаг выбора слов: toggle ✓/·,
+фильтр по статусу, пагинация, «Готово», предупреждение при пустом выборе).
 
 Словари констант — единый источник для рендера и парсинга:
 - `Buttons` — тексты кнопок + `REPLY_BUTTONS` (множество reply-кнопок для `UpdateParser`)
@@ -106,6 +115,8 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `Commands` — команды (`"/register"`, `"/new"`, `"/find"`, `"/cancel"`, ...)
 - `Messages` — тексты сообщений
 - `util/ViewUtils.createCallbackData(...)` — сборка `"prefix:payload"`
+- `util/ViewUtils.truncateButtonLabel(...)` — транкирование подписи inline-кнопки до 64 байт
+  UTF-8 с «…»; `pageCount/hasPrev/hasNext/pageSlice` — хелперы пагинации
 
 ## Application Layer
 
@@ -150,8 +161,8 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 ```
 
 `dictionary :: word` используется портом `WordTranslator` (перевод слова) в флоу урока;
-`generator :: document` — только в `InputAwaitingExerciseTopicTransition`
-(`GenerateExercisePdf` — пара PDF: упражнение + ответы).
+`generator :: document` — в переходах генерации упражнения (`GenerateCbAwaitingExerciseWordSelectionTransition` —
+`GenerateExercisePdf` — пара PDF: упражнение + ответы).
 
 ## Известные долги
 - `StateMachine.isReady()` не проверяет полноту таблиц (TODO в коде): состояние без `Handler`

@@ -30,6 +30,22 @@ public final class Buttons {
 
     public static final String OWN_TRANSLATION = "✍️ Свой перевод";
 
+    public static final String DICTIONARY = "📚 Словарь";
+
+    public static final String PREV = "◀";
+
+    public static final String NEXT = "▶";
+
+    public static final String RESET = "↺";
+
+    public static final String DONE = "✔️ Готово";
+
+    public static final String CONTINUE = "▶️ Продолжить";
+
+    public static final String BACK_TO_SELECTION = "🔙 Вернуться к выбору";
+
+    public static final String BACK_TO_STUDENT = "🔙 Назад";
+
     public static final Set<String> REPLY_BUTTONS = Set.of(NEW_STUDENT, LIST_STUDENT, FIND_STUDENT, FINISH_LESSON);
 
     public static Set<String> getReplyButtons() {

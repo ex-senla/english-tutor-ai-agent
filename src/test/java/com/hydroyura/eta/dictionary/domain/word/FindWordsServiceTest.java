@@ -34,10 +34,11 @@ class FindWordsServiceTest {
     void shouldMapWordStatusToProjection() {
         var dictId = DictionaryId.generate();
         var words = new HashSet<WordInfo>();
-        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
-        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0,
+                0));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5, 0));
         words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10,
-                10));
+                10, 0));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var projections = service.findByDictionaryId(dictId);
@@ -51,10 +52,11 @@ class FindWordsServiceTest {
     void shouldCountStatsByStatus() {
         var dictId = DictionaryId.generate();
         var words = new HashSet<WordInfo>();
-        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0));
-        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0,
+                0));
+        words.add(new WordInfo(WordInfoId.generate(), new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5, 0));
         words.add(new WordInfo(WordInfoId.generate(), new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10,
-                10));
+                10, 0));
         repository.save(new Dictionary(dictId, words, "My Dictionary"));
 
         var stats = service.getStats(dictId);
@@ -63,6 +65,36 @@ class FindWordsServiceTest {
         assertThat(stats.newCount()).isEqualTo(1);
         assertThat(stats.inProgressCount()).isEqualTo(1);
         assertThat(stats.learnedCount()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldFindOnlyRequestedWordIds() {
+        var dictId = DictionaryId.generate();
+        var appleId = WordInfoId.generate();
+        var runId = WordInfoId.generate();
+        var bigId = WordInfoId.generate();
+
+        var words = new HashSet<WordInfo>();
+        words.add(new WordInfo(appleId, new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0, 0));
+        words.add(new WordInfo(runId, new Word("run"), Set.of("бежать"), PartOfSpeech.VERB, 10, 5, 0));
+        words.add(new WordInfo(bigId, new Word("big"), Set.of("большой"), PartOfSpeech.ADJECTIVE, 10, 10, 0));
+        repository.save(new Dictionary(dictId, words, "My Dictionary"));
+
+        var projections = service.findByDictionaryIdAndWordIds(dictId, Set.of(appleId, bigId));
+
+        assertThat(projections).extracting(projection -> projection.id())
+                .containsExactlyInAnyOrder(appleId, bigId);
+    }
+
+    @Test
+    void shouldReturnEmptyForEmptyWordIds() {
+        var dictId = DictionaryId.generate();
+        var words = new HashSet<WordInfo>();
+        words.add(new WordInfo(WordInfoId.generate(), new Word("apple"), Set.of("яблоко"), PartOfSpeech.NOUN, 10, 0,
+                0));
+        repository.save(new Dictionary(dictId, words, "My Dictionary"));
+
+        assertThat(service.findByDictionaryIdAndWordIds(dictId, Set.of())).isEmpty();
     }
 
     static class StubDictionaryRepository implements DictionaryRepository {

@@ -1,20 +1,24 @@
 package com.hydroyura.eta.exercise.api.exercise;
 
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Команда генерации упражнения.
  *
  * @param cefrLevel код уровня CEFR (A1–C2); валидность значения гарантируется источником
  *                  (enum {@code CefrLevel} ученика в модуле student), поэтому здесь проверяется только непустота.
+ * @param wordIds   идентификаторы слов словаря, выбранных для упражнения; может быть пустым.
  */
 public record GenerateExerciseCommand(
         ExerciseType type,
         String grammarRule,
         String topic,
         DictionaryId dictionaryId,
-        String cefrLevel
+        String cefrLevel,
+        Set<WordInfoId> wordIds
 ) {
 
     public GenerateExerciseCommand {
@@ -32,5 +36,7 @@ public record GenerateExerciseCommand(
         if (cefrLevel.isBlank()) {
             throw new IllegalArgumentException("cefrLevel must not be blank");
         }
+        Objects.requireNonNull(wordIds, "wordIds must not be null");
+        wordIds = Set.copyOf(wordIds);
     }
 }

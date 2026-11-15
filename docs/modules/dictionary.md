@@ -13,9 +13,13 @@
 ### Word (@Entity)
 - Слово с множеством переводов, частью речи и прогрессом изучения.
 - Immutable поля: `id` (@Identity), `value`, `translations` (Set<String>).
-- Mutable поля: `partOfSpeech` (PartOfSpeech), `targetRepetitions`, `currentRepetitions`.
+- Mutable поля: `partOfSpeech` (PartOfSpeech), `targetRepetitions`, `currentRepetitions`,
+  `resetCount` (счётчик сбросов обучения, 0 при создании).
 - Статус вычисляется: NEW / IN_PROGRESS / LEARNED.
-- Методы: `addTranslation()`, `removeTranslation()`, `setPartOfSpeech()`.
+- Методы: `addTranslation()`, `removeTranslation()`, `setPartOfSpeech()`,
+  `incrementRepetition()` (currentRepetitions +1, без верхней границы),
+  `resetLearning()` (только LEARNED: currentRepetitions = 0, resetCount +1; для NEW/IN_PROGRESS —
+  `WordResetNotAllowedException`).
 - Нельзя удалить последний перевод (LastTranslationException).
 
 ### WordFactory
@@ -32,6 +36,8 @@ NEW, IN_PROGRESS, LEARNED
 - `WordDomainException` (базовый)
 - `WordValidationException`
 - `LastTranslationException`
+- `WordResetNotAllowedException`
+- `WordNotFoundException`
 
 ## API (публичные интерфейсы)
 
@@ -40,6 +46,8 @@ NEW, IN_PROGRESS, LEARNED
 | `CreateDictionary` | `DictionaryId execute(CreateDictionaryCommand)` |
 | `AddWordToDictionary` | `WordId execute(AddWordCommand)` |
 | `WordTranslator` (в `api.word`) | `List<String> translate(WordTranslationCommand)` |
+| `ResetWordLearning` | `void execute(DictionaryId, WordInfoId)` |
+| `IncrementWordRepetitions` | `void execute(DictionaryId, Set<WordInfoId>)` |
 
 ## Use Cases (Application)
 
@@ -47,6 +55,8 @@ NEW, IN_PROGRESS, LEARNED
 |----------|--------|
 | `CreateDictionary` | ✅ |
 | `AddWordToDictionary` | ✅ |
+| `ResetWordLearning` | ✅ |
+| `IncrementWordRepetitions` | ✅ |
 
 ### CreateDictionaryUseCase
 - Реализует `CreateDictionary` + `@ApplicationModuleListener` для `EntityCreated<Teacher>`.
@@ -54,6 +64,15 @@ NEW, IN_PROGRESS, LEARNED
 
 ### AddWordToDictionaryUseCase
 - Реализует `AddWordToDictionary`. Использует `WordInfoFactory` + `DictionaryRepository`.
+
+### ResetWordLearningUseCase
+- Реализует `ResetWordLearning`: загружает `Dictionary`, находит `WordInfo` по `WordInfoId`
+  (отсутствие → `WordNotFoundException`), вызывает доменную операцию `resetLearning()`
+  (для NEW/IN_PROGRESS — `WordResetNotAllowedException`), сохраняет агрегат.
+
+### IncrementWordRepetitionsUseCase
+- Реализует `IncrementWordRepetitions`: инкрементирует `currentRepetitions` каждого найденного
+  `WordInfo` из набора; отсутствующие id пропускаются с `log.warn`.
 
 ## Зависимости
 ```java

@@ -132,12 +132,12 @@ class SpringAiExerciseGeneratorTest {
 
     private GenerateExerciseCommand command() {
         return new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", DictionaryId
-                .generate(), "B1");
+                .generate(), "B1", java.util.Set.of());
     }
 
     private GenerateExerciseCommand multipleChoiceCommand() {
         return new GenerateExerciseCommand(ExerciseType.MULTIPLE_CHOICE, "Past Simple", "Animals", DictionaryId
-                .generate(), "B1");
+                .generate(), "B1", java.util.Set.of());
     }
 
     private Set<WordData> words() {

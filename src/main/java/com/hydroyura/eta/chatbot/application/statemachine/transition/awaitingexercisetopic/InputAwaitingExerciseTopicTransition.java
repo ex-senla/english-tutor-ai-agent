@@ -1,86 +1,53 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection.ExerciseWordSelectionSupport;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
-import com.hydroyura.eta.chatbot.view.students.StudentView;
+import com.hydroyura.eta.chatbot.view.exercise.ExerciseWordSelectionView;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
-import com.hydroyura.eta.dictionary.api.word.WordProjection;
-import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
-import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
-import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
-import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
-import com.hydroyura.eta.generator.api.document.GenerateExercisePdfCommand;
-import com.hydroyura.eta.generator.api.document.PdfRenderException;
+import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_SELECTION;
 
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
-import static com.hydroyura.eta.chatbot.view.Messages.EXERCISE_PDF_ERROR;
-
-@Slf4j
 @RequiredArgsConstructor
 public class InputAwaitingExerciseTopicTransition implements Transition<Action.Input> {
 
     private final StudentQuery studentQuery;
 
-    private final GenerateExercise generateExercise;
-
     private final FindWords findWords;
 
-    private final GenerateExercisePdf generateExercisePdf;
+    private final ChatbotPaginationProperties paginationProperties;
 
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
-        var topic = input.text();
-        var grammarRule = (String) chat.getContext().get(GRAMMAR_RULE.getValue());
-        var studentId = StudentSupport.selectedStudentId(chat);
-        var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), input.text());
+        chat.getContext().put(WORD_FILTER.getValue(), ExerciseWordSelectionView.FILTER_IN_PROGRESS);
+        chat.getContext().put(SELECTION_PAGE.getValue(), 0);
 
+        var studentId = StudentSupport.selectedStudentId(chat);
         var dictionaryId = studentQuery.getDictionaryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("No dictionary for student " + studentId));
 
-        var cefrLevel = studentQuery.getCefrLevel(studentId)
-                .orElseThrow(() -> new IllegalStateException("No level for student " + studentId));
+        var selectedIds = findWords.findByDictionaryId(dictionaryId).stream()
+                .filter(word -> word.status() == WordStatus.IN_PROGRESS)
+                .map(word -> word.id().value().toString())
+                .collect(Collectors.toSet());
+        chat.getContext().put(WORD_SELECTION.getValue(), selectedIds);
 
-        var exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
-                dictionaryId, cefrLevel.code()));
+        chat.updateState(ChatState.AWAITING_EXERCISE_WORD_SELECTION);
 
-        var vocabulary = new ArrayList<>(findWords.findByDictionaryId(dictionaryId));
-        vocabulary.sort(Comparator.comparing(WordProjection::value, String.CASE_INSENSITIVE_ORDER));
-
-        var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
-
-        try {
-            var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary, studentName,
-                    cefrLevel.code()));
-            log.info("Exercise {} rendered to PDF (exercise + answers)", exercise.id());
-            reset(chat);
-            return new ActionResult.SendDocuments(List.of(
-                    new ActionResult.SendDocument(bundle.exercise().fileName(), bundle.exercise().content(),
-                            "Упражнение"),
-                    new ActionResult.SendDocument(bundle.answers().fileName(), bundle.answers().content(), "Ответы")
-            ), "Ученик: " + studentName, StudentView.optionsKeyboard());
-        } catch (PdfRenderException e) {
-            log.warn("PDF render failed for exercise {}: {}", exercise.id(), e.getMessage());
-            reset(chat);
-            return new ActionResult.TextWithInlineKeyboard(EXERCISE_PDF_ERROR, StudentView.optionsKeyboard());
-        }
-    }
-
-    private void reset(Chat chat) {
-        chat.getContext().remove(GRAMMAR_RULE.getValue());
-        chat.getContext().remove(EXERCISE_TYPE.getValue());
-        chat.updateState(ChatState.STUDENT_OPTIONS);
+        var support = new ExerciseWordSelectionSupport(studentQuery, findWords, paginationProperties);
+        return support.renderFresh(chat);
     }
 }

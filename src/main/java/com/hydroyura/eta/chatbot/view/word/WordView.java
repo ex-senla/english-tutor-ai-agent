@@ -5,6 +5,7 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.view.Buttons;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.dictionary.api.word.WordStatus;
 
 import java.util.List;
 
@@ -33,6 +34,14 @@ public class WordView {
             case PartOfSpeech.NOUN -> Buttons.NOUN;
             case PartOfSpeech.VERB -> Buttons.VERB;
             case PartOfSpeech.ADJECTIVE -> Buttons.ADJECTIVE;
+        };
+    }
+
+    public static String statusLabel(WordStatus status) {
+        return switch (status) {
+            case WordStatus.NEW -> "🆕";
+            case WordStatus.IN_PROGRESS -> "🔄";
+            case WordStatus.LEARNED -> "✅";
         };
     }
 

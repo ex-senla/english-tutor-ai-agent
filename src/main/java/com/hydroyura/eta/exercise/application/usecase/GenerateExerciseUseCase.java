@@ -1,18 +1,26 @@
 package com.hydroyura.eta.exercise.application.usecase;
 
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
+import com.hydroyura.eta.dictionary.api.dictionary.IncrementWordRepetitions;
+import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.application.port.ExerciseGenerator;
 import com.hydroyura.eta.exercise.application.port.WordData;
 import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GenerateExerciseUseCase implements GenerateExercise {
 
     private final ExerciseRepository repository;
@@ -21,25 +29,24 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
     private final FindWords findWords;
 
-    public GenerateExerciseUseCase(ExerciseRepository repository, ExerciseGenerator generator, FindWords findWords) {
+    private final IncrementWordRepetitions incrementWordRepetitions;
+
+    public GenerateExerciseUseCase(ExerciseRepository repository, ExerciseGenerator generator, FindWords findWords,
+            IncrementWordRepetitions incrementWordRepetitions) {
         this.repository = Objects.requireNonNull(repository, "repository must not be null");
         this.generator = Objects.requireNonNull(generator, "generator must not be null");
         this.findWords = Objects.requireNonNull(findWords, "findWords must not be null");
+        this.incrementWordRepetitions = Objects.requireNonNull(incrementWordRepetitions,
+                "incrementWordRepetitions must not be null");
     }
 
     @Override
     public ExerciseDto execute(GenerateExerciseCommand command) {
         Objects.requireNonNull(command, "command must not be null");
 
-        // TODO (временно): берём все слова словаря без фильтра по статусу IN_PROGRESS.
-        // Вернуть фильтр по статусу IN_PROGRESS (roadmap: «слова в статусе на изучении»).
-        var words = findWords.findByDictionaryId(command.dictionaryId());
+        var words = findWords.findByDictionaryIdAndWordIds(command.dictionaryId(), command.wordIds());
 
-        var wordIds = words.stream()
-                .map(WordProjection::id)
-                .collect(Collectors.toSet());
-
-        var exercise = Exercise.create(ExerciseId.generate(), command.type(), command.topic(), wordIds);
+        var exercise = Exercise.create(ExerciseId.generate(), command.type(), command.topic(), command.wordIds());
 
         var wordDataList = words.stream()
                 .map(wp -> new WordData(wp.value(), wp.translations(), wp.partOfSpeech().name()))
@@ -52,7 +59,32 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
         repository.save(exercise);
 
+        var usedIds = determineUsedWordIds(words, dto.items());
+        incrementWordRepetitions.execute(command.dictionaryId(), usedIds);
+        log.info("Incremented repetitions for used words {}", usedIds);
+
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),
                 exercise.getContent(), exercise.getExpectedAnswers(), exercise.getItems(), exercise.getStatus());
+    }
+
+    private static Set<WordInfoId> determineUsedWordIds(Set<WordProjection> words, List<ExerciseItem> items) {
+        var combined = new StringBuilder();
+        for (var item : items) {
+            combined.append(item.sentence()).append(' ');
+            item.options().forEach(option -> combined.append(option).append(' '));
+        }
+
+        return words.stream()
+                .filter(word -> containsWord(combined.toString(), word.value()))
+                .map(WordProjection::id)
+                .collect(Collectors.toSet());
+    }
+
+    private static boolean containsWord(String text, String word) {
+        if (word == null || word.isBlank()) {
+            return false;
+        }
+        var pattern = Pattern.compile("(?i)\\b" + Pattern.quote(word) + "\\b");
+        return pattern.matcher(text).find();
     }
 }
