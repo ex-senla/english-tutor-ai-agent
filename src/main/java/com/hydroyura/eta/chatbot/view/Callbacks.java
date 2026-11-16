@@ -39,6 +39,24 @@ public final class Callbacks {
 
     public static final String EXERCISE_WORD_SELECTION_BACK = "exselback";
 
+    public static final String TOPIC_NAV = "topicnav";
+
+    public static final String TOPIC = "topic";
+
+    public static final String TOPIC_SEARCH = "topicsearch";
+
+    public static final String TOPIC_SELF = "topicself";
+
+    public static final String TOPIC_PAGE = "topicpg";
+
+    public static final String TOPIC_CONFIRM = "topicconfirm";
+
+    public static final String TOPIC_CATALOG = "topiccatalog";
+
+    public static final String TOPIC_SKIP = "topicskip";
+
+    public static final String POS_CHANGE = "poschange";
+
     // ---- any ----
     public static final String BACK = "back";
 
@@ -66,6 +84,14 @@ public final class Callbacks {
     public static final String ADJECTIVE = "adjective";
 
     public static final String OWN = "own";
+
+    public static final String EXPRESSION = "expression";
+
+    public static final String TOPIC_CONFIRM_USE = "use";
+
+    public static final String TOPIC_CONFIRM_REENTER = "reenter";
+
+    public static final String TOPIC_CONFIRM_BACK = "back";
 
     public static final String DICTIONARY = "dictionary";
 

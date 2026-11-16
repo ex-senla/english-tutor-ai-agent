@@ -10,6 +10,7 @@ import com.hydroyura.eta.chatbot.view.exercise.ExerciseWordSelectionView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
@@ -22,8 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_THEMATIC_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
@@ -53,15 +54,15 @@ public class GenerateCbAwaitingExerciseWordSelectionTransition implements Transi
     }
 
     private ActionResult generate(Chat chat, int messageId, Set<WordInfoId> wordIds) {
-        var grammarRule = (String) chat.getContext().get(GRAMMAR_RULE.getValue());
-        var topic = (String) chat.getContext().get(EXERCISE_TOPIC.getValue());
+        var topic = (ExerciseTopic) chat.getContext().get(EXERCISE_TOPIC.getValue());
+        var thematicTopic = (String) chat.getContext().get(EXERCISE_THEMATIC_TOPIC.getValue());
         var exerciseType = (ExerciseType) chat.getContext().get(EXERCISE_TYPE.getValue());
 
         var studentId = StudentSupport.selectedStudentId(chat);
         var dictionaryId = support.dictionaryId(chat);
         var cefrLevel = support.cefrLevel(chat);
 
-        var exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, grammarRule, topic,
+        var exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, topic, thematicTopic,
                 dictionaryId, cefrLevel.code(), wordIds));
 
         var vocabulary = withWords ? support.selectedWords(chat) : List.<WordProjection>of();
@@ -85,9 +86,9 @@ public class GenerateCbAwaitingExerciseWordSelectionTransition implements Transi
     }
 
     private void reset(Chat chat) {
-        chat.getContext().remove(GRAMMAR_RULE.getValue());
         chat.getContext().remove(EXERCISE_TYPE.getValue());
         chat.getContext().remove(EXERCISE_TOPIC.getValue());
+        chat.getContext().remove(EXERCISE_THEMATIC_TOPIC.getValue());
         chat.getContext().remove(WORD_SELECTION.getValue());
         chat.getContext().remove(WORD_FILTER.getValue());
         chat.getContext().remove(SELECTION_PAGE.getValue());

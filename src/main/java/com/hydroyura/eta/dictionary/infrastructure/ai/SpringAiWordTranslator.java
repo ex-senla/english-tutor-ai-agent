@@ -1,6 +1,7 @@
 package com.hydroyura.eta.dictionary.infrastructure.ai;
 
 import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
+import com.hydroyura.eta.dictionary.api.word.WordPosTranslations;
 import com.hydroyura.eta.dictionary.api.word.WordTranslationCommand;
 import com.hydroyura.eta.dictionary.api.word.WordTranslator;
 import com.hydroyura.eta.dictionary.application.config.properties.WordInfoSpecificationProperties;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ public class SpringAiWordTranslator implements WordTranslator {
 
     private static final String PROMPT_PATH = "/dictionary/prompts/word-translations-system.txt";
 
+    private static final String ONE_SHOT_PROMPT_PATH = "/dictionary/prompts/word-pos-translations-system.txt";
+
     private final ChatClient chatClient;
 
     private final WordTranslationProperties properties;
@@ -36,7 +40,7 @@ public class SpringAiWordTranslator implements WordTranslator {
         Objects.requireNonNull(command.partOfSpeech(), "partOfSpeech must not be null");
 
         var count = properties.getVariantCount();
-        var systemPrompt = loadPrompt().replace("{count}", String.valueOf(count));
+        var systemPrompt = loadPrompt(PROMPT_PATH).replace("{count}", String.valueOf(count));
         var userMessage = "Word: " + command.word() + "\nPart of speech: " + posLabel(command.partOfSpeech());
 
         AiTranslationsResponse response;
@@ -57,6 +61,62 @@ public class SpringAiWordTranslator implements WordTranslator {
         }
 
         return validate(response.translations());
+    }
+
+    @Override
+    public WordPosTranslations suggestPosAndTranslations(String word) {
+        Objects.requireNonNull(word, "word must not be null");
+
+        var count = properties.getVariantCount();
+        var systemPrompt = loadPrompt(ONE_SHOT_PROMPT_PATH).replace("{count}", String.valueOf(count));
+        var userMessage = "Word: " + word;
+
+        AiPosTranslationsResponse response;
+        try {
+            response = chatClient.prompt()
+                    .system(systemPrompt)
+                    .user(userMessage)
+                    .call()
+                    .entity(AiPosTranslationsResponse.class);
+        } catch (Exception e) {
+            log.error("AI one-shot POS/translations failed for word '{}'", word, e);
+            return failure();
+        }
+
+        if (response == null || response.partOfSpeech() == null) {
+            log.warn("AI returned empty one-shot response for word '{}'", word);
+            return failure();
+        }
+
+        var pos = mapPartOfSpeech(response.partOfSpeech());
+        if (pos == null) {
+            log.warn("AI returned unknown part of speech '{}' for word '{}'", response.partOfSpeech(), word);
+            return failure();
+        }
+
+        var translations = response.translations() == null ? List.<String>of() : validate(response.translations());
+        if (translations.isEmpty()) {
+            log.warn("AI returned no valid translations for word '{}'", word);
+            return failure();
+        }
+        return new WordPosTranslations(pos, translations);
+    }
+
+    private WordPosTranslations failure() {
+        return new WordPosTranslations(null, List.of());
+    }
+
+    private PartOfSpeech mapPartOfSpeech(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return switch (raw.trim().toLowerCase(Locale.ROOT)) {
+            case "noun" -> PartOfSpeech.NOUN;
+            case "verb" -> PartOfSpeech.VERB;
+            case "adjective" -> PartOfSpeech.ADJECTIVE;
+            case "expression" -> PartOfSpeech.EXPRESSION;
+            default -> null;
+        };
     }
 
     private List<String> validate(List<String> raw) {
@@ -85,14 +145,14 @@ public class SpringAiWordTranslator implements WordTranslator {
         return List.copyOf(result);
     }
 
-    private static String loadPrompt() {
-        try (var in = SpringAiWordTranslator.class.getResourceAsStream(PROMPT_PATH)) {
+    private static String loadPrompt(String path) {
+        try (var in = SpringAiWordTranslator.class.getResourceAsStream(path)) {
             if (in == null) {
-                throw new IllegalStateException("Prompt resource not found: " + PROMPT_PATH);
+                throw new IllegalStateException("Prompt resource not found: " + path);
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to load prompt: " + PROMPT_PATH, e);
+            throw new IllegalStateException("Failed to load prompt: " + path, e);
         }
     }
 
@@ -101,6 +161,7 @@ public class SpringAiWordTranslator implements WordTranslator {
             case NOUN -> "noun";
             case VERB -> "verb";
             case ADJECTIVE -> "adjective";
+            case EXPRESSION -> "expression";
         };
     }
 }

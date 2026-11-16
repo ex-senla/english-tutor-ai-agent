@@ -42,15 +42,7 @@ public class ThymeleafPdfRenderer implements ExercisePdfRenderer {
 
     @Override
     public byte[] render(String templateName, Map<String, Object> model) {
-        Objects.requireNonNull(templateName, "templateName must not be null");
-        Objects.requireNonNull(model, "model must not be null");
-
-        String html;
-        try {
-            html = templateEngine.process(templateName, new Context(Locale.ROOT, model));
-        } catch (RuntimeException e) {
-            throw new PdfRenderException("Failed to process template: " + templateName, e);
-        }
+        var html = renderHtml(templateName, model);
 
         try (var out = new ByteArrayOutputStream()) {
             var builder = new PdfRendererBuilder();
@@ -64,6 +56,17 @@ public class ThymeleafPdfRenderer implements ExercisePdfRenderer {
             throw e;
         } catch (Exception e) {
             throw new PdfRenderException("Failed to render PDF from template: " + templateName, e);
+        }
+    }
+
+    String renderHtml(String templateName, Map<String, Object> model) {
+        Objects.requireNonNull(templateName, "templateName must not be null");
+        Objects.requireNonNull(model, "model must not be null");
+
+        try {
+            return templateEngine.process(templateName, new Context(Locale.ROOT, model));
+        } catch (RuntimeException e) {
+            throw new PdfRenderException("Failed to process template: " + templateName, e);
         }
     }
 

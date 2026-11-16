@@ -1,0 +1,2622 @@
+[
+  {
+    "slug": "parts-of-speech",
+    "parentSlug": null,
+    "name": "Parts of Speech",
+    "nameRu": "Части речи",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "nouns",
+    "parentSlug": "parts-of-speech",
+    "name": "Nouns",
+    "nameRu": "Существительные",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "common-and-proper-nouns",
+    "parentSlug": "nouns",
+    "name": "Common and Proper Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "countable-uncountable-nouns",
+    "parentSlug": "nouns",
+    "name": "Countable and Uncountable Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "singular-plural-nouns",
+    "parentSlug": "nouns",
+    "name": "Singular and Plural Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "possessive-nouns",
+    "parentSlug": "nouns",
+    "name": "Possessive Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "compound-nouns",
+    "parentSlug": "nouns",
+    "name": "Compound Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "collective-nouns",
+    "parentSlug": "nouns",
+    "name": "Collective Nouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "pronouns",
+    "parentSlug": "parts-of-speech",
+    "name": "Pronouns",
+    "nameRu": "Местоимения",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "personal-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Personal Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "subject-pronouns",
+    "parentSlug": "personal-pronouns",
+    "name": "Subject Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "object-pronouns",
+    "parentSlug": "personal-pronouns",
+    "name": "Object Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "possessive-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Possessive Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "possessive-adjectives",
+    "parentSlug": "pronouns",
+    "name": "Possessive Adjectives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reflexive-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Reflexive Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "demonstrative-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Demonstrative Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "pronouns-relative-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Relative Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "interrogative-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Interrogative Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "indefinite-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Indefinite Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 8,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reciprocal-pronouns",
+    "parentSlug": "pronouns",
+    "name": "Reciprocal Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 9,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verbs",
+    "parentSlug": "parts-of-speech",
+    "name": "Verbs",
+    "nameRu": "Глаголы",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "action-verbs",
+    "parentSlug": "verbs",
+    "name": "Action Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "stative-verbs",
+    "parentSlug": "verbs",
+    "name": "Stative Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "linking-verbs",
+    "parentSlug": "verbs",
+    "name": "Linking Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "auxiliary-verbs",
+    "parentSlug": "verbs",
+    "name": "Auxiliary Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verbs-modal-verbs",
+    "parentSlug": "verbs",
+    "name": "Modal Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "transitive-and-intransitive-verbs",
+    "parentSlug": "verbs",
+    "name": "Transitive and Intransitive Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "regular-and-irregular-verbs",
+    "parentSlug": "verbs",
+    "name": "Regular and Irregular Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adjectives",
+    "parentSlug": "parts-of-speech",
+    "name": "Adjectives",
+    "nameRu": "Прилагательные",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "types-of-adjectives",
+    "parentSlug": "adjectives",
+    "name": "Types of Adjectives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adjectives-adjective-order",
+    "parentSlug": "adjectives",
+    "name": "Adjective Order",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "comparative-adjectives",
+    "parentSlug": "adjectives",
+    "name": "Comparative Adjectives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "superlative-adjectives",
+    "parentSlug": "adjectives",
+    "name": "Superlative Adjectives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "gradable-and-non-gradable-adjectives",
+    "parentSlug": "adjectives",
+    "name": "Gradable and Non-gradable Adjectives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs",
+    "parentSlug": "parts-of-speech",
+    "name": "Adverbs",
+    "nameRu": "Наречия",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-manner",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Manner",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-time",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Time",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-place",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Place",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-frequency",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Frequency",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-degree",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Degree",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-of-certainty",
+    "parentSlug": "adverbs",
+    "name": "Adverbs of Certainty",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbs-adverb-position",
+    "parentSlug": "adverbs",
+    "name": "Adverb Position",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "prepositions",
+    "parentSlug": "parts-of-speech",
+    "name": "Prepositions",
+    "nameRu": "Предлоги",
+    "description": null,
+    "sortOrder": 6,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "prepositions-of-time",
+    "parentSlug": "prepositions",
+    "name": "Prepositions of Time",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "prepositions-of-place",
+    "parentSlug": "prepositions",
+    "name": "Prepositions of Place",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "prepositions-of-movement",
+    "parentSlug": "prepositions",
+    "name": "Prepositions of Movement",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "prepositional-phrases",
+    "parentSlug": "prepositions",
+    "name": "Prepositional Phrases",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "conjunctions",
+    "parentSlug": "parts-of-speech",
+    "name": "Conjunctions",
+    "nameRu": "Союзы",
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "coordinating-conjunctions",
+    "parentSlug": "conjunctions",
+    "name": "Coordinating Conjunctions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "subordinating-conjunctions",
+    "parentSlug": "conjunctions",
+    "name": "Subordinating Conjunctions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "correlative-conjunctions",
+    "parentSlug": "conjunctions",
+    "name": "Correlative Conjunctions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "determiners",
+    "parentSlug": "parts-of-speech",
+    "name": "Determiners",
+    "nameRu": "Определители",
+    "description": null,
+    "sortOrder": 8,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "determiners-articles",
+    "parentSlug": "determiners",
+    "name": "Articles",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "determiners-demonstratives",
+    "parentSlug": "determiners",
+    "name": "Demonstratives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "possessives",
+    "parentSlug": "determiners",
+    "name": "Possessives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "determiners-quantifiers",
+    "parentSlug": "determiners",
+    "name": "Quantifiers",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "numbers",
+    "parentSlug": "determiners",
+    "name": "Numbers",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "interjections",
+    "parentSlug": "parts-of-speech",
+    "name": "Interjections",
+    "nameRu": "Междометия",
+    "description": null,
+    "sortOrder": 9,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "tenses-and-aspects",
+    "parentSlug": null,
+    "name": "Tenses and Aspects",
+    "nameRu": "Времена и аспекты",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present",
+    "parentSlug": "tenses-and-aspects",
+    "name": "Present",
+    "nameRu": "Настоящее время",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present-simple",
+    "parentSlug": "present",
+    "name": "Present Simple",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present-continuous",
+    "parentSlug": "present",
+    "name": "Present Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present-perfect",
+    "parentSlug": "present",
+    "name": "Present Perfect",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present-perfect-continuous",
+    "parentSlug": "present",
+    "name": "Present Perfect Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past",
+    "parentSlug": "tenses-and-aspects",
+    "name": "Past",
+    "nameRu": "Прошедшее время",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "past-simple",
+    "parentSlug": "past",
+    "name": "Past Simple",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "past-continuous",
+    "parentSlug": "past",
+    "name": "Past Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past-perfect",
+    "parentSlug": "past",
+    "name": "Past Perfect",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past-perfect-continuous",
+    "parentSlug": "past",
+    "name": "Past Perfect Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "future",
+    "parentSlug": "tenses-and-aspects",
+    "name": "Future",
+    "nameRu": "Будущее время",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "future-simple",
+    "parentSlug": "future",
+    "name": "Future Simple",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "future-continuous",
+    "parentSlug": "future",
+    "name": "Future Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "future-perfect",
+    "parentSlug": "future",
+    "name": "Future Perfect",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "future-perfect-continuous",
+    "parentSlug": "future",
+    "name": "Future Perfect Continuous",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "future-in-the-past",
+    "parentSlug": "tenses-and-aspects",
+    "name": "Future in the Past",
+    "nameRu": "Будущее в прошедшем",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "would",
+    "parentSlug": "future-in-the-past",
+    "name": "Would",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "was-were-going-to",
+    "parentSlug": "future-in-the-past",
+    "name": "Was/Were Going To",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "other-ways-of-expressing-the-future",
+    "parentSlug": "tenses-and-aspects",
+    "name": "Other Ways of Expressing the Future",
+    "nameRu": "Другие способы выражения будущего",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "be-going-to",
+    "parentSlug": "other-ways-of-expressing-the-future",
+    "name": "Be Going To",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "present-continuous-for-future",
+    "parentSlug": "other-ways-of-expressing-the-future",
+    "name": "Present Continuous for Future",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "present-simple-for-future",
+    "parentSlug": "other-ways-of-expressing-the-future",
+    "name": "Present Simple for Future",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-forms-and-structures",
+    "parentSlug": null,
+    "name": "Verb Forms and Structures",
+    "nameRu": "Формы и конструкции глаголов",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "basic-verb-forms",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Basic Verb Forms",
+    "nameRu": "Базовые формы глагола",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "infinitive",
+    "parentSlug": "basic-verb-forms",
+    "name": "Infinitive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "bare-infinitive",
+    "parentSlug": "basic-verb-forms",
+    "name": "Bare Infinitive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "gerund",
+    "parentSlug": "basic-verb-forms",
+    "name": "Gerund",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "present-participle",
+    "parentSlug": "basic-verb-forms",
+    "name": "Present Participle",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past-participle",
+    "parentSlug": "basic-verb-forms",
+    "name": "Past Participle",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "modal-verbs",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Modal Verbs",
+    "nameRu": "Модальные глаголы",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "modal-ability",
+    "parentSlug": "modal-verbs",
+    "name": "Ability",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "permission",
+    "parentSlug": "modal-verbs",
+    "name": "Permission",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "possibility",
+    "parentSlug": "modal-verbs",
+    "name": "Possibility",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "probability",
+    "parentSlug": "modal-verbs",
+    "name": "Probability",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "modal-obligation",
+    "parentSlug": "modal-verbs",
+    "name": "Obligation",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "necessity",
+    "parentSlug": "modal-verbs",
+    "name": "Necessity",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "modal-advice",
+    "parentSlug": "modal-verbs",
+    "name": "Advice",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "passive-voice",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Passive Voice",
+    "nameRu": "Пассивный залог",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "present-passive",
+    "parentSlug": "passive-voice",
+    "name": "Present Passive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past-passive",
+    "parentSlug": "passive-voice",
+    "name": "Past Passive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "future-passive",
+    "parentSlug": "passive-voice",
+    "name": "Future Passive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "perfect-passive",
+    "parentSlug": "passive-voice",
+    "name": "Perfect Passive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "modal-passive",
+    "parentSlug": "passive-voice",
+    "name": "Modal Passive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "passive-with-two-objects",
+    "parentSlug": "passive-voice",
+    "name": "Passive with Two Objects",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "causative-structures",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Causative Structures",
+    "nameRu": "Каузативные конструкции",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "have-something-done",
+    "parentSlug": "causative-structures",
+    "name": "Have Something Done",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "get-something-done",
+    "parentSlug": "causative-structures",
+    "name": "Get Something Done",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "make-someone-do-something",
+    "parentSlug": "causative-structures",
+    "name": "Make Someone Do Something",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "let-someone-do-something",
+    "parentSlug": "causative-structures",
+    "name": "Let Someone Do Something",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "get-someone-to-do-something",
+    "parentSlug": "causative-structures",
+    "name": "Get Someone to Do Something",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "gerunds-and-infinitives",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Gerunds and Infinitives",
+    "nameRu": "Герундий и инфинитив",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verbs-gerund",
+    "parentSlug": "gerunds-and-infinitives",
+    "name": "Verbs + Gerund",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verbs-infinitive",
+    "parentSlug": "gerunds-and-infinitives",
+    "name": "Verbs + Infinitive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verbs-gerund-or-infinitive",
+    "parentSlug": "gerunds-and-infinitives",
+    "name": "Verbs + Gerund or Infinitive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "changes-in-meaning",
+    "parentSlug": "gerunds-and-infinitives",
+    "name": "Changes in Meaning",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "phrasal-verbs",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Phrasal Verbs",
+    "nameRu": "Фразовые глаголы",
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "separable-phrasal-verbs",
+    "parentSlug": "phrasal-verbs",
+    "name": "Separable Phrasal Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "inseparable-phrasal-verbs",
+    "parentSlug": "phrasal-verbs",
+    "name": "Inseparable Phrasal Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "three-word-phrasal-verbs",
+    "parentSlug": "phrasal-verbs",
+    "name": "Three-word Phrasal Verbs",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-patterns",
+    "parentSlug": "verb-forms-and-structures",
+    "name": "Verb Patterns",
+    "nameRu": "Глагольные модели",
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-object",
+    "parentSlug": "verb-patterns",
+    "name": "Verb + Object",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-object-infinitive",
+    "parentSlug": "verb-patterns",
+    "name": "Verb + Object + Infinitive",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-preposition",
+    "parentSlug": "verb-patterns",
+    "name": "Verb + Preposition",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "verb-that-clause",
+    "parentSlug": "verb-patterns",
+    "name": "Verb + That-Clause",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "articles-and-determiners",
+    "parentSlug": null,
+    "name": "Articles and Determiners",
+    "nameRu": "Артикли и определители",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "articles",
+    "parentSlug": "articles-and-determiners",
+    "name": "Articles",
+    "nameRu": "Артикли",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "indefinite-article",
+    "parentSlug": "articles",
+    "name": "Indefinite Article (A / An)",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "definite-article",
+    "parentSlug": "articles",
+    "name": "Definite Article (The)",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "zero-article",
+    "parentSlug": "articles",
+    "name": "Zero Article",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "articles-with-geographical-names",
+    "parentSlug": "articles",
+    "name": "Articles with Geographical Names",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "quantifiers",
+    "parentSlug": "articles-and-determiners",
+    "name": "Quantifiers",
+    "nameRu": "Количественные определители",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "some-any",
+    "parentSlug": "quantifiers",
+    "name": "Some / Any",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "much-many",
+    "parentSlug": "quantifiers",
+    "name": "Much / Many",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "few-a-few",
+    "parentSlug": "quantifiers",
+    "name": "Few / A Few",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "little-a-little",
+    "parentSlug": "quantifiers",
+    "name": "Little / A Little",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "a-lot-of-lots-of",
+    "parentSlug": "quantifiers",
+    "name": "A Lot Of / Lots Of",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "enough",
+    "parentSlug": "quantifiers",
+    "name": "Enough",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "all-both-either-neither",
+    "parentSlug": "quantifiers",
+    "name": "All / Both / Either / Neither",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "demonstratives",
+    "parentSlug": "articles-and-determiners",
+    "name": "Demonstratives",
+    "nameRu": "Указательные местоимения",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "this-that",
+    "parentSlug": "demonstratives",
+    "name": "This / That",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "these-those",
+    "parentSlug": "demonstratives",
+    "name": "These / Those",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "numbers-and-distributives",
+    "parentSlug": "articles-and-determiners",
+    "name": "Numbers and Distributives",
+    "nameRu": "Числа и дистрибутивы",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "cardinal-numbers",
+    "parentSlug": "numbers-and-distributives",
+    "name": "Cardinal Numbers",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "ordinal-numbers",
+    "parentSlug": "numbers-and-distributives",
+    "name": "Ordinal Numbers",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "each-every",
+    "parentSlug": "numbers-and-distributives",
+    "name": "Each / Every",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "either-neither",
+    "parentSlug": "numbers-and-distributives",
+    "name": "Either / Neither",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "sentence-structure",
+    "parentSlug": null,
+    "name": "Sentence Structure",
+    "nameRu": "Структура предложений",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "sentence-elements",
+    "parentSlug": "sentence-structure",
+    "name": "Sentence Elements",
+    "nameRu": "Члены предложения",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "subject",
+    "parentSlug": "sentence-elements",
+    "name": "Subject",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "predicate",
+    "parentSlug": "sentence-elements",
+    "name": "Predicate",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "object",
+    "parentSlug": "sentence-elements",
+    "name": "Object",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "direct-object",
+    "parentSlug": "sentence-elements",
+    "name": "Direct Object",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "indirect-object",
+    "parentSlug": "sentence-elements",
+    "name": "Indirect Object",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "complement",
+    "parentSlug": "sentence-elements",
+    "name": "Complement",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "sentence-types",
+    "parentSlug": "sentence-structure",
+    "name": "Sentence Types",
+    "nameRu": "Типы предложений",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "declarative-sentences",
+    "parentSlug": "sentence-types",
+    "name": "Declarative Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "interrogative-sentences",
+    "parentSlug": "sentence-types",
+    "name": "Interrogative Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "imperative-sentences",
+    "parentSlug": "sentence-types",
+    "name": "Imperative Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "exclamatory-sentences",
+    "parentSlug": "sentence-types",
+    "name": "Exclamatory Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "sentence-structure-types",
+    "parentSlug": "sentence-structure",
+    "name": "Sentence Structure Types",
+    "nameRu": "Типы структуры предложений",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "simple-sentences",
+    "parentSlug": "sentence-structure-types",
+    "name": "Simple Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "compound-sentences",
+    "parentSlug": "sentence-structure-types",
+    "name": "Compound Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "complex-sentences",
+    "parentSlug": "sentence-structure-types",
+    "name": "Complex Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "word-order",
+    "parentSlug": "sentence-structure",
+    "name": "Word Order",
+    "nameRu": "Порядок слов",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "basic-word-order-svo",
+    "parentSlug": "word-order",
+    "name": "Basic Word Order (SVO)",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "word-order-adjective-order",
+    "parentSlug": "word-order",
+    "name": "Adjective Order",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "word-order-adverb-position",
+    "parentSlug": "word-order",
+    "name": "Adverb Position",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "inversion",
+    "parentSlug": "word-order",
+    "name": "Inversion",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "fronting",
+    "parentSlug": "word-order",
+    "name": "Fronting",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "questions",
+    "parentSlug": "sentence-structure",
+    "name": "Questions",
+    "nameRu": "Вопросы",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "yes-no-questions",
+    "parentSlug": "questions",
+    "name": "Yes / No Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "wh-questions",
+    "parentSlug": "questions",
+    "name": "Wh-Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "subject-and-object-questions",
+    "parentSlug": "questions",
+    "name": "Subject and Object Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "tag-questions",
+    "parentSlug": "questions",
+    "name": "Tag Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "alternative-questions",
+    "parentSlug": "questions",
+    "name": "Alternative Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "indirect-questions",
+    "parentSlug": "questions",
+    "name": "Indirect Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "embedded-questions",
+    "parentSlug": "questions",
+    "name": "Embedded Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "negation",
+    "parentSlug": "sentence-structure",
+    "name": "Negation",
+    "nameRu": "Отрицание",
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "negative-sentences",
+    "parentSlug": "negation",
+    "name": "Negative Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "negative-questions",
+    "parentSlug": "negation",
+    "name": "Negative Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "negative-words",
+    "parentSlug": "negation",
+    "name": "Negative Words",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "double-negatives",
+    "parentSlug": "negation",
+    "name": "Double Negatives",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "neither-nor",
+    "parentSlug": "negation",
+    "name": "Neither / Nor",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "clauses",
+    "parentSlug": null,
+    "name": "Clauses",
+    "nameRu": "Типы придаточных и сложные конструкции",
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "independent-and-dependent-clauses",
+    "parentSlug": "clauses",
+    "name": "Independent and Dependent Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "relative-clauses",
+    "parentSlug": "clauses",
+    "name": "Relative Clauses",
+    "nameRu": "Относительные придаточные",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "defining-relative-clauses",
+    "parentSlug": "relative-clauses",
+    "name": "Defining Relative Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "non-defining-relative-clauses",
+    "parentSlug": "relative-clauses",
+    "name": "Non-defining Relative Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "relative-clauses-relative-pronouns",
+    "parentSlug": "relative-clauses",
+    "name": "Relative Pronouns",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "noun-clauses",
+    "parentSlug": "clauses",
+    "name": "Noun Clauses",
+    "nameRu": "Именные придаточные",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "that-clauses",
+    "parentSlug": "noun-clauses",
+    "name": "That-Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "wh-clauses",
+    "parentSlug": "noun-clauses",
+    "name": "Wh-Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "whether-if-clauses",
+    "parentSlug": "noun-clauses",
+    "name": "Whether / If Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "adverbial-clauses",
+    "parentSlug": "clauses",
+    "name": "Adverbial Clauses",
+    "nameRu": "Обстоятельственные придаточные",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "time-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Time Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reason-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Reason Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "purpose-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Purpose Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "result-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Result Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "contrast-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Contrast Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "concession-clauses",
+    "parentSlug": "adverbial-clauses",
+    "name": "Concession Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reduced-clauses",
+    "parentSlug": "clauses",
+    "name": "Reduced Clauses",
+    "nameRu": "Сокращённые придаточные",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reduced-relative-clauses",
+    "parentSlug": "reduced-clauses",
+    "name": "Reduced Relative Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "participle-clauses",
+    "parentSlug": "reduced-clauses",
+    "name": "Participle Clauses",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "conditional-sentences",
+    "parentSlug": null,
+    "name": "Conditional Sentences",
+    "nameRu": "Условные предложения",
+    "description": null,
+    "sortOrder": 7,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "zero-conditional",
+    "parentSlug": "conditional-sentences",
+    "name": "Zero Conditional",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "first-conditional",
+    "parentSlug": "conditional-sentences",
+    "name": "First Conditional",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "second-conditional",
+    "parentSlug": "conditional-sentences",
+    "name": "Second Conditional",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": true,
+    "paid": false
+  },
+  {
+    "slug": "third-conditional",
+    "parentSlug": "conditional-sentences",
+    "name": "Third Conditional",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "mixed-conditionals",
+    "parentSlug": "conditional-sentences",
+    "name": "Mixed Conditionals",
+    "nameRu": "Смешанные условные",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "past-present",
+    "parentSlug": "mixed-conditionals",
+    "name": "Past → Present",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "present-past",
+    "parentSlug": "mixed-conditionals",
+    "name": "Present → Past",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "conditional-alternatives",
+    "parentSlug": "conditional-sentences",
+    "name": "Conditional Alternatives",
+    "nameRu": "Альтернативы условным",
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "unless",
+    "parentSlug": "conditional-alternatives",
+    "name": "Unless",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "as-long-as",
+    "parentSlug": "conditional-alternatives",
+    "name": "As Long As",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "provided-that",
+    "parentSlug": "conditional-alternatives",
+    "name": "Provided That",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "in-case",
+    "parentSlug": "conditional-alternatives",
+    "name": "In Case",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "even-if",
+    "parentSlug": "conditional-alternatives",
+    "name": "Even If",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "implied-conditionals",
+    "parentSlug": "conditional-sentences",
+    "name": "Implied Conditionals",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-speech",
+    "parentSlug": null,
+    "name": "Reported Speech",
+    "nameRu": "Косвенная речь",
+    "description": null,
+    "sortOrder": 8,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-statements",
+    "parentSlug": "reported-speech",
+    "name": "Reported Statements",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-questions",
+    "parentSlug": "reported-speech",
+    "name": "Reported Questions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-commands",
+    "parentSlug": "reported-speech",
+    "name": "Reported Commands",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-requests",
+    "parentSlug": "reported-speech",
+    "name": "Reported Requests",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reported-suggestions",
+    "parentSlug": "reported-speech",
+    "name": "Reported Suggestions",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "tense-backshift",
+    "parentSlug": "reported-speech",
+    "name": "Tense Backshift",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "pronoun-changes",
+    "parentSlug": "reported-speech",
+    "name": "Pronoun Changes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "time-and-place-changes",
+    "parentSlug": "reported-speech",
+    "name": "Time and Place Changes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 8,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "reporting-verbs",
+    "parentSlug": "reported-speech",
+    "name": "Reporting Verbs",
+    "nameRu": "Глаголы вводящие косвенную речь",
+    "description": null,
+    "sortOrder": 9,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "say-tell",
+    "parentSlug": "reporting-verbs",
+    "name": "Say / Tell",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "ask",
+    "parentSlug": "reporting-verbs",
+    "name": "Ask",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "advise",
+    "parentSlug": "reporting-verbs",
+    "name": "Advise",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "suggest",
+    "parentSlug": "reporting-verbs",
+    "name": "Suggest",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "promise",
+    "parentSlug": "reporting-verbs",
+    "name": "Promise",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "warn",
+    "parentSlug": "reporting-verbs",
+    "name": "Warn",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "advanced-grammar-and-usage",
+    "parentSlug": null,
+    "name": "Advanced Grammar and Usage",
+    "nameRu": "Продвинутая грамматика и употребление",
+    "description": null,
+    "sortOrder": 9,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "comparison-structures",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Comparison Structures",
+    "nameRu": "Сравнительные конструкции",
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "as-as",
+    "parentSlug": "comparison-structures",
+    "name": "As ... As",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "than",
+    "parentSlug": "comparison-structures",
+    "name": "Than",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "the-the",
+    "parentSlug": "comparison-structures",
+    "name": "The ... The ...",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "comparative-intensifiers",
+    "parentSlug": "comparison-structures",
+    "name": "Comparative Intensifiers",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "emphasis",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Emphasis",
+    "nameRu": "Эмфаза",
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "cleft-sentences",
+    "parentSlug": "emphasis",
+    "name": "Cleft Sentences",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "emphatic-do",
+    "parentSlug": "emphasis",
+    "name": "Emphatic Do",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "inversion-for-emphasis",
+    "parentSlug": "emphasis",
+    "name": "Inversion for Emphasis",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "subjunctive-and-unreal-structures",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Subjunctive and Unreal Structures",
+    "nameRu": "Сослагательное и нереальные конструкции",
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "wish",
+    "parentSlug": "subjunctive-and-unreal-structures",
+    "name": "Wish",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "if-only",
+    "parentSlug": "subjunctive-and-unreal-structures",
+    "name": "If Only",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "it-s-time",
+    "parentSlug": "subjunctive-and-unreal-structures",
+    "name": "It's Time",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "would-rather",
+    "parentSlug": "subjunctive-and-unreal-structures",
+    "name": "Would Rather",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "linking-words",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Linking Words",
+    "nameRu": "Слова-связки",
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "addition",
+    "parentSlug": "linking-words",
+    "name": "Addition",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "contrast",
+    "parentSlug": "linking-words",
+    "name": "Contrast",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "cause-and-effect",
+    "parentSlug": "linking-words",
+    "name": "Cause and Effect",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "sequence",
+    "parentSlug": "linking-words",
+    "name": "Sequence",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "agreement",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Agreement",
+    "nameRu": "Согласование",
+    "description": null,
+    "sortOrder": 5,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "subject-verb-agreement",
+    "parentSlug": "agreement",
+    "name": "Subject-Verb Agreement",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "pronoun-agreement",
+    "parentSlug": "agreement",
+    "name": "Pronoun Agreement",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "ellipsis-and-substitution",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Ellipsis and Substitution",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 6,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "common-grammar-mistakes",
+    "parentSlug": "advanced-grammar-and-usage",
+    "name": "Common Grammar Mistakes",
+    "nameRu": "Частые грамматические ошибки",
+    "description": null,
+    "sortOrder": 7,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "common-verb-mistakes",
+    "parentSlug": "common-grammar-mistakes",
+    "name": "Common Verb Mistakes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 1,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "article-mistakes",
+    "parentSlug": "common-grammar-mistakes",
+    "name": "Article Mistakes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 2,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "preposition-mistakes",
+    "parentSlug": "common-grammar-mistakes",
+    "name": "Preposition Mistakes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 3,
+    "isActive": false,
+    "paid": false
+  },
+  {
+    "slug": "word-order-mistakes",
+    "parentSlug": "common-grammar-mistakes",
+    "name": "Word Order Mistakes",
+    "nameRu": null,
+    "description": null,
+    "sortOrder": 4,
+    "isActive": false,
+    "paid": false
+  }
+]

@@ -1,0 +1,9 @@
+Grammar focus: Parts of Speech (broad grammar section).
+Active subtopics: Countable and Uncountable Nouns, Singular and Plural Nouns, Comparative Adjectives, Superlative Adjectives, Adverbs of Frequency, Prepositions of Time.
+
+Guidance for exercise generation:
+- Treat "Parts of Speech" as a broad topic; the exercise may target any of its active subtopics listed above.
+- Keep sentences natural and appropriate for the student's CEFR level.
+- In fill-in-the-blank, the blank must require applying the selected grammar area; the answer must not be guessable from context alone.
+- In multiple choice, the three distractors must be plausible grammar errors typical for learners of this topic.
+- If the target vocabulary is provided, use it only as context; the target words are not the answer.

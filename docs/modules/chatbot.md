@@ -24,16 +24,19 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `Map<String, Object> context` — key-value хранилище. Ключи типизированы enum'ом `ContextKey`
   (`TEACHER_NAME`, `SELECTED_STUDENT_ID`, `SELECTED_STUDENT_NAME`, `ACTIVE_LESSON_ID`,
   `PENDING_STUDENT_NAME`, `WORD_VALUE`, `WORD_POS`, `WORD_TRANSLATIONS`, `EXERCISE_TYPE`,
-  `GRAMMAR_RULE`, `EXERCISE_ID`, `EXERCISE_TOPIC`, `DICTIONARY_PAGE`, `WORD_SELECTION`,
+  `EXERCISE_ID`, `EXERCISE_TOPIC` (хранит `ExerciseTopic`), `EXERCISE_THEMATIC_TOPIC` (строка
+  тематической темы), `TOPIC_SEARCH_QUERY`, `TOPIC_PAGE`,
+  `TOPIC_NODE`, `TOPIC_CANONICAL_NAME`, `TOPIC_MATCHED_SLUG`, `DICTIONARY_PAGE`, `WORD_SELECTION`,
   `WORD_FILTER`, `SELECTION_PAGE`)
 - `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
 ### ChatState (Enum, `domain/chat`)
-21 состояние: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+23 состояния: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
 `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`,
 `STUDENT_DICTIONARY`, `AWAITING_STUDENT_LEVEL_CHANGE`, `AWAITING_STUDENT_DELETE`, `IN_LESSON`,
 `AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
-`AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`,
+`AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_TOPIC`, `AWAITING_CUSTOM_TOPIC`,
+`AWAITING_EXERCISE_TOPIC_CONFIRM`, `AWAITING_EXERCISE_THEMATIC_TOPIC`,
 `AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`.
 
 `AWAITING_EXERCISE_ANSWER` (интерактивные ответы) в текущем PDF-потоке не достигается —
@@ -80,7 +83,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 ### Handler (Application, `application/statemachine/handler`)
 Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
-«Используйте кнопки ниже», ...). Один `@Component` на состояние (21 штука), собираются в
+«Используйте кнопки ниже», ...). Один `@Component` на состояние (23 штуки), собираются в
 `Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
 
 ### StateMachineConfig (`application/config`)
@@ -91,10 +94,11 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   `onCallback(state, префикс, transition)`, `onInput(state, transition)`
 - ключи Cmd/Btn — текст (`"/new"`, `Buttons.NEW_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`,
   `"pos"`, `"level"`, `"levelchange"`, `"studentdel"`, `"studentdelok"`, `"exercise"`, `"details"`,
-  `"back"`, `"translation"`, `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`,
-  `"exdone"`, `"excont"`, `"exback"`, `"exselback"`);
-  команда `/cancel` регистрируется для всех 21 состояния через `CancelRule`/`CancelScreenRenderer`
-  (15 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
+  `"back"`, `"translation"`, `"poschange"`, `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`,
+  `"exdone"`, `"excont"`, `"exback"`, `"exselback"`, `"topicnav"`, `"topic"`, `"topicsearch"`, `"topicself"`,
+  `"topicpg"`, `"topicconfirm"`, `"topiccatalog"`, `"topicskip"`);
+  команда `/cancel` регистрируется для всех 23 состояния через `CancelRule`/`CancelScreenRenderer`
+  (17 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
   `ChatbotSearchProperties` и `ChatbotPaginationProperties` включаются через
   `@EnableConfigurationProperties`
 
@@ -104,10 +108,13 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 клавиатуры уровней CEFR, `optionsKeyboard()`, кнопка «🗑 Удалить ученика» в карточке,
 экран `deleteConfirmation`, рендер `deletedStudentsList`/`studentNotFoundOrDeleted`),
 `StudentDictionaryView` (меню «Словарь»:
-пагинация, кнопка «↺» только для LEARNED), `WordView` (`posMenu`, `translationChoice`,
-`manualTranslationPrompt`, `posLabel`, `statusLabel`, маппинг payload → `PartOfSpeech`),
+пагинация, кнопка «↺» только для LEARNED), `WordView` (`posMenu` из четырёх кнопок,
+`wordConfirmation`, `translationChoice`, `manualTranslationPrompt`, `posLabel`, `statusLabel`,
+маппинг payload → `PartOfSpeech` в т.ч. `EXPRESSION`),
 `LessonView` (клавиатура урока — только «🏁 Завершить урок», сводка завершения),
-`ExerciseView` (выбор типа), `ExerciseWordSelectionView` (шаг выбора слов: toggle ✓/·,
+`ExerciseView` (выбор типа), `TopicSelectionView` (дерево тем, поиск, «✍️ Своя тема», подтверждение,
+шаг тематической темы с кнопкой «⏭ Пропустить»),
+`ExerciseWordSelectionView` (шаг выбора слов: toggle ✓/·,
 фильтр по статусу, пагинация, «Готово», предупреждение при пустом выборе).
 
 Словари констант — единый источник для рендера и парсинга:
@@ -129,7 +136,9 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   (payload может быть пустым — `"levelchange"`); `BOT_COMMAND` entity → `Action.Command`;
   текст из `Buttons.REPLY_BUTTONS` → `Action.Button`; остальной текст → `Action.Input`
 - `EnglishTutorBot` — `TelegramLongPollingBot`: chatId → `ChatService.getOrCreate` →
-  `UpdateParser` → (индикатор «⏳ Генерирую упражнение…» для `AWAITING_EXERCISE_TOPIC` + ввод) →
+  `UpdateParser` → индикатор «⏳ Генерирую упражнение…» для `AWAITING_EXERCISE_WORD_SELECTION` +
+  callback `exdone`/`excont` и «⏳ Проверяю тему…» для `AWAITING_CUSTOM_TOPIC` + Input
+  (на шаге тематической темы `AWAITING_EXERCISE_THEMATIC_TOPIC` индикатор не отправляется) →
   `StateMachine.applyAction` → удаление индикатора → `ChatService.save` → удаление сообщения
   из `cleanupMessageId` → `SendMessageConverter` → send/edit/delete. `SendDocuments` отправляется
   батчем: документы по одному, затем текст с inline-клавиатурой. Удаляет reply-клавиатуру при
@@ -146,11 +155,13 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 ## Тесты
 
 Юнит-тесты зеркалируют структуру модуля (`src/test/java/.../chatbot`):
-переходы флоу слова (`InputInLessonTransition`, `PosCbAwaitingPosTransition`,
+переходы флоу слова (`InputInLessonTransition` — one-shot POS+переводы,
+`PosChangeCbAwaitingTranslationChoiceTransition`, `PosCbAwaitingPosTransition`,
 `TranslationCbAwaitingTranslationChoiceTransition`, `InputAwaitingManualTranslationTransition`,
-`LessonWordSupport`), поиска (`studentsearch`), отмены (`cancel`, `StateMachineCancelTest`),
-а также существующие `InputAwaitingExerciseTopicTransition`, `LevelCbAwaitingStudentLevelTransition`,
-`BackCb`/`LevelCb` из `awaitingstudentlevelchange`, `SendMessageConverterTest`, `BotCommandsTest`.
+`LessonWordSupport`), флоу темы (`awaitingexercisetopic/*`, `awaitingcustomtopic/*`,
+`awaitingexercisetopicconfirm/*`, `awaitingexercisethematictopic/*`), поиска (`studentsearch`), отмены (`cancel`, `StateMachineCancelTest`),
+`LevelCbAwaitingStudentLevelTransition`, `BackCb`/`LevelCb` из `awaitingstudentlevelchange`,
+`SendMessageConverterTest`, `BotCommandsTest`, `WordViewTest`, `TopicFlowTransitionTest`.
 
 ## Зависимости
 ```java

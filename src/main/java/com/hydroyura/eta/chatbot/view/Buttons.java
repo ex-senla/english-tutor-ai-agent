@@ -34,6 +34,28 @@ public final class Buttons {
 
     public static final String ADJECTIVE = "🎨 Adjective";
 
+    public static final String EXPRESSION = "💬 Выражение";
+
+    public static final String CHANGE_POS = "🔁 Изменить часть речи";
+
+    public static final String SEARCH = "🔍 Поиск";
+
+    public static final String SELF_TOPIC = "✍️ Своя тема";
+
+    public static final String TOPIC_CHOOSE = "✔️ Выбрать эту тему";
+
+    public static final String TOPIC_CONFIRM_USE = "✓ Использовать";
+
+    public static final String TOPIC_CONFIRM_REENTER = "✍️ Ввести заново";
+
+    public static final String TOPIC_CONFIRM_CATALOG = "📚 Использовать тему каталога";
+
+    public static final String TOPIC_BACK = "🔙 Назад";
+
+    public static final String TOPIC_SKIP = "⏭ Пропустить";
+
+    public static final String TOPIC_CANCEL = "🔙 Отмена";
+
     public static final String OWN_TRANSLATION = "✍️ Свой перевод";
 
     public static final String DICTIONARY = "📚 Словарь";

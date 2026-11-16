@@ -138,11 +138,50 @@ class GenerateExercisePdfUseCaseTest {
                 .allSatisfy(option -> assertThat(option).doesNotContain("<b>"));
     }
 
+    @Test
+    void shouldIncludeContextBadgeInBothDocumentsWhenThematicTopicPresent() {
+        useCase.execute(command(exerciseWithThematicTopic("I travel ___ daily.", "Travel"),
+                List.of(word("travel", "путешествовать"))));
+
+        assertThat(renderer.modelFor("exercise").get("thematicTopic")).isEqualTo("Travel");
+        assertThat(renderer.modelFor("answers").get("thematicTopic")).isEqualTo("Travel");
+    }
+
+    @Test
+    void shouldNotIncludeContextBadgeWhenThematicTopicBlank() {
+        useCase.execute(command(exercise("I travel ___ daily."), List.of(word("travel", "путешествовать"))));
+
+        assertThat(renderer.modelFor("exercise")).doesNotContainKey("thematicTopic");
+        assertThat(renderer.modelFor("answers")).doesNotContainKey("thematicTopic");
+    }
+
+    @Test
+    void shouldPutRawThematicTopicInModel() {
+        useCase.execute(command(exerciseWithThematicTopic("I travel ___ daily.", "Food & <drinks>"),
+                List.of(word("travel", "путешествовать"))));
+
+        // Thymeleaf (th:text) is responsible for escaping; the use case must not pre-escape,
+        // otherwise the value would be escaped twice in the rendered PDF.
+        assertThat(renderer.modelFor("exercise").get("thematicTopic")).isEqualTo("Food & <drinks>");
+        assertThat(renderer.modelFor("answers").get("thematicTopic")).isEqualTo("Food & <drinks>");
+    }
+
+    @Test
+    void shouldNotIncludeThematicTopicInFileName() {
+        var bundle = useCase.execute(command(exerciseWithThematicTopic("I travel ___ daily.", "Travel"),
+                List.of(word("travel", "путешествовать"))));
+
+        assertThat(bundle.exercise().fileName()).doesNotContain("travel");
+        assertThat(bundle.answers().fileName()).doesNotContain("travel");
+        assertThat(bundle.exercise().fileName()).startsWith("exercise_animals_b1_alice_");
+    }
+
     private ExerciseDto exercise(String sentence) {
         return new ExerciseDto(
                 ExerciseId.generate(),
                 ExerciseType.FILL_IN_THE_BLANK,
                 "Animals",
+                null,
                 "1. " + sentence,
                 List.of("travelled"),
                 List.of(new ExerciseItem(sentence, List.of(), "travelled")),
@@ -155,9 +194,23 @@ class GenerateExercisePdfUseCaseTest {
                 ExerciseId.generate(),
                 ExerciseType.MULTIPLE_CHOICE,
                 "Travel",
+                null,
                 "1. " + sentence,
                 List.of("travelled"),
                 List.of(new ExerciseItem(sentence, options, "travelled")),
+                ExerciseStatus.GENERATED
+        );
+    }
+
+    private ExerciseDto exerciseWithThematicTopic(String sentence, String thematicTopic) {
+        return new ExerciseDto(
+                ExerciseId.generate(),
+                ExerciseType.FILL_IN_THE_BLANK,
+                "Animals",
+                thematicTopic,
+                "1. " + sentence,
+                List.of("travelled"),
+                List.of(new ExerciseItem(sentence, List.of(), "travelled")),
                 ExerciseStatus.GENERATED
         );
     }

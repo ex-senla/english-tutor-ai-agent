@@ -1,0 +1,10 @@
+[
+  {"slug":"tenses-and-aspects","parentSlug":null,"name":"Tenses and Aspects","nameRu":"Времена и аспекты","description":null,"sortOrder":1,"isActive":true,"paid":false},
+  {"slug":"present","parentSlug":"tenses-and-aspects","name":"Present","nameRu":"Настоящее время","description":null,"sortOrder":1,"isActive":true,"paid":false},
+  {"slug":"present-simple","parentSlug":"present","name":"Present Simple","nameRu":null,"description":null,"sortOrder":1,"isActive":true,"paid":false},
+  {"slug":"present-continuous","parentSlug":"present","name":"Present Continuous","nameRu":null,"description":null,"sortOrder":2,"isActive":true,"paid":false},
+  {"slug":"past","parentSlug":"tenses-and-aspects","name":"Past","nameRu":"Прошедшее время","description":null,"sortOrder":2,"isActive":true,"paid":false},
+  {"slug":"past-simple","parentSlug":"past","name":"Past Simple","nameRu":null,"description":null,"sortOrder":1,"isActive":true,"paid":false},
+  {"slug":"past-perfect-continuous","parentSlug":"past","name":"Past Perfect Continuous","nameRu":null,"description":null,"sortOrder":2,"isActive":false,"paid":false},
+  {"slug":"future-simple","parentSlug":"tenses-and-aspects","name":"Future Simple","nameRu":null,"description":null,"sortOrder":3,"isActive":false,"paid":false}
+]

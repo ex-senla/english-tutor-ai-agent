@@ -5,14 +5,14 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import org.springframework.stereotype.Component;
 
-import static com.hydroyura.eta.chatbot.view.Messages.ENTER_EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.view.Messages.TOPIC_SELECTION;
 
 @Component
 public class AwatingExerciseTopicHandler implements Handler {
 
     @Override
     public ActionResult handle(Chat chat) {
-        return new ActionResult.TextResponse(ENTER_EXERCISE_TOPIC);
+        return new ActionResult.TextResponse(TOPIC_SELECTION);
     }
 
     @Override

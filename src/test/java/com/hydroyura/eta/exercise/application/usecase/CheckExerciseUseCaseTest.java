@@ -87,10 +87,23 @@ class CheckExerciseUseCaseTest {
         assertThat(result.correct()).isTrue();
     }
 
+    @Test
+    void shouldPreserveThematicTopicInResult() {
+        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", "Travel",
+                Set.of(WordInfoId.generate()));
+        exercise.setContent("1. Last summer, I ___ to the mountains.");
+        exercise.setExpectedAnswers(List.of("travelled"));
+        repository.save(exercise);
+
+        var result = useCase.execute(new CheckExerciseCommand(exercise.getId(), "travelled"));
+
+        assertThat(result.exercise().topic()).isEqualTo("Animals");
+        assertThat(result.exercise().thematicTopic()).isEqualTo("Travel");
+    }
+
     private Exercise createExercise(List<String> expectedAnswers) {
-        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(
-                WordInfoId
-                        .generate()));
+        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", null,
+                Set.of(WordInfoId.generate()));
         exercise.setContent("1. Last summer, I ___ to the mountains.\n2. We ___ home late.");
         exercise.setExpectedAnswers(expectedAnswers);
         return exercise;

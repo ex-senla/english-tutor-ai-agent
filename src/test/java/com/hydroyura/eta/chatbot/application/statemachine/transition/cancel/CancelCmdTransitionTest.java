@@ -12,8 +12,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.PENDING_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
@@ -83,20 +83,20 @@ class CancelCmdTransitionTest {
 
     @Test
     void shouldRemoveExerciseFlowKeysAndPreserveSelection() {
-        var rule = new CancelRule(ChatState.STUDENT_OPTIONS, List.of(EXERCISE_TYPE, GRAMMAR_RULE));
+        var rule = new CancelRule(ChatState.STUDENT_OPTIONS, List.of(EXERCISE_TYPE, EXERCISE_TOPIC));
         var renderer = (CancelScreenRenderer) chat -> StudentView.optionsFresh("Anna");
         var transition = new CancelCmdTransition(rule, renderer);
 
         var chat = chat(ChatState.AWAITING_EXERCISE_TOPIC);
         chat.getContext().put(EXERCISE_TYPE.getValue(), "FILL_IN_THE_BLANK");
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Past Simple");
         chat.getContext().put(SELECTED_STUDENT_ID.getValue(), "id");
         chat.getContext().put(SELECTED_STUDENT_NAME.getValue(), "Anna");
 
         var result = transition.transit(chat, new Action.Command("/cancel"));
 
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
-        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue());
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue());
         assertThat(chat.getContext()).containsKeys(SELECTED_STUDENT_ID.getValue(), SELECTED_STUDENT_NAME.getValue());
         assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
     }

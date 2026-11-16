@@ -14,8 +14,11 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.dictionary.ResetWordLearning;
 import com.hydroyura.eta.dictionary.api.word.WordTranslator;
+import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseTopics;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.exercise.api.exercise.ValidateCustomTopic;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
@@ -40,12 +43,16 @@ import org.junit.jupiter.api.Test;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_THEMATIC_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TEACHER_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_CANONICAL_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_MATCHED_SLUG;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_SEARCH_QUERY;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_SELECTION;
 import static com.hydroyura.eta.chatbot.view.Messages.CANCELLED;
@@ -83,6 +90,8 @@ class StateMachineCancelTest {
         var checkWord = mock(CheckWord.class);
         var wordTranslator = mock(WordTranslator.class);
         var resetWordLearning = mock(ResetWordLearning.class);
+        var exerciseTopics = mock(ExerciseTopics.class);
+        var validateCustomTopic = mock(ValidateCustomTopic.class);
 
         when(studentQuery.findStudentDetails(any())).thenReturn(Optional.of(
                 new StudentDetails("Anna", new DictionaryStats(0, 0, 0, 0), false, CefrLevel.B1)));
@@ -90,8 +99,8 @@ class StateMachineCancelTest {
         stateMachine = new StateMachineConfig().stateMachine(Map.of(), findTeacher, studentQuery, findActiveLesson,
                 endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
                 addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
-                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, new ChatbotSearchProperties(),
-                new ChatbotPaginationProperties());
+                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
+                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
     }
 
     @Test
@@ -107,8 +116,10 @@ class StateMachineCancelTest {
                 new Case(ChatState.AWAITING_MANUAL_TRANSLATION, ChatState.IN_LESSON),
                 new Case(ChatState.STUDENT_SEARCH, ChatState.ACTIVE),
                 new Case(ChatState.AWAITING_EXERCISE_TYPE, ChatState.STUDENT_OPTIONS),
-                new Case(ChatState.AWAITING_EXERCISE_GRAMMAR, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_TOPIC, ChatState.STUDENT_OPTIONS),
+                new Case(ChatState.AWAITING_CUSTOM_TOPIC, ChatState.STUDENT_OPTIONS),
+                new Case(ChatState.AWAITING_EXERCISE_TOPIC_CONFIRM, ChatState.STUDENT_OPTIONS),
+                new Case(ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_WORD_SELECTION, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_ANSWER, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.STUDENT_DICTIONARY, ChatState.STUDENT_DETAILS));
@@ -143,8 +154,8 @@ class StateMachineCancelTest {
         var chat = chatWithSharedKeys(ChatState.AWAITING_EXERCISE_WORD_SELECTION);
         chat.getContext().put(EXERCISE_TYPE.getValue(),
                 com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
         chat.getContext().put(WORD_SELECTION.getValue(), Set.of("8a86f6a5-85d4-4b9f-9c6b-5f0f4d0a6f6b"));
         chat.getContext().put(WORD_FILTER.getValue(), "IN_PROGRESS");
         chat.getContext().put(SELECTION_PAGE.getValue(), 1);
@@ -152,9 +163,60 @@ class StateMachineCancelTest {
         var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
 
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
-        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue(),
-                EXERCISE_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(), SELECTION_PAGE
-                        .getValue());
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
+        assertSharedKeysPreserved(chat);
+        assertThat(textOf(result)).contains(CANCELLED);
+    }
+
+    @Test
+    void cancelFromThematicTopicShouldClearFlowKeys() {
+        var chat = chatWithSharedKeys(ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC);
+        chat.getContext().put(EXERCISE_TYPE.getValue(),
+                com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
+
+        var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue());
+        assertSharedKeysPreserved(chat);
+        assertThat(textOf(result)).contains(CANCELLED);
+    }
+
+    @Test
+    void cancelFromTopicSelectionShouldClearTopicKeys() {
+        var chat = chatWithSharedKeys(ChatState.AWAITING_EXERCISE_TOPIC);
+        chat.getContext().put(EXERCISE_TYPE.getValue(),
+                com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(TOPIC_SEARCH_QUERY.getValue(), "past");
+        chat.getContext().put(TOPIC_PAGE.getValue(), 1);
+
+        var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), TOPIC_SEARCH_QUERY.getValue(),
+                TOPIC_PAGE.getValue());
+        assertSharedKeysPreserved(chat);
+        assertThat(textOf(result)).contains(CANCELLED);
+    }
+
+    @Test
+    void cancelFromTopicConfirmShouldClearValidationKeys() {
+        var chat = chatWithSharedKeys(ChatState.AWAITING_EXERCISE_TOPIC_CONFIRM);
+        chat.getContext().put(EXERCISE_TYPE.getValue(),
+                com.hydroyura.eta.exercise.api.exercise.ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(TOPIC_CANONICAL_NAME.getValue(), "Past Simple");
+        chat.getContext().put(TOPIC_MATCHED_SLUG.getValue(), "past-simple");
+
+        var result = stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), TOPIC_CANONICAL_NAME.getValue(),
+                TOPIC_MATCHED_SLUG.getValue());
         assertSharedKeysPreserved(chat);
         assertThat(textOf(result)).contains(CANCELLED);
     }

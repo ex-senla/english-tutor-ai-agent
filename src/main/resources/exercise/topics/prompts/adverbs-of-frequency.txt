@@ -1,0 +1,8 @@
+Grammar focus: Adverbs of Frequency.
+
+Guidance for exercise generation:
+- Focus strictly on "Adverbs of Frequency" and its typical forms and usage.
+- Keep sentences natural and appropriate for the student's CEFR level.
+- In fill-in-the-blank, the blank must require applying "Adverbs of Frequency"; the answer must not be guessable from context alone.
+- In multiple choice, the three distractors must be plausible grammar errors typical for learners of "Adverbs of Frequency".
+- If the target vocabulary is provided, use it only as context; the target words are not the answer.

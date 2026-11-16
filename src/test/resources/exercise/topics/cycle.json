@@ -1,0 +1,4 @@
+[
+  {"slug":"a","parentSlug":"b","name":"A","sortOrder":1,"isActive":true,"paid":false},
+  {"slug":"b","parentSlug":"a","name":"B","sortOrder":2,"isActive":true,"paid":false}
+]

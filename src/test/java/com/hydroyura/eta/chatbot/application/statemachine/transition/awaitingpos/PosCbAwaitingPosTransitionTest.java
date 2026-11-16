@@ -40,7 +40,7 @@ class PosCbAwaitingPosTransitionTest {
         assertThat((List<?>) chat.getContext().get(WORD_TRANSLATIONS.getValue())).hasSize(3);
 
         var edit = (ActionResult.EditMessageText) result;
-        assertThat(edit.keyboard()).hasSize(4);
+        assertThat(edit.keyboard()).hasSize(5);
         assertThat(edit.keyboard().get(3).get(0).callbackData()).isEqualTo("translation:own");
     }
 

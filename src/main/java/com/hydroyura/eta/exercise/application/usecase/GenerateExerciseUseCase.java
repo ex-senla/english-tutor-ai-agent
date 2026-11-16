@@ -11,6 +11,7 @@ import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.application.port.ExerciseGenerator;
 import com.hydroyura.eta.exercise.application.port.WordData;
+import com.hydroyura.eta.exercise.application.topic.GrammarTopicCatalog;
 import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import java.util.List;
@@ -31,13 +32,16 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
     private final IncrementWordRepetitions incrementWordRepetitions;
 
+    private final GrammarTopicCatalog topicCatalog;
+
     public GenerateExerciseUseCase(ExerciseRepository repository, ExerciseGenerator generator, FindWords findWords,
-            IncrementWordRepetitions incrementWordRepetitions) {
+            IncrementWordRepetitions incrementWordRepetitions, GrammarTopicCatalog topicCatalog) {
         this.repository = Objects.requireNonNull(repository, "repository must not be null");
         this.generator = Objects.requireNonNull(generator, "generator must not be null");
         this.findWords = Objects.requireNonNull(findWords, "findWords must not be null");
         this.incrementWordRepetitions = Objects.requireNonNull(incrementWordRepetitions,
                 "incrementWordRepetitions must not be null");
+        this.topicCatalog = Objects.requireNonNull(topicCatalog, "topicCatalog must not be null");
     }
 
     @Override
@@ -46,7 +50,9 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
         var words = findWords.findByDictionaryIdAndWordIds(command.dictionaryId(), command.wordIds());
 
-        var exercise = Exercise.create(ExerciseId.generate(), command.type(), command.topic(), command.wordIds());
+        var displayTopic = topicCatalog.displayTopic(command.topic());
+        var exercise = Exercise.create(ExerciseId.generate(), command.type(), displayTopic, command.thematicTopic(),
+                command.wordIds());
 
         var wordDataList = words.stream()
                 .map(wp -> new WordData(wp.value(), wp.translations(), wp.partOfSpeech().name()))
@@ -64,7 +70,8 @@ public class GenerateExerciseUseCase implements GenerateExercise {
         log.info("Incremented repetitions for used words {}", usedIds);
 
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),
-                exercise.getContent(), exercise.getExpectedAnswers(), exercise.getItems(), exercise.getStatus());
+                exercise.getThematicTopic(), exercise.getContent(), exercise.getExpectedAnswers(),
+                exercise.getItems(), exercise.getStatus());
     }
 
     private static Set<WordInfoId> determineUsedWordIds(Set<WordProjection> words, List<ExerciseItem> items) {

@@ -4,9 +4,33 @@ public final class Messages {
 
     public static final String CHOOSE_EXERCISE_TYPE = "Выберите тип упражнения кнопками ниже";
 
-    public static final String CHOOSE_EXERCISE_TOPIC = "Введите тему упражнения (например, 'Animals')";
+    public static final String TOPIC_SELECTION = "Выберите грамматическую тему:";
 
-    public static final String CHOOSE_EXERCISE_GRAMMAR = "Введите грамматическое правило (например, 'Past Simple')";
+    public static final String TOPIC_SEARCH = "🔍 Введите текст для поиска";
+
+    public static final String TOPIC_SEARCH_RESULTS = "Найдено:";
+
+    public static final String TOPIC_SELF_INPUT = "✍️ Введите свою грамматическую тему (до 100 символов):";
+
+    public static final String TOPIC_CONFIRM = "Тема: %s\n\nПодтвердите использование:";
+
+    public static final String TOPIC_INVALID =
+            "❌ %s\n\nТема не распознана как грамматическая. Введите заново или вернитесь назад.";
+
+    public static final String TOPIC_EMPTY = "Тема не может быть пустой. Введите тему заново:";
+
+    public static final String TOPIC_TOO_LONG = "Тема слишком длинная (максимум 100 символов). Введите короче:";
+
+    public static final String CHECKING_TOPIC = "⏳ Проверяю тему…";
+
+    public static final String THEMATIC_TOPIC_PROMPT =
+            "Введите тематику упражнения (например, Travel, Food, Work) или нажмите ⏭ Пропустить:";
+
+    public static final String THEMATIC_TOPIC_EMPTY =
+            "Тематика не может быть пустой. Введите тематику или нажмите ⏭ Пропустить:";
+
+    public static final String THEMATIC_TOPIC_TOO_LONG =
+            "Тематика слишком длинная (максимум 100 символов). Введите короче или нажмите ⏭ Пропустить:";
 
     public static final String CHOOSE_STUDENT = "Выберите ученика кнопками ниже";
 

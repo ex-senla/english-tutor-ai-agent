@@ -14,6 +14,7 @@ import java.time.Clock;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,11 +76,11 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
             items.add(new ExerciseItemView(sentence, options));
         }
 
-        Map<String, Object> model = Map.of(
-                "type", exercise.type().name(),
-                "topic", exercise.topic(),
-                "items", items
-        );
+        Map<String, Object> model = new HashMap<>();
+        model.put("type", exercise.type().name());
+        model.put("topic", exercise.topic());
+        model.put("items", items);
+        putThematicTopic(model, exercise);
 
         var bytes = renderer.render("exercise", model);
         return new ExercisePdfDocument(fileName("exercise", command), bytes);
@@ -98,19 +99,26 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
                         escapeHtml(String.join(", ", word.translations()))))
                 .toList();
 
-        Map<String, Object> model = Map.of(
-                "type", exercise.type().name(),
-                "topic", exercise.topic(),
-                "answers", answers,
-                "usedWords", used
-        );
+        Map<String, Object> model = new HashMap<>();
+        model.put("type", exercise.type().name());
+        model.put("topic", exercise.topic());
+        model.put("answers", answers);
+        model.put("usedWords", used);
+        putThematicTopic(model, exercise);
 
         var bytes = renderer.render("answers", model);
         return new ExercisePdfDocument(fileName("answers", command), bytes);
     }
 
+    private static void putThematicTopic(Map<String, Object> model, ExerciseDto exercise) {
+        if (exercise.thematicTopic() != null && !exercise.thematicTopic().isBlank()) {
+            // Raw value: the Thymeleaf template escapes it exactly once via th:text.
+            model.put("thematicTopic", exercise.thematicTopic());
+        }
+    }
+
     private String fileName(String kind, GenerateExercisePdfCommand command) {
-        var topic = sanitize(command.exercise().topic());
+        var topic = truncateTopicPart(sanitize(command.exercise().topic()));
         var level = sanitize(command.cefrLevel());
         var student = sanitize(command.studentName());
 
@@ -138,6 +146,13 @@ public class GenerateExercisePdfUseCase implements GenerateExercisePdf {
 
     private static String sanitize(String value) {
         return value == null ? "" : value.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]+", "_");
+    }
+
+    private static String truncateTopicPart(String topic) {
+        if (topic.length() <= 60) {
+            return topic;
+        }
+        return topic.substring(0, 60);
     }
 
     private static boolean containsWord(String text, String word) {

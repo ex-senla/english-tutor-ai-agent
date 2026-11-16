@@ -26,6 +26,8 @@ public class Exercise {
 
     private String topic;
 
+    private String thematicTopic;
+
     @Association
     private Set<WordInfoId> wordInfoIds = new HashSet<>();
 
@@ -40,7 +42,8 @@ public class Exercise {
     private Exercise() {
     }
 
-    public static Exercise create(ExerciseId id, ExerciseType type, String topic, Set<WordInfoId> wordInfoIds) {
+    public static Exercise create(ExerciseId id, ExerciseType type, String topic, String thematicTopic,
+            Set<WordInfoId> wordInfoIds) {
         Objects.requireNonNull(id, "id must not be null");
         Objects.requireNonNull(type, "type must not be null");
         Objects.requireNonNull(topic, "topic must not be null");
@@ -50,6 +53,7 @@ public class Exercise {
         exercise.id = id;
         exercise.type = type;
         exercise.topic = topic;
+        exercise.thematicTopic = thematicTopic;
         exercise.wordInfoIds = new HashSet<>(wordInfoIds);
         exercise.status = ExerciseStatus.GENERATED;
         return exercise;

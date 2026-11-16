@@ -12,13 +12,20 @@ class ExerciseTest {
 
     @Test
     void shouldCreateExercise() {
-        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", Set.of(
-                WordInfoId
-                        .generate()));
+        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", null,
+                Set.of(WordInfoId.generate()));
         assertThat(exercise.getId()).isNotNull();
         assertThat(exercise.getType()).isEqualTo(ExerciseType.FILL_IN_THE_BLANK);
         assertThat(exercise.getTopic()).isEqualTo("Animals");
+        assertThat(exercise.getThematicTopic()).isNull();
         assertThat(exercise.getWordInfoIds()).hasSize(1);
         assertThat(exercise.getStatus()).isEqualTo(ExerciseStatus.GENERATED);
+    }
+
+    @Test
+    void shouldStoreThematicTopic() {
+        var exercise = Exercise.create(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", "Travel",
+                Set.of(WordInfoId.generate()));
+        assertThat(exercise.getThematicTopic()).isEqualTo("Travel");
     }
 }

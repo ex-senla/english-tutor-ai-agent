@@ -7,6 +7,7 @@ public record ExerciseDto(
         ExerciseId id,
         ExerciseType type,
         String topic,
+        String thematicTopic,
         String content,
         List<String> expectedAnswers,
         List<ExerciseItem> items,

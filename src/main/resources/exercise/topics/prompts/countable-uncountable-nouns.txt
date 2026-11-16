@@ -1,0 +1,8 @@
+Grammar focus: Countable and Uncountable Nouns.
+
+Guidance for exercise generation:
+- Focus strictly on "Countable and Uncountable Nouns" and its typical forms and usage.
+- Keep sentences natural and appropriate for the student's CEFR level.
+- In fill-in-the-blank, the blank must require applying "Countable and Uncountable Nouns"; the answer must not be guessable from context alone.
+- In multiple choice, the three distractors must be plausible grammar errors typical for learners of "Countable and Uncountable Nouns".
+- If the target vocabulary is provided, use it only as context; the target words are not the answer.

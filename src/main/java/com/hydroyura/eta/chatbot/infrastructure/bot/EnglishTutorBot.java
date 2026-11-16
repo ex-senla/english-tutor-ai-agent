@@ -6,6 +6,7 @@ import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
+import com.hydroyura.eta.chatbot.view.Callbacks;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,9 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_CUSTOM_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_WORD_SELECTION;
+import static com.hydroyura.eta.chatbot.view.Messages.CHECKING_TOPIC;
 import static com.hydroyura.eta.chatbot.view.Messages.GENERATING_EXERCISE;
 
 @Slf4j
@@ -141,24 +145,38 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Показывает в чате сообщение-индикатор длительной операции (например, «⏳ Генерирую…»),
-     * возвращая идентификатор отправленного сообщения, чтобы удалить его после завершения.
-     * Возвращает {@code null}, если индикатор не требуется.
+     * Показывает в чате сообщение-индикатор длительной операции, возвращая идентификатор
+     * отправленного сообщения, чтобы удалить его после завершения. Возвращает {@code null},
+     * если индикатор не требуется.
      */
     private Integer showProcessingIndicator(Chat chat, Action action, Long chatId) {
-        if (chat.getState() != ChatState.AWAITING_EXERCISE_TOPIC || !(action instanceof Action.Input)) {
+        var indicator = indicatorFor(chat, action);
+        if (indicator == null) {
             return null;
         }
         try {
             var sent = execute(SendMessage.builder()
                     .chatId(chatId.toString())
-                    .text(GENERATING_EXERCISE)
+                    .text(indicator)
                     .build());
             return sent.getMessageId();
         } catch (Exception e) {
-            log.warn("Failed to send generation indicator for chatId={}: {}", chatId, e.getMessage());
+            log.warn("Failed to send processing indicator for chatId={}: {}", chatId, e.getMessage());
             return null;
         }
+    }
+
+    String indicatorFor(Chat chat, Action action) {
+        if (chat.getState() == AWAITING_EXERCISE_WORD_SELECTION
+                && action instanceof Action.Callback callback
+                && (Callbacks.EXERCISE_WORD_DONE.equals(callback.prefix())
+                        || Callbacks.EXERCISE_WORD_CONTINUE.equals(callback.prefix()))) {
+            return GENERATING_EXERCISE;
+        }
+        if (chat.getState() == AWAITING_CUSTOM_TOPIC && action instanceof Action.Input) {
+            return CHECKING_TOPIC;
+        }
+        return null;
     }
 
     /**

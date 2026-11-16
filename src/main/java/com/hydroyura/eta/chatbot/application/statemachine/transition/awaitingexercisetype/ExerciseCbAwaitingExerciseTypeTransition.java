@@ -1,19 +1,20 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetype;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicFlowSupport;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
-
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.view.Messages.CHOOSE_EXERCISE_GRAMMAR;
 import static com.hydroyura.eta.chatbot.view.Messages.CHOOSE_EXERCISE_TYPE;
 
+@RequiredArgsConstructor
 public class ExerciseCbAwaitingExerciseTypeTransition implements Transition<Action.Callback> {
 
     private static final Map<String, ExerciseType> PAYLOAD_EXERCISE_TYPE_MAP = Map.of(
@@ -21,17 +22,18 @@ public class ExerciseCbAwaitingExerciseTypeTransition implements Transition<Acti
             Callbacks.MULTIPLE_CHOICE, ExerciseType.MULTIPLE_CHOICE
     );
 
+    private final TopicFlowSupport topicFlowSupport;
+
     @Override
     public ActionResult transit(Chat chat, Action.Callback callback) {
-        //FIXME если передать null, то будет NPE
         var exerciseType = PAYLOAD_EXERCISE_TYPE_MAP.get(callback.payload());
 
         if (exerciseType == null) {
             return new ActionResult.TextResponse(CHOOSE_EXERCISE_TYPE);
         }
         chat.getContext().put(EXERCISE_TYPE.getValue(), exerciseType);
-        chat.updateState(ChatState.AWAITING_EXERCISE_GRAMMAR);
-        return new ActionResult.TextResponse(CHOOSE_EXERCISE_GRAMMAR);
+        chat.updateState(ChatState.AWAITING_EXERCISE_TOPIC);
+        return topicFlowSupport.enterTopicSelection(chat, callback.messageId());
     }
 
 }

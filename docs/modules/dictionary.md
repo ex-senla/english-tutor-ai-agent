@@ -24,7 +24,10 @@
 
 ### WordFactory
 - Фабрика для создания Word с валидацией через `WordInfoSpecifications`.
+- Нормализует значение до валидации: trim + схлопывание внутренних пробелов в один
+  (`«  look   forward   to  »` → `«look forward to»`); проверка дублей идёт по нормализованному значению.
 - Конфигурация спецификаций через `WordInfoSpecificationConfig` → `WordInfoSpecificationProperties`.
+- `PartOfSpeech` включает `NOUN`, `VERB`, `ADJECTIVE`, `EXPRESSION` (русская подпись «Выражение»).
 
 ### WordStatus (Enum)
 NEW, IN_PROGRESS, LEARNED
@@ -45,7 +48,7 @@ NEW, IN_PROGRESS, LEARNED
 |-----------|-------|
 | `CreateDictionary` | `DictionaryId execute(CreateDictionaryCommand)` |
 | `AddWordToDictionary` | `WordId execute(AddWordCommand)` |
-| `WordTranslator` (в `api.word`) | `List<String> translate(WordTranslationCommand)` |
+| `WordTranslator` (в `api.word`) | `List<String> translate(WordTranslationCommand)`, `WordPosTranslations suggestPosAndTranslations(String)` |
 | `ResetWordLearning` | `void execute(DictionaryId, WordInfoId)` |
 | `IncrementWordRepetitions` | `void execute(DictionaryId, Set<WordInfoId>)` |
 
@@ -81,4 +84,4 @@ NEW, IN_PROGRESS, LEARNED
 
 ## Инфраструктура
 - `InMemoryDictionaryRepository` — `ConcurrentHashMap<DictionaryId, Dictionary>`
-- `SpringAiWordTranslator` (`infrastructure.ai`, `@Component`) — адаптер порта `WordTranslator` на Spring AI `ChatClient`; читает `WordTranslationProperties` (`eta.dictionary.translation.variant-count`, default 3) и `WordInfoSpecificationProperties`, валидирует и дедуплицирует варианты, отбрасывает невалидные, при ошибке/пустом ответе AI возвращает пустой список. Использует существующий bean `ChatClient` из `exercise.infrastructure.ai.AiConfig` (скрытая bean-связка `dictionary → exercise`, невидимая для Modulith-verify; перенос `AiConfig` — отдельная задача при третьем потребителе).
+- `SpringAiWordTranslator` (`infrastructure.ai`, `@Component`) — адаптер порта `WordTranslator` на Spring AI `ChatClient`; читает `WordTranslationProperties` (`eta.dictionary.translation.variant-count`, default 3) и `WordInfoSpecificationProperties`, валидирует и дедуплицирует варианты, отбрасывает невалидные, при ошибке/пустом ответе AI возвращает пустой список. Метод `suggestPosAndTranslations` (промпт `word-pos-translations-system.txt`) определяет POS (`noun`/`verb`/`adjective`/`expression`) и переводы одним вызовом; неизвестный POS/пустой ответ/пустые переводы/сбой → `partOfSpeech == null`. Использует существующий bean `ChatClient` из `exercise.infrastructure.ai.AiConfig` (скрытая bean-связка `dictionary → exercise`, невидимая для Modulith-verify; перенос `AiConfig` — отдельная задача при третьем потребителе).

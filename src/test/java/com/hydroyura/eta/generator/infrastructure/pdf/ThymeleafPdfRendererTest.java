@@ -44,4 +44,21 @@ class ThymeleafPdfRendererTest {
         assertThat(bytes).isNotEmpty();
         assertThat(new String(bytes, 0, 4, StandardCharsets.ISO_8859_1)).isEqualTo("%PDF");
     }
+
+    @Test
+    void shouldEscapeThematicTopicExactlyOnceInTemplate() {
+        var renderer = new ThymeleafPdfRenderer();
+
+        var model = Map.<String, Object>of(
+                "type", "FILL_IN_THE_BLANK",
+                "topic", "Animals",
+                "thematicTopic", "Food & <drinks>",
+                "items", List.of()
+        );
+
+        var html = renderer.renderHtml("exercise", model);
+
+        assertThat(html).contains("Food &amp; &lt;drinks&gt;");
+        assertThat(html).doesNotContain("Food &amp;amp; &amp;lt;drinks&amp;gt;");
+    }
 }

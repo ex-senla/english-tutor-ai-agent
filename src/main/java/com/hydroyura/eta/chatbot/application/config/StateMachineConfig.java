@@ -9,9 +9,19 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentList
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.DefaultCmdActiveTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.NewCmdActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingcustomtopic.InputAwaitingCustomTopicTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexerciseanswer.InputAwaitingExerciseAnswerTransition;
-import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisegrammar.InputAwaitingExerciseGrammarTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.InputAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicCbAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicFlowSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicNavCbAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicPageCbAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicSearchCbAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.TopicSelfCbAwaitingExerciseTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisethematictopic.InputAwaitingExerciseThematicTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisethematictopic.SkipCbAwaitingExerciseThematicTopicTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopicconfirm.TopicCatalogCbAwaitingExerciseTopicConfirmTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopicconfirm.TopicConfirmCbAwaitingExerciseTopicConfirmTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetype.ExerciseCbAwaitingExerciseTypeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingmanualtranslation.InputAwaitingManualTranslationTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingpos.PosCbAwaitingPosTransition;
@@ -22,6 +32,7 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstu
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevelchange.BackCbAwaitingStudentLevelChangeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevelchange.LevelCbAwaitingStudentLevelChangeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentname.InputAwaitingStudentNameTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingtranslationchoice.PosChangeCbAwaitingTranslationChoiceTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingtranslationchoice.TranslationCbAwaitingTranslationChoiceTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.cancel.CancelCmdTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.cancel.CancelRule;
@@ -69,7 +80,9 @@ import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.dictionary.ResetWordLearning;
 import com.hydroyura.eta.dictionary.api.word.WordTranslator;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseTopics;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.exercise.api.exercise.ValidateCustomTopic;
 import com.hydroyura.eta.generator.api.document.GenerateExercisePdf;
 import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
@@ -92,9 +105,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ACTIVE;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_CUSTOM_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_ANSWER;
-import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_GRAMMAR;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TOPIC_CONFIRM;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_WORD_SELECTION;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_MANUAL_TRANSLATION;
@@ -112,14 +127,18 @@ import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_DICTIONARY
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_OPTIONS;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_SEARCH;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENTS_LIST;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_THEMATIC_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.PENDING_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_CANONICAL_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_MATCHED_SLUG;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_SEARCH_QUERY;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_FILTER;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_POS;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.WORD_SELECTION;
@@ -146,7 +165,8 @@ public class StateMachineConfig {
             ChangeStudentLevel changeStudentLevel, DeleteStudent deleteStudent,
             GenerateExercise generateExercise, CheckExercise checkExercise,
             GenerateExercisePdf generateExercisePdf, CheckWord checkWord, WordTranslator wordTranslator,
-            ResetWordLearning resetWordLearning, ChatbotSearchProperties chatbotSearchProperties,
+            ResetWordLearning resetWordLearning, ExerciseTopics exerciseTopics, ValidateCustomTopic validateCustomTopic,
+            ChatbotSearchProperties chatbotSearchProperties,
             ChatbotPaginationProperties chatbotPaginationProperties) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
 
@@ -161,6 +181,8 @@ public class StateMachineConfig {
         var studentSearchTransition = new StudentSearchTransition();
         var lessonWordSupport = new LessonWordSupport(studentQuery, addWordToDictionary, findActiveLesson,
                 addWordToLesson);
+        var topicFlowSupport = new TopicFlowSupport(studentQuery, findWords, exerciseTopics,
+                chatbotPaginationProperties);
 
         // INITIAL
         stateMachine.onCommand(INITIAL, Commands.REGISTER, new RegisterCmdInitialTransition());
@@ -219,7 +241,7 @@ public class StateMachineConfig {
                 new BackCbAwaitingStudentLevelChangeTransition(studentQuery));
 
         // IN_LESSON
-        stateMachine.onInput(IN_LESSON, new InputInLessonTransition(checkWord));
+        stateMachine.onInput(IN_LESSON, new InputInLessonTransition(checkWord, wordTranslator));
         stateMachine.onButton(IN_LESSON, Buttons.FINISH_LESSON, finishLessonInLessonTransition);
         stateMachine.onCommand(IN_LESSON, Commands.FINISH_LESSON, finishLessonInLessonTransition);
         stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
@@ -228,6 +250,8 @@ public class StateMachineConfig {
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition(wordTranslator));
         stateMachine.onCallback(AWAITING_TRANSLATION_CHOICE, Callbacks.TRANSLATION,
                 new TranslationCbAwaitingTranslationChoiceTransition(lessonWordSupport));
+        stateMachine.onCallback(AWAITING_TRANSLATION_CHOICE, Callbacks.POS_CHANGE,
+                new PosChangeCbAwaitingTranslationChoiceTransition());
         stateMachine.onInput(AWAITING_MANUAL_TRANSLATION, new InputAwaitingManualTranslationTransition(
                 lessonWordSupport));
 
@@ -238,12 +262,34 @@ public class StateMachineConfig {
                 studentQuery));
         stateMachine.onCallback(STUDENT_SEARCH, Callbacks.BACK, new BackCbStudentSearchTransition());
 
-        // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_GRAMMAR -> AWAITING_EXERCISE_TOPIC -> AWAITING_EXERCISE_ANSWER
+        // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_TOPIC -> (search/custom/confirm) -> words
         stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE,
-                new ExerciseCbAwaitingExerciseTypeTransition());
-        stateMachine.onInput(AWAITING_EXERCISE_GRAMMAR, new InputAwaitingExerciseGrammarTransition());
-        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(studentQuery,
-                findWords, chatbotPaginationProperties));
+                new ExerciseCbAwaitingExerciseTypeTransition(topicFlowSupport));
+        stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC, Callbacks.TOPIC_NAV,
+                new TopicNavCbAwaitingExerciseTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC, Callbacks.TOPIC,
+                new TopicCbAwaitingExerciseTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC, Callbacks.TOPIC_SEARCH,
+                new TopicSearchCbAwaitingExerciseTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC, Callbacks.TOPIC_SELF,
+                new TopicSelfCbAwaitingExerciseTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC, Callbacks.TOPIC_PAGE,
+                new TopicPageCbAwaitingExerciseTopicTransition(topicFlowSupport));
+
+        var topicConfirmTransition = new TopicConfirmCbAwaitingExerciseTopicConfirmTransition(topicFlowSupport);
+        stateMachine.onInput(AWAITING_CUSTOM_TOPIC,
+                new InputAwaitingCustomTopicTransition(validateCustomTopic, topicFlowSupport));
+        stateMachine.onCallback(AWAITING_CUSTOM_TOPIC, Callbacks.TOPIC_CONFIRM, topicConfirmTransition);
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC_CONFIRM, Callbacks.TOPIC_CONFIRM, topicConfirmTransition);
+        stateMachine.onCallback(AWAITING_EXERCISE_TOPIC_CONFIRM, Callbacks.TOPIC_CATALOG,
+                new TopicCatalogCbAwaitingExerciseTopicConfirmTransition(topicFlowSupport));
+
+        stateMachine.onInput(AWAITING_EXERCISE_THEMATIC_TOPIC,
+                new InputAwaitingExerciseThematicTopicTransition(topicFlowSupport));
+        stateMachine.onCallback(AWAITING_EXERCISE_THEMATIC_TOPIC, Callbacks.TOPIC_SKIP,
+                new SkipCbAwaitingExerciseThematicTopicTransition(topicFlowSupport));
+
         stateMachine.onInput(AWAITING_EXERCISE_ANSWER, new InputAwaitingExerciseAnswerTransition(checkExercise));
 
         // STUDENT_DICTIONARY
@@ -316,11 +362,16 @@ public class StateMachineConfig {
                 new CancelRule(IN_LESSON, List.of(WORD_VALUE, WORD_POS, WORD_TRANSLATIONS)));
         cancelRules.put(STUDENT_SEARCH, new CancelRule(ACTIVE, List.of()));
         cancelRules.put(AWAITING_EXERCISE_TYPE, new CancelRule(STUDENT_OPTIONS, List.of()));
-        cancelRules.put(AWAITING_EXERCISE_GRAMMAR, new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE)));
-        cancelRules.put(AWAITING_EXERCISE_TOPIC, new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, GRAMMAR_RULE)));
+        cancelRules.put(AWAITING_EXERCISE_TOPIC,
+                new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, TOPIC_SEARCH_QUERY, TOPIC_PAGE)));
+        cancelRules.put(AWAITING_CUSTOM_TOPIC, new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE)));
+        cancelRules.put(AWAITING_EXERCISE_TOPIC_CONFIRM,
+                new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, TOPIC_CANONICAL_NAME, TOPIC_MATCHED_SLUG)));
+        cancelRules.put(AWAITING_EXERCISE_THEMATIC_TOPIC,
+                new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, EXERCISE_TOPIC, EXERCISE_THEMATIC_TOPIC)));
         cancelRules.put(AWAITING_EXERCISE_WORD_SELECTION,
-                new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, GRAMMAR_RULE, EXERCISE_TOPIC, WORD_SELECTION,
-                        WORD_FILTER, SELECTION_PAGE)));
+                new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_TYPE, EXERCISE_TOPIC, EXERCISE_THEMATIC_TOPIC,
+                        WORD_SELECTION, WORD_FILTER, SELECTION_PAGE)));
         cancelRules.put(AWAITING_EXERCISE_ANSWER,
                 new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_ID, EXERCISE_TOPIC, EXERCISE_TYPE)));
         cancelRules.put(STUDENT_DICTIONARY, new CancelRule(STUDENT_DETAILS, List.of(DICTIONARY_PAGE)));

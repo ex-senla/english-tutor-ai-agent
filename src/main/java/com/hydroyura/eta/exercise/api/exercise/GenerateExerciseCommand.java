@@ -8,14 +8,17 @@ import java.util.Set;
 /**
  * Команда генерации упражнения.
  *
- * @param cefrLevel код уровня CEFR (A1–C2); валидность значения гарантируется источником
- *                  (enum {@code CefrLevel} ученика в модуле student), поэтому здесь проверяется только непустота.
- * @param wordIds   идентификаторы слов словаря, выбранных для упражнения; может быть пустым.
+ * @param topic         тема упражнения — предустановленная тема каталога (по slug) или «своя тема» (текст).
+ * @param thematicTopic опциональная тематическая тема (предметно-контекстный слой, например «Travel»);
+ *                      {@code null}/blank означает «не задана».
+ * @param cefrLevel     код уровня CEFR (A1–C2); валидность значения гарантируется источником
+ *                      (enum {@code CefrLevel} ученика в модуле student), поэтому здесь проверяется только непустота.
+ * @param wordIds       идентификаторы слов словаря, выбранных для упражнения; может быть пустым.
  */
 public record GenerateExerciseCommand(
         ExerciseType type,
-        String grammarRule,
-        String topic,
+        ExerciseTopic topic,
+        String thematicTopic,
         DictionaryId dictionaryId,
         String cefrLevel,
         Set<WordInfoId> wordIds
@@ -23,14 +26,7 @@ public record GenerateExerciseCommand(
 
     public GenerateExerciseCommand {
         Objects.requireNonNull(type, "type must not be null");
-        Objects.requireNonNull(grammarRule, "grammarRule must not be null");
-        if (grammarRule.isBlank()) {
-            throw new IllegalArgumentException("grammarRule must not be blank");
-        }
         Objects.requireNonNull(topic, "topic must not be null");
-        if (topic.isBlank()) {
-            throw new IllegalArgumentException("topic must not be blank");
-        }
         Objects.requireNonNull(dictionaryId, "dictionaryId must not be null");
         Objects.requireNonNull(cefrLevel, "cefrLevel must not be null");
         if (cefrLevel.isBlank()) {

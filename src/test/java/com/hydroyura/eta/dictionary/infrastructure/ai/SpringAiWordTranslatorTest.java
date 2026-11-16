@@ -90,6 +90,70 @@ class SpringAiWordTranslatorTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    void shouldSuggestNounForSingleWord() {
+        stubPosResponse(new AiPosTranslationsResponse("noun", List.of("яблоко", "фрукт")));
+
+        var result = translator.suggestPosAndTranslations("apple");
+
+        assertThat(result.partOfSpeech()).isEqualTo(PartOfSpeech.NOUN);
+        assertThat(result.translations()).containsExactly("яблоко", "фрукт");
+    }
+
+    @Test
+    void shouldSuggestExpressionForMultiword() {
+        stubPosResponse(new AiPosTranslationsResponse("expression", List.of("ждать с нетерпением")));
+
+        var result = translator.suggestPosAndTranslations("look forward to");
+
+        assertThat(result.partOfSpeech()).isEqualTo(PartOfSpeech.EXPRESSION);
+    }
+
+    @Test
+    void shouldReturnNullPosForUnknownPartOfSpeech() {
+        stubPosResponse(new AiPosTranslationsResponse("adverb", List.of("перевод")));
+
+        var result = translator.suggestPosAndTranslations("quickly");
+
+        assertThat(result.partOfSpeech()).isNull();
+    }
+
+    @Test
+    void shouldReturnNullPosWhenNoValidTranslations() {
+        stubPosResponse(new AiPosTranslationsResponse("noun", List.of("apple", "123", "")));
+
+        var result = translator.suggestPosAndTranslations("apple");
+
+        assertThat(result.partOfSpeech()).isNull();
+    }
+
+    @Test
+    void shouldDeduplicateAndLimitOneShotTranslations() {
+        properties.setVariantCount(2);
+        stubPosResponse(new AiPosTranslationsResponse("noun", List.of("дом", "дом", "здание", "крыша")));
+
+        var result = translator.suggestPosAndTranslations("house");
+
+        assertThat(result.translations()).containsExactly("дом", "здание");
+    }
+
+    @Test
+    void shouldReturnNullPosWhenOneShotChatClientThrows() {
+        when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
+
+        var result = translator.suggestPosAndTranslations("apple");
+
+        assertThat(result.partOfSpeech()).isNull();
+    }
+
+    private void stubPosResponse(AiPosTranslationsResponse response) {
+        when(chatClient.prompt()).thenReturn(requestSpec);
+        when(requestSpec.system(anyString())).thenReturn(requestSpec);
+        when(requestSpec.user(anyString())).thenReturn(requestSpec);
+        when(requestSpec.call()).thenReturn(callResponseSpec);
+        when(callResponseSpec.entity(AiPosTranslationsResponse.class)).thenReturn(response);
+    }
+
     private void stubResponse(AiTranslationsResponse response) {
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.system(anyString())).thenReturn(requestSpec);

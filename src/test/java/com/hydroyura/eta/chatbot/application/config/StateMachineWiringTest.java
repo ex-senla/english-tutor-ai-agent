@@ -15,11 +15,14 @@ import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.dictionary.api.dictionary.ResetWordLearning;
 import com.hydroyura.eta.dictionary.api.word.WordTranslator;
+import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseTopics;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
+import com.hydroyura.eta.exercise.api.exercise.ValidateCustomTopic;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
 import com.hydroyura.eta.generator.api.document.ExercisePdfBundle;
 import com.hydroyura.eta.generator.api.document.ExercisePdfDocument;
@@ -45,7 +48,6 @@ import org.junit.jupiter.api.Test;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
@@ -86,6 +88,8 @@ class StateMachineWiringTest {
         var checkWord = mock(CheckWord.class);
         var wordTranslator = mock(WordTranslator.class);
         var resetWordLearning = mock(ResetWordLearning.class);
+        var exerciseTopics = mock(ExerciseTopics.class);
+        var validateCustomTopic = mock(ValidateCustomTopic.class);
 
         when(studentQuery.getDictionaryId(any())).thenReturn(Optional.of(
                 com.hydroyura.eta.dictionary.api.dictionary.DictionaryId.generate()));
@@ -95,7 +99,7 @@ class StateMachineWiringTest {
         when(findWords.findByDictionaryId(any())).thenReturn(java.util.Set.of());
         when(findWords.findByDictionaryIdAndWordIds(any(), any())).thenReturn(java.util.Set.of());
         when(generateExercise.execute(any())).thenReturn(new ExerciseDto(ExerciseId.generate(),
-                ExerciseType.FILL_IN_THE_BLANK, "Animals", "content", List.of("answer"), List.of(),
+                ExerciseType.FILL_IN_THE_BLANK, "Animals", null, "content", List.of("answer"), List.of(),
                 ExerciseStatus.GENERATED));
         when(generateExercisePdf.execute(any())).thenReturn(new ExercisePdfBundle(
                 new ExercisePdfDocument("exercise_animals.pdf", new byte[]{1}),
@@ -109,8 +113,8 @@ class StateMachineWiringTest {
         stateMachine = new StateMachineConfig().stateMachine(handlers, findTeacher, studentQuery, findActiveLesson,
                 endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
                 addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
-                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, new ChatbotSearchProperties(),
-                new ChatbotPaginationProperties());
+                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
+                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
     }
 
     @Test
@@ -136,6 +140,34 @@ class StateMachineWiringTest {
     }
 
     @Test
+    void topicCallbacksShouldBeWired() {
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC, new Action.Callback("topicnav", "present", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC, new Action.Callback("topic", "present-simple", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC, new Action.Callback("topicsearch", "", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC, new Action.Callback("topicself", "", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC, new Action.Callback("topicpg", "next", 1));
+        assertNotDefault(ChatState.AWAITING_CUSTOM_TOPIC, new Action.Callback("topicconfirm", "back", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC_CONFIRM, new Action.Callback("topicconfirm", "use", 1));
+        assertNotDefault(ChatState.AWAITING_EXERCISE_TOPIC_CONFIRM, new Action.Callback("topiccatalog", "past-simple",
+                1));
+    }
+
+    @Test
+    void thematicTopicShouldBeWired() {
+        assertNotDefault(ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC, new Action.Callback("topicskip", "", 1));
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.updateState(ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC);
+        chat.getContext().put(SELECTED_STUDENT_ID.getValue(), UUID.randomUUID().toString());
+        chat.getContext().put(SELECTED_STUDENT_NAME.getValue(), "Anna");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+
+        var result = stateMachine.applyAction(chat, new Action.Input("Travel"));
+
+        assertThat(textOf(result)).isNotEqualTo(SENTINEL);
+    }
+
+    @Test
     void dictionaryActionShouldBeWiredFromStudentOptions() {
         assertNotDefault(ChatState.STUDENT_OPTIONS, new Action.Callback("action", "dictionary", 1));
     }
@@ -155,8 +187,7 @@ class StateMachineWiringTest {
 
         if (state == ChatState.AWAITING_EXERCISE_WORD_SELECTION) {
             chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-            chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-            chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+            chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
             chat.getContext().put(WORD_SELECTION.getValue(), java.util.Set.of());
             chat.getContext().put(WORD_FILTER.getValue(), "ALL");
             chat.getContext().put(SELECTION_PAGE.getValue(), 0);

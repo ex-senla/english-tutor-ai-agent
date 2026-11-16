@@ -30,6 +30,13 @@ class WordFactoryTest {
     }
 
     @Test
+    void shouldNormalizeWhitespace() {
+        var word = factory.create("  look   forward   to  ");
+
+        assertThat(word.value()).isEqualTo("look forward to");
+    }
+
+    @Test
     void shouldRejectRussianValue() {
         assertThatThrownBy(() -> factory.create("привет"))
                 .isInstanceOf(WordValidationException.class);

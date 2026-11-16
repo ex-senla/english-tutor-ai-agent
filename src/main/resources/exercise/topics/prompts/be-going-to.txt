@@ -1,0 +1,8 @@
+Grammar focus: Be Going To.
+
+Guidance for exercise generation:
+- Focus strictly on "Be Going To" and its typical forms and usage.
+- Keep sentences natural and appropriate for the student's CEFR level.
+- In fill-in-the-blank, the blank must require applying "Be Going To"; the answer must not be guessable from context alone.
+- In multiple choice, the three distractors must be plausible grammar errors typical for learners of "Be Going To".
+- If the target vocabulary is provided, use it only as context; the target words are not the answer.

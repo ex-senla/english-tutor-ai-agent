@@ -12,6 +12,7 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
+import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
@@ -36,8 +37,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_THEMATIC_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
-import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.GRAMMAR_RULE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
@@ -160,20 +161,21 @@ class AwaitingExerciseWordSelectionTransitionTest {
                 generateExercisePdf);
         var chat = chatWithSelection(Set.of(appleId.value().toString()));
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
 
         var result = transition.transit(chat, new Action.Callback("exdone", "", 1));
 
         assertThat(result).isInstanceOf(ActionResult.SendDocuments.class);
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
-        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue(),
-                EXERCISE_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(), SELECTION_PAGE
-                        .getValue());
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
 
         var captor = ArgumentCaptor.forClass(GenerateExerciseCommand.class);
         verify(generateExercise).execute(captor.capture());
         assertThat(captor.getValue().wordIds()).containsExactly(appleId);
+        assertThat(captor.getValue().thematicTopic()).isEqualTo("Travel");
     }
 
     @Test
@@ -191,8 +193,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
                 generateExercisePdf);
         var chat = chatWithSelection(Set.of());
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
 
         var result = transition.transit(chat, new Action.Callback("excont", "", 1));
 
@@ -209,15 +210,15 @@ class AwaitingExerciseWordSelectionTransitionTest {
         var transition = new SelectionBackCbAwaitingExerciseWordSelectionTransition();
         var chat = chatWithSelection(Set.of());
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
 
         var result = transition.transit(chat, new Action.Callback("exselback", "", 1));
 
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
-        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue(),
-                EXERCISE_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(), SELECTION_PAGE
-                        .getValue());
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
         assertThat(result).isInstanceOf(ActionResult.EditMessageText.class);
     }
 
@@ -237,17 +238,17 @@ class AwaitingExerciseWordSelectionTransitionTest {
                 generateExercisePdf);
         var chat = chatWithSelection(Set.of(appleId.value().toString()));
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
-        chat.getContext().put(GRAMMAR_RULE.getValue(), "Past Simple");
-        chat.getContext().put(EXERCISE_TOPIC.getValue(), "Animals");
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
 
         var result = transition.transit(chat, new Action.Callback("exdone", "", 1));
 
         assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
         assertThat(((ActionResult.TextWithInlineKeyboard) result).text()).isEqualTo(EXERCISE_PDF_ERROR);
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
-        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), GRAMMAR_RULE.getValue(),
-                EXERCISE_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(), SELECTION_PAGE
-                        .getValue());
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
     }
 
     private Chat chatWithSelection(Set<String> selection) {
@@ -262,7 +263,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
     }
 
     private ExerciseDto exercise() {
-        return new ExerciseDto(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", "content",
+        return new ExerciseDto(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Animals", null, "content",
                 List.of("answer"), List.of(new ExerciseItem("I travel ___", List.of(), "travelled")),
                 ExerciseStatus.GENERATED);
     }

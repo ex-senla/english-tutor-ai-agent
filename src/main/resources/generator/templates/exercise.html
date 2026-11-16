@@ -124,6 +124,7 @@
         <div class="meta">
             <span class="badge" th:text="${type == 'FILL_IN_THE_BLANK' ? 'Fill in the blank' : 'Multiple choice'}">Fill in the blank</span>
             <span class="badge" th:text="|Topic: ${topic}|">Topic</span>
+            <span class="badge" th:if="${thematicTopic != null}" th:text="|Context: ${thematicTopic}|">Context</span>
         </div>
         <table class="details">
             <tbody><tr>

@@ -8,6 +8,8 @@ import com.hydroyura.eta.dictionary.api.word.PartOfSpeech;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
+import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
+import com.hydroyura.eta.exercise.api.exercise.CustomTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
@@ -15,6 +17,7 @@ import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
 import com.hydroyura.eta.exercise.application.port.ExerciseGenerator;
 import com.hydroyura.eta.exercise.application.port.WordData;
+import com.hydroyura.eta.exercise.application.topic.GrammarTopicCatalog;
 import com.hydroyura.eta.exercise.domain.exercise.Exercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseStatus;
@@ -27,6 +30,9 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GenerateExerciseUseCaseTest {
+
+    private static final GrammarTopicCatalog CATALOG = new GrammarTopicCatalog(
+            "/exercise/topics/test-grammar-topics.json");
 
     @Test
     void shouldGenerateOnlyFromSelectedWordIds() {
@@ -43,16 +49,63 @@ class GenerateExerciseUseCaseTest {
         var generator = new RecordingGenerator(exerciseDto(List.of()));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId,
-                "A2", Set.of(appleId, runId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("present-simple"),
+                null, dictId, "A2", Set.of(appleId, runId));
         useCase.execute(command);
 
         assertThat(generator.receivedWords).extracting(WordData::value)
                 .containsExactlyInAnyOrder("apple", "run");
         assertThat(repository.saved.getWordInfoIds()).containsExactlyInAnyOrder(appleId, runId);
         assertThat(increment.incrementedIds).isEmpty();
+    }
+
+    @Test
+    void shouldBuildDisplayPathForCatalogTopic() {
+        var dictId = DictionaryId.generate();
+        var findWords = new StubFindWords(Set.of());
+        var generator = new RecordingGenerator(exerciseDto(List.of()));
+        var repository = new StubExerciseRepository();
+        var increment = new RecordingIncrement();
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
+
+        var dto = useCase.execute(new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK,
+                new CatalogTopic("present-simple"), null, dictId, "A2", Set.of()));
+
+        assertThat(dto.topic()).isEqualTo("Tenses and Aspects › Present › Present Simple");
+    }
+
+    @Test
+    void shouldKeepCustomTopicTextAsDisplay() {
+        var dictId = DictionaryId.generate();
+        var findWords = new StubFindWords(Set.of());
+        var generator = new RecordingGenerator(exerciseDto(List.of()));
+        var repository = new StubExerciseRepository();
+        var increment = new RecordingIncrement();
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
+
+        var dto = useCase.execute(new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK,
+                new CustomTopic("Past Simple"), null, dictId, "A2", Set.of()));
+
+        assertThat(dto.topic()).isEqualTo("Past Simple");
+    }
+
+    @Test
+    void shouldPreserveThematicTopic() {
+        var dictId = DictionaryId.generate();
+        var findWords = new StubFindWords(Set.of());
+        var generator = new RecordingGenerator(exerciseDto(List.of()));
+        var repository = new StubExerciseRepository();
+        var increment = new RecordingIncrement();
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
+
+        var dto = useCase.execute(new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK,
+                new CatalogTopic("present-simple"), "Travel", dictId, "A2", Set.of()));
+
+        assertThat(dto.topic()).isEqualTo("Tenses and Aspects › Present › Present Simple");
+        assertThat(dto.thematicTopic()).isEqualTo("Travel");
+        assertThat(repository.saved.getThematicTopic()).isEqualTo("Travel");
     }
 
     @Test
@@ -65,10 +118,10 @@ class GenerateExerciseUseCaseTest {
         var generator = new RecordingGenerator(exerciseDto(List.of()));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Animals", dictId,
-                "A2", Set.of());
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of());
         useCase.execute(command);
 
         assertThat(generator.receivedWords).isEmpty();
@@ -92,10 +145,10 @@ class GenerateExerciseUseCaseTest {
                 new ExerciseItem("Choose the verb.", List.of("run", "walk", "jump", "fly"), "run"))));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Travel", dictId,
-                "A2", Set.of(travelId, runId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of(travelId, runId));
         useCase.execute(command);
 
         assertThat(increment.incrementedIds).containsExactlyInAnyOrder(travelId, runId);
@@ -115,10 +168,10 @@ class GenerateExerciseUseCaseTest {
                 new ExerciseItem("Do you travel often?", List.of("travel", "stay", "leave", "go"), "travel"))));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Present Simple", "Travel", dictId,
-                "A2", Set.of(travelId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("present-simple"),
+                null, dictId, "A2", Set.of(travelId));
         useCase.execute(command);
 
         assertThat(increment.incrementedIds).containsExactly(travelId);
@@ -136,10 +189,10 @@ class GenerateExerciseUseCaseTest {
                 new ExerciseItem("She ate an Apple.", List.of(), "Apple"))));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Food", dictId,
-                "A2", Set.of(appleId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of(appleId));
         useCase.execute(command);
 
         assertThat(increment.incrementedIds).containsExactly(appleId);
@@ -157,10 +210,10 @@ class GenerateExerciseUseCaseTest {
                 new ExerciseItem("I found a catalog.", List.of(), "catalog"))));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Reading", dictId,
-                "A2", Set.of(catId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of(catId));
         useCase.execute(command);
 
         assertThat(increment.incrementedIds).isEmpty();
@@ -178,10 +231,10 @@ class GenerateExerciseUseCaseTest {
         var generator = new RecordingGenerator(exerciseDto(List.of()));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Travel", dictId,
-                "A2", Set.of(travelId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of(travelId));
         useCase.execute(command);
 
         assertThat(increment.incrementedIds).isEmpty();
@@ -201,10 +254,10 @@ class GenerateExerciseUseCaseTest {
                 new ExerciseItem("I travel.", List.of(), "travel"))));
         var repository = new StubExerciseRepository();
         var increment = new RecordingIncrement();
-        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment);
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG);
 
-        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, "Past Simple", "Travel", dictId,
-                "A2", Set.of(travelId, missingId));
+        var command = new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK, new CatalogTopic("past-simple"),
+                null, dictId, "A2", Set.of(travelId, missingId));
         useCase.execute(command);
 
         assertThat(generator.receivedWords).extracting(WordData::value).containsExactly("travel");
@@ -212,7 +265,7 @@ class GenerateExerciseUseCaseTest {
     }
 
     private static ExerciseDto exerciseDto(List<ExerciseItem> items) {
-        return new ExerciseDto(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Topic", "content",
+        return new ExerciseDto(ExerciseId.generate(), ExerciseType.FILL_IN_THE_BLANK, "Topic", null, "content",
                 List.of("answer"), items, ExerciseStatus.GENERATED);
     }
 

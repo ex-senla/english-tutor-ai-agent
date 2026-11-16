@@ -1,0 +1,8 @@
+Grammar focus: Yes / No Questions.
+
+Guidance for exercise generation:
+- Focus strictly on "Yes / No Questions" and its typical forms and usage.
+- Keep sentences natural and appropriate for the student's CEFR level.
+- In fill-in-the-blank, the blank must require applying "Yes / No Questions"; the answer must not be guessable from context alone.
+- In multiple choice, the three distractors must be plausible grammar errors typical for learners of "Yes / No Questions".
+- If the target vocabulary is provided, use it only as context; the target words are not the answer.
