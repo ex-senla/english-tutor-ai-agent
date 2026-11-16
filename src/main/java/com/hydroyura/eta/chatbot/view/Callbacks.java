@@ -13,6 +13,10 @@ public final class Callbacks {
 
     public static final String LEVEL_CHANGE = "levelchange";
 
+    public static final String STUDENT_DELETE = "studentdel";
+
+    public static final String STUDENT_DELETE_CONFIRM = "studentdelok";
+
     public static final String TRANSLATION = "translation";
 
     public static final String WORD_DICTIONARY_PAGE = "wdpg";

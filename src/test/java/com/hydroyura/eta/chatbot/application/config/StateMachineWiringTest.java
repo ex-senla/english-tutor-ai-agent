@@ -30,6 +30,7 @@ import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
+import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
@@ -78,6 +79,7 @@ class StateMachineWiringTest {
         var addWordToDictionary = mock(AddWordToDictionary.class);
         var addWordToLesson = mock(AddWordToLesson.class);
         var changeStudentLevel = mock(ChangeStudentLevel.class);
+        var deleteStudent = mock(DeleteStudent.class);
         var generateExercise = mock(GenerateExercise.class);
         var checkExercise = mock(CheckExercise.class);
         var generateExercisePdf = mock(GenerateExercisePdf.class);
@@ -106,8 +108,9 @@ class StateMachineWiringTest {
 
         stateMachine = new StateMachineConfig().stateMachine(handlers, findTeacher, studentQuery, findActiveLesson,
                 endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
-                addWordToLesson, changeStudentLevel, generateExercise, checkExercise, generateExercisePdf, checkWord,
-                wordTranslator, resetWordLearning, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
+                addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
+                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, new ChatbotSearchProperties(),
+                new ChatbotPaginationProperties());
     }
 
     @Test
@@ -135,6 +138,13 @@ class StateMachineWiringTest {
     @Test
     void dictionaryActionShouldBeWiredFromStudentOptions() {
         assertNotDefault(ChatState.STUDENT_OPTIONS, new Action.Callback("action", "dictionary", 1));
+    }
+
+    @Test
+    void studentDeleteCallbacksShouldBeWired() {
+        assertNotDefault(ChatState.STUDENT_DETAILS, new Action.Callback("studentdel", "", 1));
+        assertNotDefault(ChatState.AWAITING_STUDENT_DELETE, new Action.Callback("studentdelok", "", 1));
+        assertNotDefault(ChatState.AWAITING_STUDENT_DELETE, new Action.Callback("back", "main", 1));
     }
 
     private void assertNotDefault(ChatState state, Action.Callback callback) {

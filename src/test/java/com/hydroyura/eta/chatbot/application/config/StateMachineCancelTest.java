@@ -23,6 +23,7 @@ import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
+import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
@@ -75,6 +76,7 @@ class StateMachineCancelTest {
         var addWordToDictionary = mock(AddWordToDictionary.class);
         var addWordToLesson = mock(AddWordToLesson.class);
         var changeStudentLevel = mock(ChangeStudentLevel.class);
+        var deleteStudent = mock(DeleteStudent.class);
         var generateExercise = mock(GenerateExercise.class);
         var checkExercise = mock(CheckExercise.class);
         var generateExercisePdf = mock(GenerateExercisePdf.class);
@@ -87,8 +89,9 @@ class StateMachineCancelTest {
 
         stateMachine = new StateMachineConfig().stateMachine(Map.of(), findTeacher, studentQuery, findActiveLesson,
                 endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
-                addWordToLesson, changeStudentLevel, generateExercise, checkExercise, generateExercisePdf, checkWord,
-                wordTranslator, resetWordLearning, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
+                addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
+                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, new ChatbotSearchProperties(),
+                new ChatbotPaginationProperties());
     }
 
     @Test
@@ -98,6 +101,7 @@ class StateMachineCancelTest {
                 new Case(ChatState.AWAITING_STUDENT_NAME, ChatState.ACTIVE),
                 new Case(ChatState.AWAITING_STUDENT_LEVEL, ChatState.ACTIVE),
                 new Case(ChatState.AWAITING_STUDENT_LEVEL_CHANGE, ChatState.STUDENT_DETAILS),
+                new Case(ChatState.AWAITING_STUDENT_DELETE, ChatState.STUDENT_DETAILS),
                 new Case(ChatState.AWAITING_POS, ChatState.IN_LESSON),
                 new Case(ChatState.AWAITING_TRANSLATION_CHOICE, ChatState.IN_LESSON),
                 new Case(ChatState.AWAITING_MANUAL_TRANSLATION, ChatState.IN_LESSON),

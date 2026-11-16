@@ -54,4 +54,38 @@ class StudentTest {
         assertThatThrownBy(() -> student.changeLevel(null))
                 .isInstanceOf(NullPointerException.class);
     }
+
+    @Test
+    void shouldNotBeDeletedByDefault() {
+        var student = Student.create(StudentId.generate(), DictionaryId.generate(), "Иван", CefrLevel.A2);
+
+        assertThat(student.isDeleted()).isFalse();
+    }
+
+    @Test
+    void shouldMarkDeletedWithoutChangingAttributes() {
+        var id = StudentId.generate();
+        var dictionaryId = DictionaryId.generate();
+        var student = Student.create(id, dictionaryId, "Иван", CefrLevel.A2);
+
+        student.markDeleted();
+
+        assertThat(student.isDeleted()).isTrue();
+        assertThat(student.getId()).isEqualTo(id);
+        assertThat(student.getDictionaryId()).isEqualTo(dictionaryId);
+        assertThat(student.getName()).isEqualTo("Иван");
+        assertThat(student.getLevel()).isEqualTo(CefrLevel.A2);
+    }
+
+    @Test
+    void shouldMarkDeletedBeIdempotent() {
+        var student = Student.create(StudentId.generate(), DictionaryId.generate(), "Иван", CefrLevel.A2);
+
+        student.markDeleted();
+        student.markDeleted();
+
+        assertThat(student.isDeleted()).isTrue();
+        assertThat(student.getName()).isEqualTo("Иван");
+        assertThat(student.getLevel()).isEqualTo(CefrLevel.A2);
+    }
 }

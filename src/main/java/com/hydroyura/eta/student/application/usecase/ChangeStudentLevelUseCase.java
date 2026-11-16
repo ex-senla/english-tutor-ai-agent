@@ -22,6 +22,10 @@ public class ChangeStudentLevelUseCase implements ChangeStudentLevel {
         var student = studentRepository.findById(command.studentId())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found: " + command.studentId()));
 
+        if (student.isDeleted()) {
+            throw new IllegalArgumentException("Student not found: " + command.studentId());
+        }
+
         student.changeLevel(command.level());
         studentRepository.save(student);
 

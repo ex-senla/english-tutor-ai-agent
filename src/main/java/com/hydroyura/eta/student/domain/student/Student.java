@@ -23,6 +23,8 @@ public class Student {
 
     private CefrLevel level;
 
+    private boolean deleted = false;
+
     private Student() {
     }
 
@@ -42,5 +44,9 @@ public class Student {
 
     public void changeLevel(CefrLevel level) {
         this.level = Objects.requireNonNull(level, "Level must not be null");
+    }
+
+    public void markDeleted() {
+        this.deleted = true;
     }
 }

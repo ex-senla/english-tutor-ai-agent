@@ -133,6 +133,40 @@ class CreateStudentWithDictionaryUseCaseTest {
                 .hasMessageContaining("already exists");
     }
 
+    @Test
+    void shouldAllowCreatingStudentWithDeletedStudentsName() {
+        var teacherId = TeacherId.generate();
+        var teacher = Teacher.create(teacherId, "John");
+        teacher.getIdentifiers().put(IdentifierType.TELEGRAM, 123L);
+        var deletedStudent = Student.create(StudentId.generate(), DictionaryId.generate(), "Anna", CefrLevel.A2);
+        deletedStudent.markDeleted();
+        studentRepository.save(deletedStudent);
+        teacher.addStudent(deletedStudent.getId());
+        teacherRepository.save(teacher);
+
+        var newId = useCase.execute(new CreateStudentWithDictionaryCommand(teacherId, "Anna", "Словарь", CefrLevel.A2));
+
+        assertThat(newId).isNotNull();
+        var savedTeacher = teacherRepository.findById(teacherId).orElseThrow();
+        assertThat(savedTeacher.getStudentIds()).contains(deletedStudent.getId(), newId);
+    }
+
+    @Test
+    void shouldAllowCreatingStudentWithDeletedStudentsNameCaseInsensitive() {
+        var teacherId = TeacherId.generate();
+        var teacher = Teacher.create(teacherId, "John");
+        teacher.getIdentifiers().put(IdentifierType.TELEGRAM, 123L);
+        var deletedStudent = Student.create(StudentId.generate(), DictionaryId.generate(), "Anna", CefrLevel.A2);
+        deletedStudent.markDeleted();
+        studentRepository.save(deletedStudent);
+        teacher.addStudent(deletedStudent.getId());
+        teacherRepository.save(teacher);
+
+        var newId = useCase.execute(new CreateStudentWithDictionaryCommand(teacherId, "anna", "Словарь", CefrLevel.A2));
+
+        assertThat(newId).isNotNull();
+    }
+
     // --- stub ---
 
     static class StubTeacherRepository implements TeacherRepository {
@@ -174,7 +208,8 @@ class CreateStudentWithDictionaryUseCaseTest {
 
         @Override
         public boolean existsByNameInIds(Set<StudentId> ids, String name) {
-            return ids.stream().map(store::get).anyMatch(s -> s != null && s.getName().equalsIgnoreCase(name));
+            return ids.stream().map(store::get)
+                    .anyMatch(s -> s != null && !s.isDeleted() && s.getName().equalsIgnoreCase(name));
         }
     }
 }

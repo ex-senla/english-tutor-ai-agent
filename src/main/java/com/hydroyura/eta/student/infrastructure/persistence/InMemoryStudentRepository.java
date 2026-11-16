@@ -33,6 +33,7 @@ public class InMemoryStudentRepository implements StudentRepository, SnapshotPro
         return ids.stream()
                 .map(store::get)
                 .filter(java.util.Objects::nonNull)
+                .filter(s -> !s.isDeleted())
                 .anyMatch(s -> s.getName().equalsIgnoreCase(name));
     }
 

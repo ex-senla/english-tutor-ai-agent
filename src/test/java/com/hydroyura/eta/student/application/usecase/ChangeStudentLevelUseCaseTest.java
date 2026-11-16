@@ -46,6 +46,18 @@ class ChangeStudentLevelUseCaseTest {
                 .hasMessageContaining("Student not found");
     }
 
+    @Test
+    void shouldRejectDeletedStudentWithoutChangingLevel() {
+        var student = Student.create(StudentId.generate(), DictionaryId.generate(), "Иван", CefrLevel.A2);
+        student.markDeleted();
+        repository.save(student);
+
+        assertThatThrownBy(() -> useCase.execute(new ChangeStudentLevelCommand(student.getId(), CefrLevel.B2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Student not found");
+        assertThat(repository.findById(student.getId()).orElseThrow().getLevel()).isEqualTo(CefrLevel.A2);
+    }
+
     static class StubStudentRepository implements StudentRepository {
 
         private final Map<StudentId, Student> store = new HashMap<>();

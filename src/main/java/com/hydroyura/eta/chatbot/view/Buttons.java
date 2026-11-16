@@ -18,6 +18,12 @@ public final class Buttons {
 
     public static final String CHANGE_LEVEL = "🔄 Изменить уровень";
 
+    public static final String DELETE_STUDENT = "🗑 Удалить ученика";
+
+    public static final String DELETE_CONFIRM = "✅ Да, удалить";
+
+    public static final String DELETE_CANCEL = "🔙 Отмена";
+
     public static final String EXERCISE = "🎯 Exercise";
 
     public static final String BACK = "◀ Back";

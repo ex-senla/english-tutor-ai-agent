@@ -38,6 +38,7 @@ public class StudentQueryService implements StudentQuery {
         return query.studentIds().stream()
                 .map(studentRepository::findById)
                 .flatMap(Optional::stream)
+                .filter(s -> !s.isDeleted())
                 .filter(s -> s.getName().equalsIgnoreCase(query.name()))
                 .map(s -> s.getId())
                 .findFirst();
@@ -46,6 +47,7 @@ public class StudentQueryService implements StudentQuery {
     @Override
     public Optional<DictionaryId> getDictionaryId(StudentId studentId) {
         return studentRepository.findById(studentId)
+                .filter(s -> !s.isDeleted())
                 .map(s -> s.getDictionaryId());
     }
 
@@ -54,6 +56,7 @@ public class StudentQueryService implements StudentQuery {
         return ids.stream()
                 .map(studentRepository::findById)
                 .flatMap(Optional::stream)
+                .filter(s -> !s.isDeleted())
                 .map(s -> new StudentInfo(s.getId(), s.getName()))
                 .toList();
     }
@@ -64,6 +67,7 @@ public class StudentQueryService implements StudentQuery {
         return query.studentIds().stream()
                 .map(studentRepository::findById)
                 .flatMap(Optional::stream)
+                .filter(s -> !s.isDeleted())
                 .filter(s -> s.getName().toLowerCase().contains(fragment))
                 .map(s -> new StudentInfo(s.getId(), s.getName()))
                 .sorted(Comparator.comparing(StudentInfo::name, String.CASE_INSENSITIVE_ORDER))
@@ -73,6 +77,7 @@ public class StudentQueryService implements StudentQuery {
     @Override
     public Optional<StudentDetails> findStudentDetails(StudentId studentId) {
         return studentRepository.findById(studentId)
+                .filter(s -> !s.isDeleted())
                 .map(student -> {
                     var stats = findWords.getStats(student.getDictionaryId());
                     var hasActiveLesson = findActiveLesson.findByStudentId(studentId).isPresent();
@@ -83,6 +88,7 @@ public class StudentQueryService implements StudentQuery {
     @Override
     public Optional<CefrLevel> getCefrLevel(StudentId studentId) {
         return studentRepository.findById(studentId)
+                .filter(s -> !s.isDeleted())
                 .map(Student::getLevel);
     }
 }

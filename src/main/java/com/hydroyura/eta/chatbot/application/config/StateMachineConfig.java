@@ -17,6 +17,8 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingman
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingpos.PosCbAwaitingPosTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingregistrationname.InputAwaitingRegistrationNameTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevel.LevelCbAwaitingStudentLevelTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentdelete.BackCbAwaitingStudentDeleteTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentdelete.DeleteConfirmCbAwaitingStudentDeleteTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevelchange.BackCbAwaitingStudentLevelChangeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevelchange.LevelCbAwaitingStudentLevelChangeTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentname.InputAwaitingStudentNameTransition;
@@ -31,6 +33,7 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.inlesson.Fi
 import com.hydroyura.eta.chatbot.application.statemachine.transition.inlesson.HelpCmdInLessonTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.inlesson.InputInLessonTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdetails.BackCbStudentDetailsTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdetails.DeleteCbStudentDetailsTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdetails.LevelChangeCbStudentDetailsTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentoptions.ActionCbStudentOptionsTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentsearch.BackCbStudentSearchTransition;
@@ -73,6 +76,7 @@ import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
+import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
@@ -96,6 +100,7 @@ import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_MANUAL_TRANSLATION;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_POS;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_REGISTRATION_NAME;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_STUDENT_DELETE;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_STUDENT_LEVEL;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_STUDENT_LEVEL_CHANGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_STUDENT_NAME;
@@ -138,7 +143,8 @@ public class StateMachineConfig {
             StudentQuery studentQuery, FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
             RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary, AddWordToLesson addWordToLesson,
-            ChangeStudentLevel changeStudentLevel, GenerateExercise generateExercise, CheckExercise checkExercise,
+            ChangeStudentLevel changeStudentLevel, DeleteStudent deleteStudent,
+            GenerateExercise generateExercise, CheckExercise checkExercise,
             GenerateExercisePdf generateExercisePdf, CheckWord checkWord, WordTranslator wordTranslator,
             ResetWordLearning resetWordLearning, ChatbotSearchProperties chatbotSearchProperties,
             ChatbotPaginationProperties chatbotPaginationProperties) {
@@ -197,6 +203,14 @@ public class StateMachineConfig {
         stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(findTeacher,
                 studentQuery));
         stateMachine.onCallback(STUDENT_DETAILS, Callbacks.LEVEL_CHANGE, new LevelChangeCbStudentDetailsTransition());
+        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.STUDENT_DELETE,
+                new DeleteCbStudentDetailsTransition(findActiveLesson));
+
+        // AWAITING_STUDENT_DELETE
+        stateMachine.onCallback(AWAITING_STUDENT_DELETE, Callbacks.STUDENT_DELETE_CONFIRM,
+                new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, findTeacher, studentQuery));
+        stateMachine.onCallback(AWAITING_STUDENT_DELETE, Callbacks.BACK,
+                new BackCbAwaitingStudentDeleteTransition(studentQuery));
 
         // AWAITING_STUDENT_LEVEL_CHANGE
         stateMachine.onCallback(AWAITING_STUDENT_LEVEL_CHANGE, Callbacks.LEVEL,
@@ -294,6 +308,7 @@ public class StateMachineConfig {
         cancelRules.put(AWAITING_STUDENT_NAME, new CancelRule(ACTIVE, List.of(PENDING_STUDENT_NAME)));
         cancelRules.put(AWAITING_STUDENT_LEVEL, new CancelRule(ACTIVE, List.of(PENDING_STUDENT_NAME)));
         cancelRules.put(AWAITING_STUDENT_LEVEL_CHANGE, new CancelRule(STUDENT_DETAILS, List.of()));
+        cancelRules.put(AWAITING_STUDENT_DELETE, new CancelRule(STUDENT_DETAILS, List.of()));
         cancelRules.put(AWAITING_POS, new CancelRule(IN_LESSON, List.of(WORD_VALUE)));
         cancelRules.put(AWAITING_TRANSLATION_CHOICE,
                 new CancelRule(IN_LESSON, List.of(WORD_VALUE, WORD_POS, WORD_TRANSLATIONS)));

@@ -76,11 +76,12 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
   - `Chat` aggregate (`chatbot.domain.chat`): `ChatId`, `ChatState`, key-value `context` for
     multi-step flows with typed `ContextKey` enum keys (`SELECTED_STUDENT_ID`, `WORD_VALUE`,
     `EXERCISE_TYPE`, `GRAMMAR_RULE`, ...).
-  - `ChatState` enum — 17 states: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`,
+  - `ChatState` enum — 21 states: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`,
     `AWAITING_STUDENT_NAME`, `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`,
-    `STUDENT_DETAILS`, `AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_WORD`, `AWAITING_POS`,
-    `AWAITING_TRANSLATION`, `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`,
-    `AWAITING_EXERCISE_TOPIC`, `AWAITING_EXERCISE_ANSWER`.
+    `STUDENT_DETAILS`, `AWAITING_STUDENT_LEVEL_CHANGE`, `AWAITING_STUDENT_DELETE`, `IN_LESSON`,
+    `AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
+    `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`,
+    `AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`, `STUDENT_DICTIONARY`.
   - `Action` / `ActionResult` sealed types (`chatbot.domain.action`): inputs are `Command`,
     `Input`, `Callback`, `Button`; outputs are `TextResponse`, `TextWithInlineKeyboard`,
     `TextWithReplyKeyboard`, `EditMessageText`, `DeleteMessage`, `SendDocument`, `SendDocuments`

@@ -29,10 +29,10 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
 ### ChatState (Enum, `domain/chat`)
-20 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+21 состояние: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
 `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`,
-`STUDENT_DICTIONARY`, `AWAITING_STUDENT_LEVEL_CHANGE`, `IN_LESSON`, `AWAITING_POS`,
-`AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
+`STUDENT_DICTIONARY`, `AWAITING_STUDENT_LEVEL_CHANGE`, `AWAITING_STUDENT_DELETE`, `IN_LESSON`,
+`AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
 `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_GRAMMAR`, `AWAITING_EXERCISE_TOPIC`,
 `AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`.
 
@@ -80,7 +80,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 ### Handler (Application, `application/statemachine/handler`)
 Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
-«Используйте кнопки ниже», ...). Один `@Component` на состояние (20 штук), собираются в
+«Используйте кнопки ниже», ...). Один `@Component` на состояние (21 штука), собираются в
 `Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
 
 ### StateMachineConfig (`application/config`)
@@ -90,18 +90,20 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - таблица регистрации: `onCommand(state, команда, transition)`, `onButton(state, кнопка, transition)`,
   `onCallback(state, префикс, transition)`, `onInput(state, transition)`
 - ключи Cmd/Btn — текст (`"/new"`, `Buttons.NEW_STUDENT`), ключ Cb — префикс (`"student"`, `"action"`,
-  `"pos"`, `"level"`, `"levelchange"`, `"exercise"`, `"details"`, `"back"`, `"translation"`,
-  `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`, `"exdone"`,
-  `"excont"`, `"exback"`, `"exselback"`);
-  команда `/cancel` регистрируется для всех 20 состояний через `CancelRule`/`CancelScreenRenderer`
-  (14 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
+  `"pos"`, `"level"`, `"levelchange"`, `"studentdel"`, `"studentdelok"`, `"exercise"`, `"details"`,
+  `"back"`, `"translation"`, `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`,
+  `"exdone"`, `"excont"`, `"exback"`, `"exselback"`);
+  команда `/cancel` регистрируется для всех 21 состояния через `CancelRule`/`CancelScreenRenderer`
+  (15 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
   `ChatbotSearchProperties` и `ChatbotPaginationProperties` включаются через
   `@EnableConfigurationProperties`
 
 ### View (презентация, `view/`)
 Статические билдеры `ActionResult`: `MenuView` (главное меню с «🔍 Найти ученика»),
 `StudentView` (список/опции/карточка ученика, поиск `searchPrompt`/`searchResults`,
-клавиатуры уровней CEFR, `optionsKeyboard()`), `StudentDictionaryView` (меню «Словарь»:
+клавиатуры уровней CEFR, `optionsKeyboard()`, кнопка «🗑 Удалить ученика» в карточке,
+экран `deleteConfirmation`, рендер `deletedStudentsList`/`studentNotFoundOrDeleted`),
+`StudentDictionaryView` (меню «Словарь»:
 пагинация, кнопка «↺» только для LEARNED), `WordView` (`posMenu`, `translationChoice`,
 `manualTranslationPrompt`, `posLabel`, `statusLabel`, маппинг payload → `PartOfSpeech`),
 `LessonView` (клавиатура урока — только «🏁 Завершить урок», сводка завершения),

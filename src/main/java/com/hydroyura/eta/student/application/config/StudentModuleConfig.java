@@ -5,12 +5,14 @@ import com.hydroyura.eta.student.api.lesson.AddWordToLesson;
 import com.hydroyura.eta.student.api.lesson.FindActiveLesson;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
 import com.hydroyura.eta.student.api.student.CreateStudent;
+import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.lesson.EndLesson;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.student.application.usecase.AddWordToLessonUseCase;
 import com.hydroyura.eta.student.application.usecase.ChangeStudentLevelUseCase;
 import com.hydroyura.eta.student.application.usecase.CreateStudentUseCase;
+import com.hydroyura.eta.student.application.usecase.DeleteStudentUseCase;
 import com.hydroyura.eta.student.application.usecase.EndLessonUseCase;
 import com.hydroyura.eta.student.application.usecase.FindActiveLessonService;
 import com.hydroyura.eta.student.application.usecase.StartLessonUseCase;
@@ -31,6 +33,11 @@ public class StudentModuleConfig {
     @Bean
     ChangeStudentLevel changeStudentLevel(StudentRepository repository) {
         return new ChangeStudentLevelUseCase(repository);
+    }
+
+    @Bean
+    DeleteStudent deleteStudent(StudentRepository repository, LessonRepository lessonRepository) {
+        return new DeleteStudentUseCase(repository, lessonRepository);
     }
 
     @Bean

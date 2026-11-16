@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_NOTHING_FOUND;
+import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_NOT_FOUND_OR_DELETED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -125,5 +126,48 @@ class StudentSearchTransitionTest {
 
         assertThat(chat.getState()).isEqualTo(ChatState.ACTIVE);
         assertThat(result).isInstanceOf(ActionResult.TextWithReplyKeyboard.class);
+    }
+
+    @Test
+    void shouldHandleDeletedStudentFromSearchWithoutPollutingContext() {
+        var findTeacher = mock(FindTeacher.class);
+        var studentQuery = mock(StudentQuery.class);
+        var deletedId = StudentId.generate();
+        var aliveId = StudentId.generate();
+        when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(deletedId, aliveId));
+        when(studentQuery.findStudentsByIds(Set.of(deletedId, aliveId)))
+                .thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
+        var transition = new StudentCbStudentSearchTransition(findTeacher, studentQuery);
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.updateState(ChatState.STUDENT_SEARCH);
+
+        var result = transition.transit(chat, new Action.Callback("student", deletedId.value().toString(), 42));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENTS_LIST);
+        assertThat(chat.getContext()).doesNotContainKeys(SELECTED_STUDENT_ID.getValue(), SELECTED_STUDENT_NAME
+                .getValue());
+        assertThat(((ActionResult.EditMessageText) result).text()).isEqualTo(STUDENT_NOT_FOUND_OR_DELETED);
+    }
+
+    @Test
+    void shouldHandleNonExistingStudentFromSearch() {
+        var findTeacher = mock(FindTeacher.class);
+        var studentQuery = mock(StudentQuery.class);
+        var aliveId = StudentId.generate();
+        var unknownId = StudentId.generate();
+        when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(aliveId));
+        when(studentQuery.findStudentsByIds(Set.of(aliveId))).thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
+        var transition = new StudentCbStudentSearchTransition(findTeacher, studentQuery);
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.updateState(ChatState.STUDENT_SEARCH);
+
+        var result = transition.transit(chat, new Action.Callback("student", unknownId.value().toString(), 42));
+
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENTS_LIST);
+        assertThat(chat.getContext()).doesNotContainKeys(SELECTED_STUDENT_ID.getValue(), SELECTED_STUDENT_NAME
+                .getValue());
+        assertThat(((ActionResult.EditMessageText) result).text()).isEqualTo(STUDENT_NOT_FOUND_OR_DELETED);
     }
 }

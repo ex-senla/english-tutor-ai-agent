@@ -10,11 +10,13 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.hydroyura.eta.chatbot.view.Messages.NO_STUDENTS;
 import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_NOTHING_FOUND;
 import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_PROMPT;
+import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_DELETE_CONFIRM;
+import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_DELETED;
+import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_NOT_FOUND_OR_DELETED;
 import static com.hydroyura.eta.chatbot.view.util.ViewUtils.createCallbackData;
 
 @RequiredArgsConstructor
@@ -82,22 +84,31 @@ public class StudentView {
     }
 
     public static ActionResult listEdit(int messageId, List<StudentInfo> students) {
-        var keyboard = students.stream()
-                .map(
-                        info -> List.of(
-                                new ActionResult.InlineButton(
-                                        info.name(),
-                                        createCallbackData(Callbacks.STUDENT, info.id().value().toString())
-                                )
-                        )
-                )
-                .collect(Collectors.toList());
+        return new ActionResult.EditMessageText(messageId, "Ваши ученики:", studentsListKeyboard(students));
+    }
 
-        keyboard.add(
-                List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN)))
-        );
+    public static ActionResult deletedStudentsList(int messageId, List<StudentInfo> students) {
+        if (students.isEmpty()) {
+            return new ActionResult.EditMessageText(messageId, NO_STUDENTS, List.of());
+        }
+        return new ActionResult.EditMessageText(messageId, STUDENT_DELETED, studentsListKeyboard(students));
+    }
 
-        return new ActionResult.EditMessageText(messageId, "Ваши ученики:", keyboard);
+    public static ActionResult studentNotFoundOrDeleted(int messageId, List<StudentInfo> students) {
+        if (students.isEmpty()) {
+            return new ActionResult.EditMessageText(messageId, NO_STUDENTS, List.of());
+        }
+        return new ActionResult.EditMessageText(messageId, STUDENT_NOT_FOUND_OR_DELETED, studentsListKeyboard(
+                students));
+    }
+
+    public static ActionResult deleteConfirmation(int messageId, String name) {
+        return new ActionResult.EditMessageText(messageId, STUDENT_DELETE_CONFIRM.formatted(name), List.of(
+                List.of(new ActionResult.InlineButton(Buttons.DELETE_CONFIRM,
+                        createCallbackData(Callbacks.STUDENT_DELETE_CONFIRM))),
+                List.of(new ActionResult.InlineButton(Buttons.DELETE_CANCEL,
+                        createCallbackData(Callbacks.BACK, Callbacks.MAIN)))
+        ));
     }
 
     public static ActionResult studentDetails(int messageId, StudentDetails details) {
@@ -131,9 +142,21 @@ public class StudentView {
         return List.of(
                 List.of(new ActionResult.InlineButton(Buttons.CHANGE_LEVEL,
                         createCallbackData(Callbacks.LEVEL_CHANGE))),
+                List.of(new ActionResult.InlineButton(Buttons.DELETE_STUDENT,
+                        createCallbackData(Callbacks.STUDENT_DELETE))),
                 List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.DETAILS,
                         Callbacks.BACK)))
         );
+    }
+
+    private static List<List<ActionResult.InlineButton>> studentsListKeyboard(List<StudentInfo> students) {
+        var keyboard = new ArrayList<>(students.stream()
+                .map(info -> List.of(new ActionResult.InlineButton(info.name(),
+                        createCallbackData(Callbacks.STUDENT, info.id().value().toString()))))
+                .toList());
+        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK,
+                createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
+        return keyboard;
     }
 
     public static List<List<ActionResult.InlineButton>> levelKeyboard() {

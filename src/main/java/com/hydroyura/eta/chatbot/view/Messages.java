@@ -81,6 +81,14 @@ public final class Messages {
 
     public static final String STUDENT_ADDED = "✅ Ученик '%s' добавлен!";
 
+    public static final String STUDENT_DELETE_CONFIRM = "Удалить ученика \"%s\"? Подтвердите удаление";
+
+    public static final String STUDENT_DELETE_LESSON_ACTIVE = "⚠️ Завершите урок перед удалением";
+
+    public static final String STUDENT_NOT_FOUND_OR_DELETED = "Ученик не найден или удалён";
+
+    public static final String STUDENT_DELETED = "✅ Ученик удалён";
+
     public static final String STUDENT_FEEDBACK = """
             🎯 Ученик: %s
 
