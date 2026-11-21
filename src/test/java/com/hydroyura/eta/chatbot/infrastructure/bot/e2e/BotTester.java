@@ -5,7 +5,6 @@ import com.hydroyura.eta.chatbot.infrastructure.bot.ResponseSender;
 import java.util.List;
 import java.util.Map;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
  * Фасад E2E-прогона конвейера бота, привязанный к {@code chatId} теста: приём
@@ -22,13 +21,12 @@ public final class BotTester {
 
     private final BotDbInspector db;
 
-    public BotTester(EnglishTutorBot bot, ResponseSender responseSender, BotDbInspector db, Long chatId)
-            throws TelegramApiException {
+    public BotTester(EnglishTutorBot bot, ResponseSender responseSender, BotDbInspector db, Long chatId,
+            OutgoingCallsRecorder recorder) {
         this.bot = bot;
         this.chatId = chatId;
         this.db = db;
-        this.recorder = new OutgoingCallsRecorder();
-        this.recorder.install(responseSender);
+        this.recorder = recorder;
     }
 
     public void receive(Update update) {

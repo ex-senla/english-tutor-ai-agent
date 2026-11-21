@@ -148,4 +148,50 @@ public final class Messages {
             Отправьте следующее слово.
             """ + Buttons.FINISH_LESSON + " — завершить урок";
 
+    // --- личный кабинет ---
+    public static final String ACCOUNT_PROFILE = """
+            👤 Личный кабинет
+
+            Имя: %s
+            Учеников: %d""";
+
+    public static final String ACCOUNT_HINT = "Используйте кнопки: Поддержка, Подписки или Назад";
+
+    public static final String SUBSCRIPTIONS_STUB = """
+            Подписки скоро появятся.
+
+            Следите за обновлениями!""";
+
+    // --- поддержка ---
+    public static final String SUPPORT_ENTER = """
+            💬 Поддержка
+
+            Напишите сообщение — оно будет передано в поддержку.
+            Выход — /cancel""";
+
+    public static final String SUPPORT_HINT = "Текст сообщений уходит в поддержку. Выход — /cancel";
+
+    public static final String SUPPORT_SENT = "✅ Сообщение отправлено в поддержку";
+
+    // --- админка ---
+    public static final String ADMIN_MENU = "🛡 Админ-панель";
+
+    public static final String ADMIN_MENU_HINT = "Используйте кнопки: Учителя, Обращения или возврат в меню";
+
+    public static final String ADMIN_TEACHERS_HINT = "Выберите учителя из списка или вернитесь назад";
+
+    public static final String ADMIN_TEACHER_STUDENTS_HINT = "Выберите действие: войти от имени учителя или вернуться";
+
+    public static final String ADMIN_THREADS_HINT = "Выберите обращение из списка или вернитесь назад";
+
+    public static final String ADMIN_THREAD_VIEW_HINT = "Введите текст ответа или вернитесь к списку обращений";
+
+    public static final String ADMIN_ACCESS_DENIED = "❌ Недостаточно прав для доступа к админ-панели";
+
+    public static final String ADMIN_THREAD_NOT_FOUND = "Диалог не найден. Вернитесь к списку обращений";
+
+    public static final String SUPPORT_ANSWER_PREFIX = "📬 Ответ поддержки:\n";
+
+    public static final String IMPERSONATION_INDICATOR = "👤 Работа от имени: %s";
+
 }

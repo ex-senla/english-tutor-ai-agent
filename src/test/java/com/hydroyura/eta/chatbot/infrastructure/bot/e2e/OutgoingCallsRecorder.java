@@ -109,12 +109,13 @@ public final class OutgoingCallsRecorder {
     }
 
     private static BotCall.SentMessage toSentMessage(int id, SendMessage message) {
+        var chatId = Long.valueOf(message.getChatId());
         var markup = message.getReplyMarkup();
         if (markup instanceof ReplyKeyboardMarkup replyKeyboardMarkup) {
             var replyButtons = replyKeyboardMarkup.getKeyboard().stream()
                     .flatMap(row -> row.stream().map(KeyboardButton::getText))
                     .toList();
-            return new BotCall.SentMessage(id, message.getText(), KeyboardKind.REPLY, List.of(), replyButtons);
+            return new BotCall.SentMessage(id, message.getText(), KeyboardKind.REPLY, List.of(), replyButtons, chatId);
         }
         if (markup instanceof InlineKeyboardMarkup inlineKeyboardMarkup) {
             var inlineButtons = inlineKeyboardMarkup.getKeyboard().stream()
@@ -122,9 +123,10 @@ public final class OutgoingCallsRecorder {
                             .map(button -> new BotButton(button.getText(), button.getCallbackData()))
                             .toList())
                     .toList();
-            return new BotCall.SentMessage(id, message.getText(), KeyboardKind.INLINE, inlineButtons, List.of());
+            return new BotCall.SentMessage(id, message.getText(), KeyboardKind.INLINE, inlineButtons, List.of(),
+                    chatId);
         }
-        return new BotCall.SentMessage(id, message.getText(), KeyboardKind.NONE, List.of(), List.of());
+        return new BotCall.SentMessage(id, message.getText(), KeyboardKind.NONE, List.of(), List.of(), chatId);
     }
 
     private static BotCall.SentDocument toSentDocument(SendDocument document) {

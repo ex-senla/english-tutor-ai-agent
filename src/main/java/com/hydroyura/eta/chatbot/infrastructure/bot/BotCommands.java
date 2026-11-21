@@ -21,7 +21,9 @@ public final class BotCommands {
                 command(Commands.LIST, "Список учеников"),
                 command(Commands.FIND, "Найти ученика"),
                 command(Commands.CANCEL, "Отменить действие"),
-                command(Commands.FINISH_LESSON, "Завершить урок"));
+                command(Commands.FINISH_LESSON, "Завершить урок"),
+                command(Commands.SUPPORT, "Поддержка"),
+                command(Commands.ADMIN, "Админ-панель"));
     }
 
     private static BotCommand command(String command, String description) {

@@ -1,15 +1,19 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.studentsearch;
 
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActiveMenuSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatId;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -21,6 +25,7 @@ import static com.hydroyura.eta.chatbot.view.Messages.SEARCH_NOTHING_FOUND;
 import static com.hydroyura.eta.chatbot.view.Messages.STUDENT_NOT_FOUND_OR_DELETED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -43,8 +48,10 @@ class StudentSearchTransitionTest {
     @Test
     void shouldReturnNothingFoundOnBlankFragmentWithoutQuery() {
         var findTeacher = mock(FindTeacher.class);
+        var teacherDirectory = mock(TeacherDirectory.class);
         var studentQuery = mock(StudentQuery.class);
-        var transition = new InputStudentSearchTransition(findTeacher, studentQuery, new ChatbotSearchProperties());
+        var resolver = new ActingTeacherResolver(findTeacher, teacherDirectory);
+        var transition = new InputStudentSearchTransition(resolver, studentQuery, new ChatbotSearchProperties());
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -53,7 +60,7 @@ class StudentSearchTransitionTest {
 
         assertThat(((ActionResult.TextWithInlineKeyboard) result).text()).isEqualTo(SEARCH_NOTHING_FOUND);
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_SEARCH);
-        verifyNoInteractions(findTeacher, studentQuery);
+        verifyNoInteractions(findTeacher, teacherDirectory, studentQuery);
     }
 
     @Test
@@ -62,7 +69,8 @@ class StudentSearchTransitionTest {
         var studentQuery = mock(StudentQuery.class);
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(StudentId.generate()));
         when(studentQuery.searchByNameFragment(any())).thenReturn(List.of());
-        var transition = new InputStudentSearchTransition(findTeacher, studentQuery, new ChatbotSearchProperties());
+        var transition = new InputStudentSearchTransition(resolver(findTeacher), studentQuery,
+                new ChatbotSearchProperties());
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -84,7 +92,7 @@ class StudentSearchTransitionTest {
                 .toList();
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(StudentId.generate()));
         when(studentQuery.searchByNameFragment(any())).thenReturn(students);
-        var transition = new InputStudentSearchTransition(findTeacher, studentQuery, properties);
+        var transition = new InputStudentSearchTransition(resolver(findTeacher), studentQuery, properties);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -102,7 +110,7 @@ class StudentSearchTransitionTest {
         var studentId = StudentId.generate();
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(studentId));
         when(studentQuery.findStudentsByIds(Set.of(studentId))).thenReturn(List.of(new StudentInfo(studentId, "Anna")));
-        var transition = new StudentCbStudentSearchTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentSearchTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -117,7 +125,9 @@ class StudentSearchTransitionTest {
 
     @Test
     void shouldReturnToActiveMenu() {
-        var transition = new BackCbStudentSearchTransition();
+        var activeMenuSupport = mock(ActiveMenuSupport.class);
+        when(activeMenuSupport.render(any(), anyInt())).thenReturn(MenuView.activeMenu());
+        var transition = new BackCbStudentSearchTransition(activeMenuSupport);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -137,7 +147,7 @@ class StudentSearchTransitionTest {
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(deletedId, aliveId));
         when(studentQuery.findStudentsByIds(Set.of(deletedId, aliveId)))
                 .thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
-        var transition = new StudentCbStudentSearchTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentSearchTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -158,7 +168,7 @@ class StudentSearchTransitionTest {
         var unknownId = StudentId.generate();
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(aliveId));
         when(studentQuery.findStudentsByIds(Set.of(aliveId))).thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
-        var transition = new StudentCbStudentSearchTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentSearchTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_SEARCH);
@@ -169,5 +179,9 @@ class StudentSearchTransitionTest {
         assertThat(chat.getContext()).doesNotContainKeys(SELECTED_STUDENT_ID.getValue(), SELECTED_STUDENT_NAME
                 .getValue());
         assertThat(((ActionResult.EditMessageText) result).text()).isEqualTo(STUDENT_NOT_FOUND_OR_DELETED);
+    }
+
+    private ActingTeacherResolver resolver(FindTeacher findTeacher) {
+        return new ActingTeacherResolver(findTeacher, mock(TeacherDirectory.class));
     }
 }

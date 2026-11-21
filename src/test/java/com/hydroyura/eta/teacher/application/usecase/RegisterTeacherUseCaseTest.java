@@ -1,8 +1,10 @@
 package com.hydroyura.eta.teacher.application.usecase;
 
+import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
+import com.hydroyura.eta.teacher.api.teacher.TeacherInfo;
 import com.hydroyura.eta.teacher.application.demo.DemoStudentsSeeder;
 import com.hydroyura.eta.teacher.domain.teacher.Teacher;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
@@ -10,8 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,6 +82,24 @@ class RegisterTeacherUseCaseTest {
         public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
             return store.values().stream().filter(t -> java.util.Objects.equals(value, t.getIdentifiers().get(type)))
                     .findFirst();
+        }
+
+        @Override
+        public List<TeacherInfo> findAllInfos() {
+            return store.values().stream()
+                    .map(t -> new TeacherInfo(t.getId(), t.getName(), t.isAdmin()))
+                    .toList();
+        }
+
+        @Override
+        public Optional<Long> findTelegramChatId(TeacherId id) {
+            return Optional.ofNullable(store.get(id))
+                    .map(t -> (Long) t.getIdentifiers().get(IdentifierType.TELEGRAM));
+        }
+
+        @Override
+        public Set<StudentId> findStudentIds(TeacherId id) {
+            return Optional.ofNullable(store.get(id)).map(Teacher::getStudentIds).orElse(Set.of());
         }
     }
 }

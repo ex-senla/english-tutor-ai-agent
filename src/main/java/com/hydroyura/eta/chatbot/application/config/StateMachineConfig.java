@@ -2,14 +2,36 @@ package com.hydroyura.eta.chatbot.application.config;
 
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
+import com.hydroyura.eta.chatbot.application.notification.BotNotifier;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
 import com.hydroyura.eta.chatbot.application.statemachine.handler.Handler;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActiveMenuSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.NewStudentTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StartCmdTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.AccountBtnActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.AccountCbTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.BackCbAccountTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.SubscriptionsCbAccountTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.SupportCbAccountTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.DefaultCmdActiveTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.NewCmdActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminCmdActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminGuard;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminMenuCbTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminTeacherStudentsCbTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminTeachersCbTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.AdminThreadsCbTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.BackCbAdminTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.ImpersonateCbAdminTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.ImpersonationExitCmdActiveTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.InputAdminThreadViewTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.TeacherCbAdminTeachersTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.TeachersCbAdminTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.ThreadCbAdminThreadsTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.admin.ThreadsCbAdminTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingcustomtopic.InputAwaitingCustomTopicTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexerciseanswer.InputAwaitingExerciseAnswerTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisetopic.InputAwaitingExerciseTopicTransition;
@@ -55,6 +77,9 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.studentsear
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.BackCbStudentsListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.ListCmdStudentsListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist.StudentCbStudentsListTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.support.BackCbSupportTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.support.InputSupportTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.support.SupportCmdTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection.AlertBackCbAwaitingExerciseWordSelectionTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection.ExerciseWordSelectionSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection.FilterCbAwaitingExerciseWordSelectionTransition;
@@ -73,7 +98,6 @@ import com.hydroyura.eta.chatbot.view.Buttons;
 import com.hydroyura.eta.chatbot.view.Callbacks;
 import com.hydroyura.eta.chatbot.view.Commands;
 import com.hydroyura.eta.chatbot.view.lesson.LessonView;
-import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
@@ -92,9 +116,14 @@ import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
 import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.support.api.support.AppendSupportMessage;
+import com.hydroyura.eta.support.api.support.FindSupportMessages;
+import com.hydroyura.eta.support.api.support.FindSupportThreads;
+import com.hydroyura.eta.support.api.support.OpenSupportThread;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -105,7 +134,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ACCOUNT;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ACTIVE;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ADMIN_MENU;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ADMIN_TEACHERS;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ADMIN_TEACHER_STUDENTS;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ADMIN_THREADS;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.ADMIN_THREAD_VIEW;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_CUSTOM_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_ANSWER;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.AWAITING_EXERCISE_TOPIC;
@@ -128,6 +163,9 @@ import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_DICTIONARY
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_OPTIONS;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENT_SEARCH;
 import static com.hydroyura.eta.chatbot.domain.chat.ChatState.STUDENTS_LIST;
+import static com.hydroyura.eta.chatbot.domain.chat.ChatState.SUPPORT;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ADMIN_SELECTED_TEACHER_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ADMIN_SELECTED_TEACHER_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
@@ -136,6 +174,7 @@ import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.PENDING_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SUPPORT_THREAD_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_CANONICAL_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_MATCHED_SLUG;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_PAGE;
@@ -159,6 +198,13 @@ public class StateMachineConfig {
     }
 
     @Bean
+    public BotNotifier noOpBotNotifier() {
+        return (chatId, text) -> {
+            // no-op для контекстов без Telegram
+        };
+    }
+
+    @Bean
     public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher,
             StudentQuery studentQuery, FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
@@ -168,15 +214,23 @@ public class StateMachineConfig {
             GenerateExercisePdf generateExercisePdf, CheckWord checkWord, WordTranslator wordTranslator,
             ResetWordLearning resetWordLearning, ExerciseTopics exerciseTopics, ValidateCustomTopic validateCustomTopic,
             ChatbotSearchProperties chatbotSearchProperties,
-            ChatbotPaginationProperties chatbotPaginationProperties) {
+            ChatbotPaginationProperties chatbotPaginationProperties,
+            TeacherDirectory teacherDirectory,
+            OpenSupportThread openSupportThread, AppendSupportMessage appendSupportMessage,
+            FindSupportThreads findSupportThreads, FindSupportMessages findSupportMessages,
+            BotNotifier botNotifier) {
         StateMachine stateMachine = new StateMachine(chatStateHandlerMap);
+
+        var resolver = new ActingTeacherResolver(findTeacher, teacherDirectory);
+        var activeMenuSupport = new ActiveMenuSupport(findTeacher, teacherDirectory);
+        var adminGuard = new AdminGuard(findTeacher, teacherDirectory);
 
         // переходы, регистрируемые под несколькими ключами
         var defaultCmdInitialTransition = new DefaultCmdInitialTransition();
-        var defaultCmdActiveTransition = new DefaultCmdActiveTransition();
-        var studentListTransition = new StudentListTransition(findTeacher, studentQuery);
+        var defaultCmdActiveTransition = new DefaultCmdActiveTransition(activeMenuSupport);
+        var studentListTransition = new StudentListTransition(resolver, studentQuery);
         var newStudentTransition = new NewStudentTransition();
-        var listCmdStudentsListTransition = new ListCmdStudentsListTransition(findTeacher, studentQuery);
+        var listCmdStudentsListTransition = new ListCmdStudentsListTransition(resolver, studentQuery);
         var finishLessonInLessonTransition = new FinishLessonInLessonTransition(findActiveLesson, endLesson,
                 studentQuery, findWords);
         var studentSearchTransition = new StudentSearchTransition();
@@ -184,6 +238,7 @@ public class StateMachineConfig {
                 addWordToLesson);
         var topicFlowSupport = new TopicFlowSupport(studentQuery, findWords, exerciseTopics,
                 chatbotPaginationProperties);
+        var adminCmdActiveTransition = new AdminCmdActiveTransition(adminGuard);
 
         // INITIAL
         stateMachine.onCommand(INITIAL, Commands.REGISTER, new RegisterCmdInitialTransition());
@@ -194,26 +249,32 @@ public class StateMachineConfig {
         stateMachine.onCommand(ACTIVE, Commands.NEW, new NewCmdActiveTransition());
         stateMachine.onCommand(ACTIVE, Commands.LIST, studentListTransition);
         stateMachine.onCommand(ACTIVE, Commands.HELP, defaultCmdActiveTransition);
-        stateMachine.onCommand(ACTIVE, Commands.START, defaultCmdActiveTransition);
         stateMachine.onCommand(ACTIVE, Commands.FIND, studentSearchTransition);
+        stateMachine.onCommand(ACTIVE, Commands.SUPPORT,
+                new SupportCmdTransition(resolver, openSupportThread, findSupportMessages));
+        stateMachine.onCommand(ACTIVE, Commands.ADMIN, adminCmdActiveTransition);
         stateMachine.onButton(ACTIVE, Buttons.NEW_STUDENT, newStudentTransition);
         stateMachine.onButton(ACTIVE, Buttons.LIST_STUDENT, studentListTransition);
         stateMachine.onButton(ACTIVE, Buttons.FIND_STUDENT, studentSearchTransition);
+        stateMachine.onButton(ACTIVE, Buttons.ACCOUNT,
+                new AccountBtnActiveTransition(resolver, teacherDirectory, studentQuery));
+        stateMachine.onButton(ACTIVE, Buttons.ADMIN_PANEL, adminCmdActiveTransition);
 
         // AWAITING_REGISTRATION_NAME
-        stateMachine.onInput(AWAITING_REGISTRATION_NAME, new InputAwaitingRegistrationNameTransition(registerTeacher));
+        stateMachine.onInput(AWAITING_REGISTRATION_NAME,
+                new InputAwaitingRegistrationNameTransition(registerTeacher, activeMenuSupport));
 
         // AWAITING_STUDENT_NAME
         stateMachine.onInput(AWAITING_STUDENT_NAME, new InputAwaitingStudentNameTransition());
 
         // AWAITING_STUDENT_LEVEL
         stateMachine.onCallback(AWAITING_STUDENT_LEVEL, Callbacks.LEVEL,
-                new LevelCbAwaitingStudentLevelTransition(findTeacher, createStudentWithDictionary));
+                new LevelCbAwaitingStudentLevelTransition(resolver, createStudentWithDictionary, activeMenuSupport));
 
         // STUDENTS_LIST
-        stateMachine.onCallback(STUDENTS_LIST, Callbacks.STUDENT, new StudentCbStudentsListTransition(findTeacher,
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.STUDENT, new StudentCbStudentsListTransition(resolver,
                 studentQuery));
-        stateMachine.onCallback(STUDENTS_LIST, Callbacks.BACK, new BackCbStudentsListTransition());
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.BACK, new BackCbStudentsListTransition(activeMenuSupport));
         stateMachine.onCommand(STUDENTS_LIST, Commands.NEW, newStudentTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.LIST, listCmdStudentsListTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.HELP, listCmdStudentsListTransition);
@@ -222,10 +283,10 @@ public class StateMachineConfig {
 
         // STUDENT_OPTIONS
         stateMachine.onCallback(STUDENT_OPTIONS, Callbacks.ACTION, new ActionCbStudentOptionsTransition(startLesson,
-                findTeacher, studentQuery, findWords, chatbotPaginationProperties));
+                resolver, studentQuery, findWords, chatbotPaginationProperties));
 
         // STUDENT_DETAILS
-        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(findTeacher,
+        stateMachine.onCallback(STUDENT_DETAILS, Callbacks.DETAILS, new BackCbStudentDetailsTransition(resolver,
                 studentQuery));
         stateMachine.onCallback(STUDENT_DETAILS, Callbacks.LEVEL_CHANGE, new LevelChangeCbStudentDetailsTransition());
         stateMachine.onCallback(STUDENT_DETAILS, Callbacks.STUDENT_DELETE,
@@ -233,7 +294,7 @@ public class StateMachineConfig {
 
         // AWAITING_STUDENT_DELETE
         stateMachine.onCallback(AWAITING_STUDENT_DELETE, Callbacks.STUDENT_DELETE_CONFIRM,
-                new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, findTeacher, studentQuery));
+                new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, resolver, studentQuery));
         stateMachine.onCallback(AWAITING_STUDENT_DELETE, Callbacks.BACK,
                 new BackCbAwaitingStudentDeleteTransition(studentQuery));
 
@@ -249,7 +310,7 @@ public class StateMachineConfig {
         stateMachine.onCommand(IN_LESSON, Commands.FINISH_LESSON, finishLessonInLessonTransition);
         stateMachine.onCommand(IN_LESSON, Commands.HELP, new HelpCmdInLessonTransition());
 
-        // word flow: IN_LESSON -> AWAITING_POS -> AWAITING_TRANSLATION_CHOICE / AWAITING_MANUAL_TRANSLATION
+        // word flow
         stateMachine.onCallback(AWAITING_POS, Callbacks.POS, new PosCbAwaitingPosTransition(wordTranslator));
         stateMachine.onCallback(AWAITING_TRANSLATION_CHOICE, Callbacks.TRANSLATION,
                 new TranslationCbAwaitingTranslationChoiceTransition(lessonWordSupport));
@@ -259,13 +320,13 @@ public class StateMachineConfig {
                 lessonWordSupport));
 
         // student search
-        stateMachine.onInput(STUDENT_SEARCH, new InputStudentSearchTransition(findTeacher, studentQuery,
+        stateMachine.onInput(STUDENT_SEARCH, new InputStudentSearchTransition(resolver, studentQuery,
                 chatbotSearchProperties));
-        stateMachine.onCallback(STUDENT_SEARCH, Callbacks.STUDENT, new StudentCbStudentSearchTransition(findTeacher,
+        stateMachine.onCallback(STUDENT_SEARCH, Callbacks.STUDENT, new StudentCbStudentSearchTransition(resolver,
                 studentQuery));
-        stateMachine.onCallback(STUDENT_SEARCH, Callbacks.BACK, new BackCbStudentSearchTransition());
+        stateMachine.onCallback(STUDENT_SEARCH, Callbacks.BACK, new BackCbStudentSearchTransition(activeMenuSupport));
 
-        // exercise flow: AWAITING_EXERCISE_TYPE -> AWAITING_EXERCISE_TOPIC -> (search/custom/confirm) -> words
+        // exercise flow
         stateMachine.onCallback(AWAITING_EXERCISE_TYPE, Callbacks.EXERCISE,
                 new ExerciseCbAwaitingExerciseTypeTransition(topicFlowSupport));
         stateMachine.onInput(AWAITING_EXERCISE_TOPIC, new InputAwaitingExerciseTopicTransition(topicFlowSupport));
@@ -325,8 +386,42 @@ public class StateMachineConfig {
         stateMachine.onCallback(AWAITING_EXERCISE_WORD_SELECTION, Callbacks.EXERCISE_WORD_SELECTION_BACK,
                 new SelectionBackCbAwaitingExerciseWordSelectionTransition());
 
-        registerCancelTransitions(stateMachine, studentQuery);
-        registerStartTransitions(stateMachine);
+        // ACCOUNT
+        var supportCbAccount = new SupportCbAccountTransition(resolver, openSupportThread, findSupportMessages);
+        var subscriptionsCbAccount = new SubscriptionsCbAccountTransition();
+        var backCbAccount = new BackCbAccountTransition(activeMenuSupport);
+        stateMachine.onCallback(ACCOUNT, Callbacks.ACCOUNT,
+                new AccountCbTransition(supportCbAccount, subscriptionsCbAccount, backCbAccount));
+
+        // SUPPORT
+        stateMachine.onInput(SUPPORT, new InputSupportTransition(appendSupportMessage, findSupportMessages));
+        stateMachine.onCallback(SUPPORT, Callbacks.SUPPORT, new BackCbSupportTransition(activeMenuSupport));
+
+        // ADMIN
+        var teachersCbAdmin = new TeachersCbAdminTransition(teacherDirectory, adminGuard);
+        var threadsCbAdmin = new ThreadsCbAdminTransition(findSupportThreads, teacherDirectory, adminGuard);
+        var teacherCbAdminTeachers = new TeacherCbAdminTeachersTransition(teacherDirectory, studentQuery, adminGuard);
+        var impersonateCbAdmin = new ImpersonateCbAdminTransition(adminGuard, activeMenuSupport);
+        var threadCbAdminThreads = new ThreadCbAdminThreadsTransition(findSupportThreads, findSupportMessages,
+                teacherDirectory, adminGuard);
+        var inputAdminThreadView = new InputAdminThreadViewTransition(appendSupportMessage, findSupportThreads,
+                findSupportMessages, teacherDirectory, botNotifier, adminGuard);
+        var backCbAdmin = new BackCbAdminTransition(activeMenuSupport, teacherDirectory, findSupportThreads,
+                adminGuard);
+
+        stateMachine.onCallback(ADMIN_MENU, Callbacks.ADMIN,
+                new AdminMenuCbTransition(teachersCbAdmin, threadsCbAdmin, backCbAdmin));
+        stateMachine.onCallback(ADMIN_TEACHERS, Callbacks.ADMIN,
+                new AdminTeachersCbTransition(teacherCbAdminTeachers, backCbAdmin));
+        stateMachine.onCallback(ADMIN_TEACHER_STUDENTS, Callbacks.ADMIN,
+                new AdminTeacherStudentsCbTransition(impersonateCbAdmin, backCbAdmin));
+        stateMachine.onCallback(ADMIN_THREADS, Callbacks.ADMIN,
+                new AdminThreadsCbTransition(threadCbAdminThreads, backCbAdmin));
+        stateMachine.onCallback(ADMIN_THREAD_VIEW, Callbacks.ADMIN, backCbAdmin);
+        stateMachine.onInput(ADMIN_THREAD_VIEW, inputAdminThreadView);
+
+        registerCancelTransitions(stateMachine, studentQuery, activeMenuSupport, resolver);
+        registerStartTransitions(stateMachine, activeMenuSupport);
 
         if (!stateMachine.isReady()) {
             throw new RuntimeException();
@@ -335,33 +430,40 @@ public class StateMachineConfig {
         return stateMachine;
     }
 
-    private void registerStartTransitions(StateMachine stateMachine) {
-        var startTransition = new StartCmdTransition();
+    private void registerStartTransitions(StateMachine stateMachine, ActiveMenuSupport activeMenuSupport) {
+        var startTransition = new StartCmdTransition(activeMenuSupport);
         for (var state : ChatState.values()) {
-            if (state == ChatState.INITIAL || state == ChatState.ACTIVE) {
+            if (state == ChatState.INITIAL) {
                 continue;
             }
             stateMachine.onCommand(state, Commands.START, startTransition);
         }
     }
 
-    private void registerCancelTransitions(StateMachine stateMachine, StudentQuery studentQuery) {
+    private void registerCancelTransitions(StateMachine stateMachine, StudentQuery studentQuery,
+            ActiveMenuSupport activeMenuSupport, ActingTeacherResolver resolver) {
         var noCancel = new NoCancelCmdTransition();
 
         var initialRenderer = (CancelScreenRenderer) chat -> new ActionResult.TextResponse(WELCOME);
-        var activeRenderer = (CancelScreenRenderer) chat -> MenuView.activeMenu();
+        var activeRenderer = (CancelScreenRenderer) chat -> activeMenuSupport.render(chat);
         var lessonRenderer = (CancelScreenRenderer) chat -> LessonView.lessonKeyboard(LESSON_INSTRUCTION);
         var studentOptionsRenderer = (CancelScreenRenderer) chat -> StudentView.optionsFresh(
                 (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?"));
         var studentDetailsRenderer = (CancelScreenRenderer) chat -> StudentSupport.studentDetailsFresh(studentQuery,
                 chat);
+        var accountRenderer = (CancelScreenRenderer) chat -> activeMenuSupport.render(chat);
+        var supportRenderer = (CancelScreenRenderer) chat -> activeMenuSupport.render(chat);
+        var adminRenderer = (CancelScreenRenderer) chat -> com.hydroyura.eta.chatbot.view.admin.AdminView.menu();
 
         var renderers = Map.of(
                 INITIAL, initialRenderer,
                 ACTIVE, activeRenderer,
                 IN_LESSON, lessonRenderer,
                 STUDENT_OPTIONS, studentOptionsRenderer,
-                STUDENT_DETAILS, studentDetailsRenderer);
+                STUDENT_DETAILS, studentDetailsRenderer,
+                ACCOUNT, accountRenderer,
+                SUPPORT, supportRenderer,
+                ADMIN_MENU, adminRenderer);
 
         var cancelRules = new EnumMap<ChatState, CancelRule>(ChatState.class);
         cancelRules.put(AWAITING_REGISTRATION_NAME, new CancelRule(INITIAL, List.of()));
@@ -390,11 +492,32 @@ public class StateMachineConfig {
                 new CancelRule(STUDENT_OPTIONS, List.of(EXERCISE_ID, EXERCISE_TOPIC, EXERCISE_TYPE)));
         cancelRules.put(STUDENT_DICTIONARY, new CancelRule(STUDENT_DETAILS, List.of(DICTIONARY_PAGE)));
 
+        cancelRules.put(ACCOUNT, new CancelRule(ACTIVE, List.of()));
+        cancelRules.put(SUPPORT, new CancelRule(ACTIVE, List.of(SUPPORT_THREAD_ID)));
+        cancelRules.put(ADMIN_TEACHERS,
+                new CancelRule(ADMIN_MENU, List.of(ADMIN_SELECTED_TEACHER_ID, ADMIN_SELECTED_TEACHER_NAME,
+                        SUPPORT_THREAD_ID)));
+        cancelRules.put(ADMIN_TEACHER_STUDENTS,
+                new CancelRule(ADMIN_MENU, List.of(ADMIN_SELECTED_TEACHER_ID, ADMIN_SELECTED_TEACHER_NAME,
+                        SUPPORT_THREAD_ID)));
+        cancelRules.put(ADMIN_THREADS,
+                new CancelRule(ADMIN_MENU, List.of(ADMIN_SELECTED_TEACHER_ID, ADMIN_SELECTED_TEACHER_NAME,
+                        SUPPORT_THREAD_ID)));
+        cancelRules.put(ADMIN_THREAD_VIEW,
+                new CancelRule(ADMIN_MENU, List.of(ADMIN_SELECTED_TEACHER_ID, ADMIN_SELECTED_TEACHER_NAME,
+                        SUPPORT_THREAD_ID)));
+        cancelRules.put(ADMIN_MENU,
+                new CancelRule(ADMIN_MENU, List.of(ADMIN_SELECTED_TEACHER_ID, ADMIN_SELECTED_TEACHER_NAME,
+                        SUPPORT_THREAD_ID)));
+
         cancelRules.forEach((state, rule) -> stateMachine.onCommand(state, Commands.CANCEL,
                 new CancelCmdTransition(rule, renderers.get(rule.target()))));
 
-        for (var state : List.of(INITIAL, ACTIVE, STUDENTS_LIST, STUDENT_OPTIONS, STUDENT_DETAILS, IN_LESSON)) {
+        // INITIAL / STUDENTS_LIST / STUDENT_OPTIONS / STUDENT_DETAILS / IN_LESSON — no-op
+        for (var state : List.of(INITIAL, STUDENTS_LIST, STUDENT_OPTIONS, STUDENT_DETAILS, IN_LESSON)) {
             stateMachine.onCommand(state, Commands.CANCEL, noCancel);
         }
+        // ACTIVE: имперсонация выходит, иначе no-op
+        stateMachine.onCommand(ACTIVE, Commands.CANCEL, new ImpersonationExitCmdActiveTransition(resolver));
     }
 }

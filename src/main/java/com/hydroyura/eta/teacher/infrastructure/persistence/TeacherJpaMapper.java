@@ -45,7 +45,7 @@ final class TeacherJpaMapper {
     }
 
     Teacher toDomain(TeacherJpa entity) {
-        var teacher = Teacher.create(new TeacherId(entity.getId()), entity.getName());
+        var teacher = Teacher.reconstitute(new TeacherId(entity.getId()), entity.getName(), entity.isAdmin());
         entity.getStudentIds().forEach(id -> teacher.addStudent(new StudentId(id)));
         for (var identifier : entity.getIdentifiers()) {
             var type = identifier.getId().getIdentifierType();
@@ -75,5 +75,13 @@ final class TeacherJpaMapper {
             return raw;
         }
         throw new IllegalStateException("Unsupported identifier value class " + valueClass.getSimpleName());
+    }
+
+    static Long parseLong(String raw) {
+        try {
+            return Long.valueOf(raw);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Cannot convert identifier value '" + raw + "' to Long", e);
+        }
     }
 }

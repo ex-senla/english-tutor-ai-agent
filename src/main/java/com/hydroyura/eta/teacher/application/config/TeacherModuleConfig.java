@@ -7,12 +7,14 @@ import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import com.hydroyura.eta.teacher.application.config.properties.DemoStudentsSpringProperties;
 import com.hydroyura.eta.teacher.application.demo.DemoStudentsConfig;
 import com.hydroyura.eta.teacher.application.demo.DemoStudentsSeeder;
 import com.hydroyura.eta.teacher.application.usecase.CreateStudentWithDictionaryUseCase;
 import com.hydroyura.eta.teacher.application.usecase.FindTeacherService;
 import com.hydroyura.eta.teacher.application.usecase.RegisterTeacherUseCase;
+import com.hydroyura.eta.teacher.application.usecase.TeacherDirectoryService;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import java.util.Random;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,6 +33,11 @@ public class TeacherModuleConfig {
     @Bean
     FindTeacher findTeacher(TeacherRepository repository) {
         return new FindTeacherService(repository);
+    }
+
+    @Bean
+    TeacherDirectory teacherDirectory(TeacherRepository repository) {
+        return new TeacherDirectoryService(repository);
     }
 
     @Bean

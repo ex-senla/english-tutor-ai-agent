@@ -31,13 +31,14 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `ofDefaults(ChatId)` — фабрика, начальное состояние `INITIAL`
 
 ### ChatState (Enum, `domain/chat`)
-23 состояния: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
+30 состояний: `INITIAL`, `AWAITING_REGISTRATION_NAME`, `ACTIVE`, `AWAITING_STUDENT_NAME`,
 `AWAITING_STUDENT_LEVEL`, `STUDENTS_LIST`, `STUDENT_OPTIONS`, `STUDENT_DETAILS`,
 `STUDENT_DICTIONARY`, `AWAITING_STUDENT_LEVEL_CHANGE`, `AWAITING_STUDENT_DELETE`, `IN_LESSON`,
 `AWAITING_POS`, `AWAITING_TRANSLATION_CHOICE`, `AWAITING_MANUAL_TRANSLATION`, `STUDENT_SEARCH`,
 `AWAITING_EXERCISE_TYPE`, `AWAITING_EXERCISE_TOPIC`, `AWAITING_CUSTOM_TOPIC`,
 `AWAITING_EXERCISE_TOPIC_CONFIRM`, `AWAITING_EXERCISE_THEMATIC_TOPIC`,
-`AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`.
+`AWAITING_EXERCISE_WORD_SELECTION`, `AWAITING_EXERCISE_ANSWER`, `ACCOUNT`, `SUPPORT`,
+`ADMIN_MENU`, `ADMIN_TEACHERS`, `ADMIN_TEACHER_STUDENTS`, `ADMIN_THREADS`, `ADMIN_THREAD_VIEW`.
 
 `AWAITING_EXERCISE_ANSWER` (интерактивные ответы) в текущем PDF-потоке не достигается —
 ни один переход в него не ведёт; переход и `CheckExercise` сохранены как задел.
@@ -83,7 +84,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 
 ### Handler (Application, `application/statemachine/handler`)
 Дефолтная реакция состояния на любой нераспознанный триггер («Введите имя ученика»,
-«Используйте кнопки ниже», ...). Один `@Component` на состояние (23 штуки), собираются в
+«Используйте кнопки ниже», ...). Один `@Component` на состояние (30 штук), собираются в
 `Map<ChatState, Handler>` бином `chatStateHandlerMap` в `StateMachineConfig`.
 
 ### StateMachineConfig (`application/config`)
@@ -97,8 +98,8 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   `"back"`, `"translation"`, `"poschange"`, `"wdpg"`, `"wdreset"`, `"wdback"`, `"exword"`, `"exfilter"`, `"expg"`,
   `"exdone"`, `"excont"`, `"exback"`, `"exselback"`, `"topicnav"`, `"topic"`, `"topicsearch"`, `"topicself"`,
   `"topicpg"`, `"topicconfirm"`, `"topiccatalog"`, `"topicskip"`);
-  команда `/cancel` регистрируется для всех 23 состояния через `CancelRule`/`CancelScreenRenderer`
-  (17 правил отмены + `NoCancelCmdTransition` для 6 не-диалоговых состояний); свойства
+  команда `/cancel` регистрируется для всех 30 состояния через `CancelRule`/`CancelScreenRenderer`
+  (правила отмены + `NoCancelCmdTransition` для не-диалоговых состояний); свойства
   `ChatbotSearchProperties` и `ChatbotPaginationProperties` включаются через
   `@EnableConfigurationProperties`
 

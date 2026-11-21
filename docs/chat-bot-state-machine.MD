@@ -27,6 +27,13 @@
 | `AWAITING_EXERCISE_WORD_SELECTION` | Шаг выбора слов для упражнения |
 | `AWAITING_EXERCISE_ANSWER` | Ожидание ответа на упражнение (legacy, недостижим) |
 | `STUDENT_DICTIONARY` | Меню «Словарь» ученика |
+| `ACCOUNT` | Личный кабинет учителя (профиль, поддержка, подписки) |
+| `SUPPORT` | Режим поддержки: текст уходит в диалог учителя с поддержкой |
+| `ADMIN_MENU` | Админ-панель: пункты «Учителя» и «Обращения» |
+| `ADMIN_TEACHERS` | Список всех учителей (для админа) |
+| `ADMIN_TEACHER_STUDENTS` | Экран выбранного учителя: его ученики + «Войти как» |
+| `ADMIN_THREADS` | Список диалогов поддержки (для админа) |
+| `ADMIN_THREAD_VIEW` | Просмотр диалога + ввод ответа администратора |
 
 ## Флоу упражнения
 
@@ -106,6 +113,13 @@ AWAITING_POS
 | `AWAITING_EXERCISE_WORD_SELECTION` | `STUDENT_OPTIONS` | `exerciseType`, `exerciseTopic`, `exerciseThematicTopic`, `wordSelection`, `wordFilter`, `selectionPage` |
 | `AWAITING_EXERCISE_ANSWER` | `STUDENT_OPTIONS` | `exerciseId`, `exerciseTopic`, `exerciseType` |
 | `STUDENT_DICTIONARY` | `STUDENT_DETAILS` | `dictionaryPage` |
+| `ACCOUNT` | `ACTIVE` | — |
+| `SUPPORT` | `ACTIVE` | `supportThreadId` |
+| `ADMIN_TEACHERS` | `ADMIN_MENU` | `adminSelectedTeacherId`, `adminSelectedTeacherName`, `supportThreadId` |
+| `ADMIN_TEACHER_STUDENTS` | `ADMIN_MENU` | `adminSelectedTeacherId`, `adminSelectedTeacherName`, `supportThreadId` |
+| `ADMIN_THREADS` | `ADMIN_MENU` | `adminSelectedTeacherId`, `adminSelectedTeacherName`, `supportThreadId` |
+| `ADMIN_THREAD_VIEW` | `ADMIN_MENU` | `adminSelectedTeacherId`, `adminSelectedTeacherName`, `supportThreadId` |
+| `ADMIN_MENU` | `ADMIN_MENU` | `adminSelectedTeacherId`, `adminSelectedTeacherName`, `supportThreadId` |
 
 ## Callback-префиксы
 
@@ -125,6 +139,18 @@ AWAITING_POS
 | `exercise` | `fillintheblank`/`multiplechoice` | выбор типа упражнения |
 | `exword`/`exfilter`/`expg`/`exdone`/`excont`/`exback`/`exselback` | — | шаг выбора слов |
 | `wdpg`/`wdreset`/`wdback` | — | словарь |
+| `account` | `support`/`subs`/`back` | действия личного кабинета |
+| `support` | `back` | выход из режима поддержки |
+| `adm` | `teachers`/`threads`/`teacher:<id>`/`imp:<id>`/`thread:<id>`/`back:<target>` | навигация админ-панели |
+
+## Админка, имперсонация и поддержка
+
+- Ключи контекста: `actingTeacherId`, `supportThreadId`, `adminSelectedTeacherId`, `adminSelectedTeacherName`.
+- `ActingTeacherResolver` — единая точка «действующий учитель»: без имперсонации — учитель по `chatId` (`FindTeacher`), при активном `actingTeacherId` — выбранный учитель; `actingStudentIds` для не-админа сохраняет прежнюю семантику (пустое множество для чата без учителя), `actingTeacherId` — fail-fast (`DomainException`).
+- `AdminGuard` проверяет **реального** учителя чата (`FindTeacher` → `TeacherDirectory.findById().admin()`), не действующего в режиме имперсонации; применяется во всех admin-переходах.
+- `ActiveMenuSupport` — единый рендер главного меню: кнопка «🛡 Админка» только при `admin=true` (свежее значение из БД), индикатор имперсонации резолвится через `TeacherDirectory.findById(actingTeacherId)`.
+- `/start` сбрасывает имперсонацию (включая `ACTIVE`) и рендерит меню по реальной роли; `/cancel` в `ACTIVE` при активной имперсонации возвращает в `ADMIN_MENU`.
+- Push-ответы админа: порт `BotNotifier` (`chatbot/application/notification`) → `TelegramBotNotifier` (best-effort); адресат = владелец треда, состояние чата учителя не читается/не пишется.
 
 ## Индикаторы обработки
 

@@ -3,11 +3,13 @@ package com.hydroyura.eta.chatbot.application.config;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
+import com.hydroyura.eta.chatbot.application.statemachine.handler.Handler;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatId;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.application.notification.BotNotifier;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryStats;
@@ -29,9 +31,14 @@ import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
 import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentDetails;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.support.api.support.AppendSupportMessage;
+import com.hydroyura.eta.support.api.support.FindSupportMessages;
+import com.hydroyura.eta.support.api.support.FindSupportThreads;
+import com.hydroyura.eta.support.api.support.OpenSupportThread;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +48,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ACTIVE_LESSON_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ADMIN_SELECTED_TEACHER_ID;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.ADMIN_SELECTED_TEACHER_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.DICTIONARY_PAGE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TOPIC;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_THEMATIC_TOPIC;
@@ -48,6 +57,7 @@ import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.EXERCISE_TYPE;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTED_STUDENT_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SELECTION_PAGE;
+import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.SUPPORT_THREAD_ID;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TEACHER_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_CANONICAL_NAME;
 import static com.hydroyura.eta.chatbot.domain.chat.ContextKey.TOPIC_MATCHED_SLUG;
@@ -92,15 +102,23 @@ class StateMachineCancelTest {
         var resetWordLearning = mock(ResetWordLearning.class);
         var exerciseTopics = mock(ExerciseTopics.class);
         var validateCustomTopic = mock(ValidateCustomTopic.class);
+        var teacherDirectory = mock(TeacherDirectory.class);
+        var openSupportThread = mock(OpenSupportThread.class);
+        var appendSupportMessage = mock(AppendSupportMessage.class);
+        var findSupportThreads = mock(FindSupportThreads.class);
+        var findSupportMessages = mock(FindSupportMessages.class);
+        var botNotifier = mock(BotNotifier.class);
 
         when(studentQuery.findStudentDetails(any())).thenReturn(Optional.of(
                 new StudentDetails("Anna", new DictionaryStats(0, 0, 0, 0), false, CefrLevel.B1)));
 
-        stateMachine = new StateMachineConfig().stateMachine(Map.of(), findTeacher, studentQuery, findActiveLesson,
-                endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
-                addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
-                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
-                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
+        stateMachine = new StateMachineConfig().stateMachine(Map.<ChatState, Handler>of(), findTeacher, studentQuery,
+                findActiveLesson, endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher,
+                addWordToDictionary, addWordToLesson, changeStudentLevel, deleteStudent, generateExercise,
+                checkExercise, generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
+                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties(),
+                teacherDirectory, openSupportThread, appendSupportMessage, findSupportThreads, findSupportMessages,
+                botNotifier);
     }
 
     @Test
@@ -122,7 +140,14 @@ class StateMachineCancelTest {
                 new Case(ChatState.AWAITING_EXERCISE_THEMATIC_TOPIC, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_WORD_SELECTION, ChatState.STUDENT_OPTIONS),
                 new Case(ChatState.AWAITING_EXERCISE_ANSWER, ChatState.STUDENT_OPTIONS),
-                new Case(ChatState.STUDENT_DICTIONARY, ChatState.STUDENT_DETAILS));
+                new Case(ChatState.STUDENT_DICTIONARY, ChatState.STUDENT_DETAILS),
+                new Case(ChatState.ACCOUNT, ChatState.ACTIVE),
+                new Case(ChatState.SUPPORT, ChatState.ACTIVE),
+                new Case(ChatState.ADMIN_TEACHERS, ChatState.ADMIN_MENU),
+                new Case(ChatState.ADMIN_TEACHER_STUDENTS, ChatState.ADMIN_MENU),
+                new Case(ChatState.ADMIN_THREADS, ChatState.ADMIN_MENU),
+                new Case(ChatState.ADMIN_THREAD_VIEW, ChatState.ADMIN_MENU),
+                new Case(ChatState.ADMIN_MENU, ChatState.ADMIN_MENU));
 
         for (var dialog : dialogStates) {
             var chat = chatWithSharedKeys(dialog.from());
@@ -237,6 +262,31 @@ class StateMachineCancelTest {
 
             assertThat(chat.getState()).as("state for %s", state).isEqualTo(state);
             assertThat(textOf(result)).isEqualTo(NOTHING_TO_CANCEL);
+        }
+    }
+
+    @Test
+    void cancelShouldClearSupportAndAdminSelectionKeys() {
+        var supportChat = chatWithSharedKeys(ChatState.SUPPORT);
+        supportChat.getContext().put(SUPPORT_THREAD_ID.getValue(), "thread-1");
+
+        stateMachine.applyAction(supportChat, new Action.Command("/cancel"));
+
+        assertThat(supportChat.getState()).isEqualTo(ChatState.ACTIVE);
+        assertThat(supportChat.getContext()).doesNotContainKey(SUPPORT_THREAD_ID.getValue());
+
+        for (var state : List.of(ChatState.ADMIN_TEACHERS, ChatState.ADMIN_TEACHER_STUDENTS,
+                ChatState.ADMIN_THREADS, ChatState.ADMIN_THREAD_VIEW, ChatState.ADMIN_MENU)) {
+            var chat = chatWithSharedKeys(state);
+            chat.getContext().put(ADMIN_SELECTED_TEACHER_ID.getValue(), "teacher-1");
+            chat.getContext().put(ADMIN_SELECTED_TEACHER_NAME.getValue(), "Teacher");
+            chat.getContext().put(SUPPORT_THREAD_ID.getValue(), "thread-1");
+
+            stateMachine.applyAction(chat, new Action.Command("/cancel"));
+
+            assertThat(chat.getState()).as("state for %s", state).isEqualTo(ChatState.ADMIN_MENU);
+            assertThat(chat.getContext()).doesNotContainKeys(ADMIN_SELECTED_TEACHER_ID.getValue(),
+                    ADMIN_SELECTED_TEACHER_NAME.getValue(), SUPPORT_THREAD_ID.getValue());
         }
     }
 

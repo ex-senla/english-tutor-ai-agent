@@ -5,9 +5,9 @@
 ## Составляющие
 
 ### Teacher (@Entity)
-- `id` (@Identity, TeacherId), `name`, `identifiers` (Identifiers), `studentIds` (@Association Set<StudentId>).
-- Статическая фабрика: `Teacher.create(id, name)`.
-- Методы: `addStudent(StudentId)`, `getStudentIds()` (unmodifiable set).
+- `id` (@Identity, TeacherId), `name`, `admin` (DB-managed), `identifiers` (Identifiers), `studentIds` (@Association Set<StudentId>).
+- Статические фабрики: `Teacher.create(id, name)` (admin=false) и `Teacher.reconstitute(id, name, admin)`.
+- Методы: `addStudent(StudentId)`, `getStudentIds()` (unmodifiable set), `isAdmin()`. Мутатора флага нет — назначение роли только SQL.
 
 ### Identifiers (Value Object)
 - Key-value хранилище идентификаторов преподавателя: `Map<IdentifierType, Object>`.
@@ -24,6 +24,7 @@
 | `RegisterTeacher` | `TeacherId execute(RegisterTeacherCommand)` |
 | `CreateStudentWithDictionary` | `StudentId execute(CreateStudentWithDictionaryCommand)` |
 | `FindTeacher` | `findByTelegramChatId(Long) → Optional<TeacherId>`<br>`getStudentIds(Long chatId) → Set<StudentId>` |
+| `TeacherDirectory` | `findById(TeacherId)`, `findAll()`, `findTelegramChatId(TeacherId)`, `getStudentIds(TeacherId)` — лёгкие read-проекции без загрузки коллекций (без N+1) |
 
 ### CreateStudentWithDictionary
 - Оркестрирует создание Student + Dictionary в одной транзакции:

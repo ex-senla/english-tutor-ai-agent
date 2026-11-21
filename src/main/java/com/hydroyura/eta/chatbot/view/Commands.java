@@ -18,4 +18,8 @@ public final class Commands {
 
     public static final String FINISH_LESSON = "/finishlesson";
 
+    public static final String SUPPORT = "/support";
+
+    public static final String ADMIN = "/admin";
+
 }

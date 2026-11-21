@@ -27,7 +27,11 @@ public enum ContextKey {
     DICTIONARY_PAGE("dictionaryPage"),
     WORD_SELECTION("wordSelection"),
     WORD_FILTER("wordFilter"),
-    SELECTION_PAGE("selectionPage");
+    SELECTION_PAGE("selectionPage"),
+    ACTING_TEACHER_ID("actingTeacherId"),
+    SUPPORT_THREAD_ID("supportThreadId"),
+    ADMIN_SELECTED_TEACHER_ID("adminSelectedTeacherId"),
+    ADMIN_SELECTED_TEACHER_NAME("adminSelectedTeacherName");
 
     private final String value;
 

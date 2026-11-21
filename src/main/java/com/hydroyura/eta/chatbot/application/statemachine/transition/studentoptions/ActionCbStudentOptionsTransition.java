@@ -6,6 +6,7 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.studentdictionary.StudentDictionarySupport;
 import com.hydroyura.eta.chatbot.view.Callbacks;
@@ -16,7 +17,6 @@ import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
 import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.lesson.StartLessonCommand;
 import com.hydroyura.eta.student.api.student.StudentQuery;
-import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +41,7 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
 
     private final StartLesson startLesson;
 
-    private final FindTeacher findTeacher;
+    private final ActingTeacherResolver resolver;
 
     private final StudentQuery studentQuery;
 
@@ -100,7 +100,7 @@ public class ActionCbStudentOptionsTransition implements Transition<Action.Callb
     private ActionResult studentsListEdit(Chat chat, int messageId) {
         chat.updateState(ChatState.STUDENTS_LIST);
 
-        var studentIds = findTeacher.getStudentIds(chat.getId().chatId());
+        var studentIds = resolver.actingStudentIds(chat, chat.getId().chatId());
 
         if (studentIds.isEmpty()) {
             return new ActionResult.EditMessageText(messageId, NO_STUDENTS, List.of());

@@ -54,7 +54,7 @@ Modular monolith + DDD. Root package: `com.hydroyura.eta`. One Maven module; eac
 module declares `@ApplicationModule(allowedDependencies = ...)` in its `package-info.java`.
 Modules talk to each other only through `api` packages, which expose
 `@NamedInterface`s (`shared`, `dictionary`, `word`, `student`, `lesson`, `teacher`, `exercise`,
-`document`).
+`document`, `support`).
 
 ### Module dependency rules (enforced by Modulith)
 
@@ -66,7 +66,8 @@ Modules talk to each other only through `api` packages, which expose
 | `teacher` | `dictionary` (`dictionary`, `word`), `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation, demo data seeder |
 | `exercise` | `dictionary` (`dictionary`, `word`), `shared` | AI exercise generation and checking (Spring AI) |
 | `generator` | `exercise` (`exercise`), `dictionary` (`word`), `shared` | Renders exercises into PDF documents (student sheet + teacher answers) |
-| `chatbot` | `teacher`, `student`, `dictionary`, `exercise`, `generator` (`document`), `shared` | State machine, bot commands |
+| `support` | `teacher` (`teacher`), `shared` | Support threads and messages (teacher support channel) |
+| `chatbot` | `teacher`, `student`, `dictionary`, `exercise`, `generator` (`document`), `support`, `shared` | State machine, bot commands |
 
 Never introduce a dependency that is not in this table; update the table and the module's
 `package-info.java` together if boundaries intentionally change.

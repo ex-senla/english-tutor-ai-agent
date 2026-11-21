@@ -3,12 +3,14 @@ package com.hydroyura.eta.chatbot.application.config;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
+import com.hydroyura.eta.chatbot.application.statemachine.handler.Handler;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatId;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.view.Messages;
+import com.hydroyura.eta.chatbot.application.notification.BotNotifier;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CheckWord;
 import com.hydroyura.eta.dictionary.api.dictionary.FindWords;
@@ -26,9 +28,14 @@ import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.ChangeStudentLevel;
 import com.hydroyura.eta.student.api.student.DeleteStudent;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.support.api.support.AppendSupportMessage;
+import com.hydroyura.eta.support.api.support.FindSupportMessages;
+import com.hydroyura.eta.support.api.support.FindSupportThreads;
+import com.hydroyura.eta.support.api.support.OpenSupportThread;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,12 +70,20 @@ class StartCommandResetTest {
         var resetWordLearning = mock(ResetWordLearning.class);
         var exerciseTopics = mock(ExerciseTopics.class);
         var validateCustomTopic = mock(ValidateCustomTopic.class);
+        var teacherDirectory = mock(TeacherDirectory.class);
+        var openSupportThread = mock(OpenSupportThread.class);
+        var appendSupportMessage = mock(AppendSupportMessage.class);
+        var findSupportThreads = mock(FindSupportThreads.class);
+        var findSupportMessages = mock(FindSupportMessages.class);
+        var botNotifier = mock(BotNotifier.class);
 
-        stateMachine = new StateMachineConfig().stateMachine(Map.of(), findTeacher, studentQuery, findActiveLesson,
-                endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
-                addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
-                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
-                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties());
+        stateMachine = new StateMachineConfig().stateMachine(Map.<ChatState, Handler>of(), findTeacher, studentQuery,
+                findActiveLesson, endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher,
+                addWordToDictionary, addWordToLesson, changeStudentLevel, deleteStudent, generateExercise,
+                checkExercise, generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
+                validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties(),
+                teacherDirectory, openSupportThread, appendSupportMessage, findSupportThreads, findSupportMessages,
+                botNotifier);
     }
 
     @Test

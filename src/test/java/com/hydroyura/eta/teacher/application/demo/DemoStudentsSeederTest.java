@@ -13,6 +13,7 @@ import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
+import com.hydroyura.eta.teacher.api.teacher.TeacherInfo;
 import com.hydroyura.eta.teacher.domain.teacher.Teacher;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,6 +76,21 @@ class DemoStudentsSeederTest {
             @Override
             public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
                 return Optional.empty();
+            }
+
+            @Override
+            public List<TeacherInfo> findAllInfos() {
+                return List.of();
+            }
+
+            @Override
+            public Optional<Long> findTelegramChatId(TeacherId id) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Set<StudentId> findStudentIds(TeacherId id) {
+                return Set.of();
             }
         };
 

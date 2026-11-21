@@ -28,6 +28,8 @@ class BotCommandsTest {
                 Commands.LIST,
                 Commands.FIND,
                 Commands.CANCEL,
-                Commands.FINISH_LESSON);
+                Commands.FINISH_LESSON,
+                Commands.SUPPORT,
+                Commands.ADMIN);
     }
 }

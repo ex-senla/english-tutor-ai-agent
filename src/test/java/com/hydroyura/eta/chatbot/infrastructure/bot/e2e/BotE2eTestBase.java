@@ -54,6 +54,8 @@ public abstract class BotE2eTestBase extends PostgresIntegrationTestBase {
 
     protected BotTester botTester;
 
+    protected OutgoingCallsRecorder outgoingCallsRecorder;
+
     @BeforeEach
     void cleanDatabase() throws Exception {
         jdbcTemplate.execute("DELETE FROM exercise_word_info");
@@ -67,8 +69,16 @@ public abstract class BotE2eTestBase extends PostgresIntegrationTestBase {
         jdbcTemplate.execute("DELETE FROM teacher");
         jdbcTemplate.execute("DELETE FROM dictionary");
         jdbcTemplate.execute("DELETE FROM exercise");
+        jdbcTemplate.execute("DELETE FROM support_message");
+        jdbcTemplate.execute("DELETE FROM support_thread");
         jdbcTemplate.execute("DELETE FROM chat");
 
-        botTester = new BotTester(bot, responseSender, new BotDbInspector(jdbcTemplate), CHAT_ID);
+        outgoingCallsRecorder = new OutgoingCallsRecorder();
+        outgoingCallsRecorder.install(responseSender);
+        botTester = tester(CHAT_ID);
+    }
+
+    protected BotTester tester(Long chatId) {
+        return new BotTester(bot, responseSender, new BotDbInspector(jdbcTemplate), chatId, outgoingCallsRecorder);
     }
 }

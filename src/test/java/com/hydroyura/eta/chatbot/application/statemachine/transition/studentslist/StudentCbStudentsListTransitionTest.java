@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.studentslist;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
@@ -11,6 +12,7 @@ import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -32,7 +34,7 @@ class StudentCbStudentsListTransitionTest {
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(studentId));
         when(studentQuery.findStudentsByIds(Set.of(studentId))).thenReturn(List.of(new StudentInfo(studentId, "Anna")));
 
-        var transition = new StudentCbStudentsListTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentsListTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENTS_LIST);
@@ -55,7 +57,7 @@ class StudentCbStudentsListTransitionTest {
         when(studentQuery.findStudentsByIds(Set.of(deletedId, aliveId)))
                 .thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
 
-        var transition = new StudentCbStudentsListTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentsListTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENTS_LIST);
@@ -78,7 +80,7 @@ class StudentCbStudentsListTransitionTest {
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(aliveId));
         when(studentQuery.findStudentsByIds(Set.of(aliveId))).thenReturn(List.of(new StudentInfo(aliveId, "Bob")));
 
-        var transition = new StudentCbStudentsListTransition(findTeacher, studentQuery);
+        var transition = new StudentCbStudentsListTransition(resolver(findTeacher), studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENTS_LIST);
@@ -89,5 +91,9 @@ class StudentCbStudentsListTransitionTest {
         assertThat(chat.getContext()).doesNotContainKeys(SELECTED_STUDENT_ID.getValue(), SELECTED_STUDENT_NAME
                 .getValue());
         assertThat(((ActionResult.EditMessageText) result).text()).isEqualTo(Messages.STUDENT_NOT_FOUND_OR_DELETED);
+    }
+
+    private ActingTeacherResolver resolver(FindTeacher findTeacher) {
+        return new ActingTeacherResolver(findTeacher, mock(TeacherDirectory.class));
     }
 }

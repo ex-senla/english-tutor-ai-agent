@@ -20,6 +20,8 @@ public class Teacher {
 
     private String name;
 
+    private boolean admin;
+
     private Identifiers identifiers;
 
     @Association
@@ -35,7 +37,14 @@ public class Teacher {
         var teacher = new Teacher();
         teacher.id = id;
         teacher.name = name;
+        teacher.admin = false;
         teacher.identifiers = new Identifiers();
+        return teacher;
+    }
+
+    public static Teacher reconstitute(TeacherId id, String name, boolean admin) {
+        var teacher = create(id, name);
+        teacher.admin = admin;
         return teacher;
     }
 
@@ -46,5 +55,9 @@ public class Teacher {
 
     public Set<StudentId> getStudentIds() {
         return Collections.unmodifiableSet(studentIds);
+    }
+
+    public boolean isAdmin() {
+        return admin;
     }
 }

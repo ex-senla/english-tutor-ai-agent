@@ -59,6 +59,13 @@ public final class Callbacks {
 
     public static final String POS_CHANGE = "poschange";
 
+    // ---- account / support / admin - prefix ----
+    public static final String ACCOUNT = "account";
+
+    public static final String SUPPORT = "support";
+
+    public static final String ADMIN = "adm";
+
     // ---- any ----
     public static final String BACK = "back";
 
@@ -104,5 +111,20 @@ public final class Callbacks {
     public static final String WORD_FILTER_LEARNED = "learned";
 
     public static final String WORD_FILTER_ALL = "all";
+
+    // ---- account / support / admin - payload ----
+    public static final String SUBSCRIPTIONS = "subs";
+
+    public static final String TEACHERS = "teachers";
+
+    public static final String THREADS = "threads";
+
+    public static final String IMPERSONATE = "imp";
+
+    public static final String THREAD = "thread";
+
+    public static final String TEACHER = "teacher";
+
+    public static final String MENU = "menu";
 
 }

@@ -1,6 +1,7 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.studentoptions;
 
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
@@ -17,6 +18,7 @@ import com.hydroyura.eta.student.api.lesson.StartLesson;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -44,8 +46,8 @@ class ActionCbStudentOptionsTransitionTest {
                 new WordProjection(WordInfoId.generate(), "apple", Set.of("яблоко"), PartOfSpeech.NOUN,
                         WordStatus.NEW)));
 
-        var transition = new ActionCbStudentOptionsTransition(startLesson, findTeacher, studentQuery, findWords,
-                new ChatbotPaginationProperties());
+        var transition = new ActionCbStudentOptionsTransition(startLesson, resolver(findTeacher), studentQuery,
+                findWords, new ChatbotPaginationProperties());
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.STUDENT_OPTIONS);
@@ -57,5 +59,9 @@ class ActionCbStudentOptionsTransitionTest {
         assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_DICTIONARY);
         assertThat(chat.getContext().get(DICTIONARY_PAGE.getValue())).isEqualTo(0);
         assertThat(result).isInstanceOf(ActionResult.EditMessageText.class);
+    }
+
+    private ActingTeacherResolver resolver(FindTeacher findTeacher) {
+        return new ActingTeacherResolver(findTeacher, mock(TeacherDirectory.class));
     }
 }

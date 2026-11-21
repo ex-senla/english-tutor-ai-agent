@@ -6,7 +6,7 @@ public sealed interface BotCall
         permits BotCall.SentMessage, BotCall.SentDocument, BotCall.EditedMessage, BotCall.DeletedMessage {
 
     record SentMessage(int messageId, String text, KeyboardKind keyboard,
-            List<List<BotButton>> inlineButtons, List<String> replyButtons) implements BotCall {
+            List<List<BotButton>> inlineButtons, List<String> replyButtons, Long chatId) implements BotCall {
     }
 
     record SentDocument(String fileName, byte[] content, String caption) implements BotCall {

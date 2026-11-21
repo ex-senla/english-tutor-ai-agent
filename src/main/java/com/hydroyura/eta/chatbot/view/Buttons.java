@@ -74,7 +74,12 @@ public final class Buttons {
 
     public static final String BACK_TO_STUDENT = "🔙 Назад";
 
-    public static final Set<String> REPLY_BUTTONS = Set.of(NEW_STUDENT, LIST_STUDENT, FIND_STUDENT, FINISH_LESSON);
+    public static final String ACCOUNT = "👤 Личный кабинет";
+
+    public static final String ADMIN_PANEL = "🛡 Админка";
+
+    public static final Set<String> REPLY_BUTTONS = Set.of(NEW_STUDENT, LIST_STUDENT, FIND_STUDENT, FINISH_LESSON,
+            ACCOUNT, ADMIN_PANEL);
 
     public static Set<String> getReplyButtons() {
         return REPLY_BUTTONS;

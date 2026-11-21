@@ -6,7 +6,6 @@ import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
-import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -49,9 +48,9 @@ public final class StudentSupport {
      * Обрабатывает выбор ученика из списка/поиска: если ученик не найден (удалён или не существует),
      * показывает «Ученик не найден или удалён» и актуальный список, не засоряя контекст.
      */
-    public static ActionResult selectStudentOrNotFound(FindTeacher findTeacher, StudentQuery studentQuery, Chat chat,
-            String studentId, int messageId) {
-        var studentIds = findTeacher.getStudentIds(chat.getId().chatId());
+    public static ActionResult selectStudentOrNotFound(ActingTeacherResolver resolver, StudentQuery studentQuery,
+            Chat chat, String studentId, int messageId) {
+        var studentIds = resolver.actingStudentIds(chat, chat.getId().chatId());
         var students = studentQuery.findStudentsByIds(studentIds);
 
         var selected = students.stream()

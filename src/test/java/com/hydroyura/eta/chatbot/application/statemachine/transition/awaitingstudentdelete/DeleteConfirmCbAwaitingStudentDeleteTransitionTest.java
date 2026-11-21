@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentdelete;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
@@ -13,6 +14,7 @@ import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
+import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -39,7 +41,8 @@ class DeleteConfirmCbAwaitingStudentDeleteTransitionTest {
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(deletedId, remaining.id()));
         when(studentQuery.findStudentsByIds(Set.of(deletedId, remaining.id()))).thenReturn(List.of(remaining));
 
-        var transition = new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, findTeacher, studentQuery);
+        var transition = new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, resolver(findTeacher),
+                studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.AWAITING_STUDENT_DELETE);
@@ -75,7 +78,8 @@ class DeleteConfirmCbAwaitingStudentDeleteTransitionTest {
         when(findTeacher.getStudentIds(1L)).thenReturn(Set.of(deletedId));
         when(studentQuery.findStudentsByIds(Set.of(deletedId))).thenReturn(List.of());
 
-        var transition = new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, findTeacher, studentQuery);
+        var transition = new DeleteConfirmCbAwaitingStudentDeleteTransition(deleteStudent, resolver(findTeacher),
+                studentQuery);
 
         var chat = Chat.ofDefaults(new ChatId(1L));
         chat.updateState(ChatState.AWAITING_STUDENT_DELETE);
@@ -88,5 +92,9 @@ class DeleteConfirmCbAwaitingStudentDeleteTransitionTest {
         var edit = (ActionResult.EditMessageText) result;
         assertThat(edit.text()).isEqualTo(Messages.NO_STUDENTS);
         assertThat(edit.keyboard()).isEmpty();
+    }
+
+    private ActingTeacherResolver resolver(FindTeacher findTeacher) {
+        return new ActingTeacherResolver(findTeacher, mock(TeacherDirectory.class));
     }
 }

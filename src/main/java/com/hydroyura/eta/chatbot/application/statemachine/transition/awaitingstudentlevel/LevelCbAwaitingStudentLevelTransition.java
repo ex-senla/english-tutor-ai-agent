@@ -1,17 +1,17 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingstudentlevel;
 
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActiveMenuSupport;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.ActingTeacherResolver;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
-import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.student.api.student.CefrLevel;
 import com.hydroyura.eta.student.api.student.StudentAlreadyExistsException;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
-import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +25,11 @@ import static com.hydroyura.eta.chatbot.view.Messages.USE_BUTTONS_BELOW;
 @RequiredArgsConstructor
 public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.Callback> {
 
-    private final FindTeacher findTeacher;
+    private final ActingTeacherResolver resolver;
 
     private final CreateStudentWithDictionary createStudentWithDictionary;
+
+    private final ActiveMenuSupport activeMenuSupport;
 
     @Override
     public ActionResult transit(Chat chat, Action.Callback callback) {
@@ -40,8 +42,7 @@ public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.
 
         var name = Objects.requireNonNull((String) chat.getContext().get(PENDING_STUDENT_NAME.getValue()),
                 "pendingStudentName must be present in chat context");
-        var teacherId = findTeacher.findByTelegramChatId(chat.getId().chatId())
-                .orElseThrow(() -> new IllegalStateException("Teacher not found for chatId=" + chat.getId().chatId()));
+        var teacherId = resolver.actingTeacherId(chat, chat.getId().chatId());
 
         try {
             var dictionaryName = "Словарь " + name;
@@ -51,7 +52,7 @@ public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.
                     name, studentId, teacherId, level.get());
             chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
             chat.updateState(ChatState.ACTIVE);
-            return MenuView.activeMenuWithMessage(STUDENT_ADDED.formatted(name));
+            return activeMenuSupport.renderWithMessage(chat, STUDENT_ADDED.formatted(name));
         } catch (StudentAlreadyExistsException e) {
             log.warn("Failed to create student '{}': {}", name, e.getMessage());
             chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
