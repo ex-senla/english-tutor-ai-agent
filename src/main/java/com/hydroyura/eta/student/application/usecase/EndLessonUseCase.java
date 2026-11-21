@@ -6,9 +6,11 @@ import com.hydroyura.eta.student.api.lesson.EndLessonResult;
 import com.hydroyura.eta.student.domain.student.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class EndLessonUseCase implements EndLesson {
 
     private final LessonRepository lessonRepository;

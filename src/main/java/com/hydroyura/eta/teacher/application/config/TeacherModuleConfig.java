@@ -38,9 +38,10 @@ public class TeacherModuleConfig {
             DemoStudentsConfig config,
             CreateStudentWithDictionary createStudentWithDictionary,
             StudentQuery studentQuery,
-            AddWordToDictionary addWordToDictionary) {
+            AddWordToDictionary addWordToDictionary,
+            TeacherRepository teacherRepository) {
         return new DemoStudentsSeeder(config, createStudentWithDictionary, studentQuery, addWordToDictionary,
-                new Random());
+                teacherRepository, new Random(42L));
     }
 
     @Bean

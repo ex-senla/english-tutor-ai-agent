@@ -9,9 +9,11 @@ import com.hydroyura.eta.dictionary.domain.word.WordFactory;
 import com.hydroyura.eta.dictionary.domain.word.WordInfoFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class AddWordToDictionaryUseCase implements AddWordToDictionary {
 
     private final DictionaryRepository dictionaryRepository;

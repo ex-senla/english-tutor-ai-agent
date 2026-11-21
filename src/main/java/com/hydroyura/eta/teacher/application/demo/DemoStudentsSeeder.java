@@ -4,10 +4,12 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordCommand;
 import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.student.api.student.CefrLevel;
+import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
+import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +32,8 @@ public class DemoStudentsSeeder {
 
     private final AddWordToDictionary addWordToDictionary;
 
+    private final TeacherRepository teacherRepository;
+
     private final Random random;
 
     public DemoStudentsSeeder(
@@ -37,12 +41,14 @@ public class DemoStudentsSeeder {
             CreateStudentWithDictionary createStudentWithDictionary,
             StudentQuery studentQuery,
             AddWordToDictionary addWordToDictionary,
+            TeacherRepository teacherRepository,
             Random random) {
         this.config = Objects.requireNonNull(config, "config must not be null");
         this.createStudentWithDictionary = Objects.requireNonNull(createStudentWithDictionary,
                 "createStudentWithDictionary must not be null");
         this.studentQuery = Objects.requireNonNull(studentQuery, "studentQuery must not be null");
         this.addWordToDictionary = Objects.requireNonNull(addWordToDictionary, "addWordToDictionary must not be null");
+        this.teacherRepository = Objects.requireNonNull(teacherRepository, "teacherRepository must not be null");
         this.random = Objects.requireNonNull(random, "random must not be null");
     }
 
@@ -80,6 +86,14 @@ public class DemoStudentsSeeder {
         var name = randomName(suffix);
         var dictionaryName = "Словарь " + name;
 
+        var studentIds = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new IllegalStateException("Teacher not found: " + teacherId.value()))
+                .getStudentIds();
+        if (studentQuery.existsByName(new StudentExistsByNameQuery(studentIds, name))) {
+            log.warn("Demo student '{}' already exists for teacher {}, skipping", name, teacherId.value());
+            return;
+        }
+
         var studentId = createStudentWithDictionary.execute(
                 new CreateStudentWithDictionaryCommand(teacherId, name, dictionaryName, CefrLevel.A2));
 
@@ -92,7 +106,7 @@ public class DemoStudentsSeeder {
     }
 
     private String randomName(int suffix) {
-        var base = NAME_POOL.get(random.nextInt(NAME_POOL.size()));
+        var base = NAME_POOL.get((suffix - 1) % NAME_POOL.size());
         return base + " " + suffix;
     }
 

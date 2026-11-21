@@ -17,6 +17,8 @@ public final class Callbacks {
 
     public static final String STUDENT_DELETE_CONFIRM = "studentdelok";
 
+    public static final String NEW_STUDENT = "newstudent";
+
     public static final String TRANSLATION = "translation";
 
     public static final String WORD_DICTIONARY_PAGE = "wdpg";

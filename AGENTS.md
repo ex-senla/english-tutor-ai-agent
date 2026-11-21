@@ -25,21 +25,28 @@ student and teacher (see `docs/TODO.md` for remaining work).
 - OpenHTMLtoPDF (`openhtmltopdf-pdfbox` 1.0.10) + Thymeleaf — renders exercise PDFs
 - TelegramBots 6.9.7.1 (spring-boot-starter)
 - Lombok (annotation processors configured in maven-compiler-plugin)
-- Persistence: in-memory only (`InMemory*Repository` in each module's `infrastructure/persistence`).
-  PostgreSQL + Flyway/JPA planned; `debug` module is to be removed at that point.
+- Persistence: PostgreSQL + Spring Data JPA + Flyway. Schema lives in a single migration
+  `src/main/resources/db/migration/V1__init.sql`, Hibernate runs in `ddl-auto: validate`.
+  JPA-entities (`*Jpa`), Spring Data interfaces (`*DataRepository`) and domain↔JPA mappers live
+  only in each module's `infrastructure/persistence`; domain stays framework-free.
+  Integration/N+1 tests run against real PostgreSQL via Testcontainers (Docker is required).
 
 ## Build & Test
 
 ```bash
 ./mvnw test                 # all tests (use ./mvnw.cmd on Windows shells)
-./mvnw verify               # tests + Modulith verification
+./mvnw verify               # tests + Modulith verification + Spotless (needs Docker/Testcontainers)
 ./mvnw spring-boot:run      # run app (needs TELEGRAM_BOT_TOKEN, AI_API_KEY, AI_BASE_URL, AI_CHAT_MODEL env vars)
 ./mvnw test -Dtest=CreateDictionaryUseCaseTest   # single test class
 ```
 
-Tests do not require Telegram/AI credentials.
-`eta.demo-students.enabled=true` (see `application.yaml`) seeds demo students with words on startup
-(`DemoStudentsSeeder` in `teacher.application.demo`) — handy for local runs.
+Tests do not require Telegram/AI credentials (the bot/LLM are disabled with dummy values and
+`telegram.bot.enabled=false`).
+
+Local dev database: `docker compose up -d postgres` (credentials match the local defaults in
+`application.yaml`; see `.env.example`). `./mvnw spring-boot:run` connects to it by default.
+Demo students seeding is **dev-only and off by default** (`eta.demo-students.enabled=false`);
+enable it locally via env `ETA_DEMO_STUDENTS_ENABLED=true`.
 
 ## Architecture
 
@@ -53,14 +60,13 @@ Modules talk to each other only through `api` packages, which expose
 
 | Module | May depend on (named interfaces) | Purpose |
 |---|---|---|
-| `shared` | — | Cross-module contracts in `shared.api`: `Specification<T>`, `DomainException`, `SnapshotProvider` |
+| `shared` | — | Cross-module contracts in `shared.api`: `Specification<T>`, `DomainException` |
 | `dictionary` | `shared` | Student dictionary, `WordInfo` aggregate (word + translations + POS + status), validation (`WordSpecifications`) |
 | `student` | `dictionary` (`dictionary`, `word`), `shared` | Student aggregate (incl. CEFR level); `Lesson` is part of it |
 | `teacher` | `dictionary` (`dictionary`, `word`), `student` (`student`, `lesson`), `shared` | Teacher, orchestrates Student+Dictionary creation, demo data seeder |
 | `exercise` | `dictionary` (`dictionary`, `word`), `shared` | AI exercise generation and checking (Spring AI) |
 | `generator` | `exercise` (`exercise`), `dictionary` (`word`), `shared` | Renders exercises into PDF documents (student sheet + teacher answers) |
 | `chatbot` | `teacher`, `student`, `dictionary`, `exercise`, `generator` (`document`), `shared` | State machine, bot commands |
-| `debug` | `shared` | Debug REST endpoints (temporary) |
 
 Never introduce a dependency that is not in this table; update the table and the module's
 `package-info.java` together if boundaries intentionally change.
@@ -111,7 +117,7 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
 ## Docs
 
 - `docs/modules/<module>.md` — per-module design docs (Russian; exists for all modules except
-  `generator` and `debug`). Update the module doc when you change that module's design; keep them
+  `generator`). Update the module doc when you change that module's design; keep them
   in Russian to match existing style.
 - `docs/roadmap.MD`, `docs/TODO.md`, `docs/chat-bot-state-machine.MD`,
   `docs/exercise-generation-flow.md` — planning and flow documentation.
@@ -119,9 +125,9 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
 ## Conventions
 
 - Tests mirror module structure under `src/test/java`; unit tests for use cases, domain and chatbot
-  transitions. Module boundaries are verified by root `ModuleVerificationTest`;
-  `ModuleDocumentationTest` generates the Modulith component docs into
-  `target/spring-modulith-docs/`. `debug` currently has no dedicated unit tests.
+  transitions; integration round-trip/N+1 tests against Testcontainers PostgreSQL. Module
+  boundaries are verified by root `ModuleVerificationTest`; `ModuleDocumentationTest` generates
+  the Modulith component docs into `target/spring-modulith-docs/`.
 - Prefer records and sealed types for value objects; Lombok is available (`@Getter`,
   `@RequiredArgsConstructor`, ...).
 - Commits: short lowercase imperative messages (`wordInfo add update`, `finish lesson update logic`).

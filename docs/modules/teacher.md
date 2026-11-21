@@ -57,10 +57,15 @@
 - `min-words-per-student` (default `3`) и `max-words-per-student` (default `5`) — диапазон слов в словаре.
 
 Демо-слова берутся из курируемого каталога `DemoWordCatalog`, который проходит валидацию
-`WordInfoSpecifications`. Имена учеников — случайное базовое имя + порядковый суффикс, что гарантирует
-уникальность (иначе `CreateStudentWithDictionary` отклонит дубликат имени).
+`WordInfoSpecifications`. Имена учеников — детерминированное базовое имя + порядковый суффикс.
+Идемпотентность достигается пред-чеком `StudentQuery.existsByName` ДО `CreateStudentWithDictionary`:
+существующее имя → WARN и пропуск ученика (без исключений внутри транзакции регистрации).
 
 Тип `PartOfSpeech` для наполнения словаря потребовал добавить зависимость `dictionary :: wordInfo`.
 
 ## Инфраструктура
-- `InMemoryTeacherRepository` — `ConcurrentHashMap<TeacherId, Teacher>`
+- Persistence (`infrastructure.persistence`, JPA/PostgreSQL): `TeacherJpa` + `TeacherIdentifierJpa`
+  (идентификаторы — отдельная таблица `teacher_identifier`, значение хранится строкой и конвертируется
+  по `IdentifierType.getValueClass()`), `studentIds` — `@ElementCollection` → `teacher_student`;
+  `TeacherDataRepository` (`findWithChildren`/`findByIdentifier` — `LEFT JOIN FETCH` коллекций),
+  `TeacherJpaMapper` (diff-sync идентификаторов) и `JpaTeacherRepository`.

@@ -53,7 +53,7 @@ ACTIVE, ENDED
 
 ### StudentQueryService
 - `searchByNameFragment(SearchStudentsQuery)` — ищет учеников по подстроке имени без учёта регистра среди заданного множества `studentIds`, возвращает `List<StudentInfo>` в стабильном порядке (по имени). Лимит подсказок не входит в query — это UI-параметр чат-бота.
-- Все read-методы (`findStudentsByIds`, `searchByNameFragment`, `findByNameIn`, `findStudentDetails`, `getCefrLevel`, `getDictionaryId`) исключают удалённых учеников (`.filter(s -> !s.isDeleted())`). `existsByName` исключает удалённых на уровне `InMemoryStudentRepository.existsByNameInIds`.
+- Все read-методы (`findStudentsByIds`, `searchByNameFragment`, `findByNameIn`, `findStudentDetails`, `getCefrLevel`, `getDictionaryId`) исключают удалённых учеников. `findStudentsByIds`/`searchByNameFragment`/`findByNameIn` используют batch-метод порта `StudentRepository.findAllActiveByIds` (один SELECT `id IN (...) AND deleted = false`), фильтрация/сортировка имён остаются в сервисе; `existsByName` исключает удалённых на уровне `JpaStudentRepository.existsByNameInIds`.
 
 ### DeleteStudent
 - `DeleteStudentUseCase`: `findById` → «Student not found» (`IllegalArgumentException`) → идемпотентный short-circuit `if (isDeleted) return` → проверка активного урока через `LessonRepository.findActiveByStudentId` (присутствует → `StudentDeletionNotAllowedException`) → `markDeleted()` → `save`.
@@ -67,5 +67,8 @@ ACTIVE, ENDED
 ```
 
 ## Инфраструктура
-- `InMemoryStudentRepository` — `ConcurrentHashMap<StudentId, Student>`
-- `InMemoryLessonRepository` — `ConcurrentHashMap<LessonId, Lesson>`
+- Persistence (`infrastructure.persistence`, JPA/PostgreSQL): `StudentJpa` + `LessonJpa`
+  (`wordInfoIds` — `@ElementCollection` → `lesson_word_info`), `StudentDataRepository` (Spring Data:
+  `findByIdInAndDeletedFalse`, `existsByIdInAndDeletedFalseAndNameIgnoreCase`), `LessonDataRepository`
+  (`JOIN FETCH wordInfoIds`), мапперы `StudentJpaMapper`/`LessonJpaMapper` и адаптеры
+  `JpaStudentRepository`/`JpaLessonRepository`.

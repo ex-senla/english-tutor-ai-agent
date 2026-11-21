@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Slf4j
 public class GenerateExerciseUseCase implements GenerateExercise {
@@ -34,14 +35,18 @@ public class GenerateExerciseUseCase implements GenerateExercise {
 
     private final GrammarTopicCatalog topicCatalog;
 
+    private final TransactionTemplate transactionTemplate;
+
     public GenerateExerciseUseCase(ExerciseRepository repository, ExerciseGenerator generator, FindWords findWords,
-            IncrementWordRepetitions incrementWordRepetitions, GrammarTopicCatalog topicCatalog) {
+            IncrementWordRepetitions incrementWordRepetitions, GrammarTopicCatalog topicCatalog,
+            TransactionTemplate transactionTemplate) {
         this.repository = Objects.requireNonNull(repository, "repository must not be null");
         this.generator = Objects.requireNonNull(generator, "generator must not be null");
         this.findWords = Objects.requireNonNull(findWords, "findWords must not be null");
         this.incrementWordRepetitions = Objects.requireNonNull(incrementWordRepetitions,
                 "incrementWordRepetitions must not be null");
         this.topicCatalog = Objects.requireNonNull(topicCatalog, "topicCatalog must not be null");
+        this.transactionTemplate = Objects.requireNonNull(transactionTemplate, "transactionTemplate must not be null");
     }
 
     @Override
@@ -63,10 +68,13 @@ public class GenerateExerciseUseCase implements GenerateExercise {
         exercise.setExpectedAnswers(dto.expectedAnswers());
         exercise.setItems(dto.items());
 
-        repository.save(exercise);
-
         var usedIds = determineUsedWordIds(words, dto.items());
-        incrementWordRepetitions.execute(command.dictionaryId(), usedIds);
+
+        // LLM-вызов выполнен вне транзакции; запись упражнения и инкременты — атомарно в короткой транзакции.
+        transactionTemplate.executeWithoutResult(status -> {
+            repository.save(exercise);
+            incrementWordRepetitions.execute(command.dictionaryId(), usedIds);
+        });
         log.info("Incremented repetitions for used words {}", usedIds);
 
         return new ExerciseDto(exercise.getId(), exercise.getType(), exercise.getTopic(),

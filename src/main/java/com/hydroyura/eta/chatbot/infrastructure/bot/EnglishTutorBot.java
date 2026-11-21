@@ -10,6 +10,7 @@ import com.hydroyura.eta.chatbot.view.Callbacks;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
@@ -26,6 +27,7 @@ import static com.hydroyura.eta.chatbot.view.Messages.GENERATING_EXERCISE;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "telegram.bot.enabled", havingValue = "true", matchIfMissing = true)
 public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final String botUsername;

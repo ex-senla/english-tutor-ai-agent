@@ -6,6 +6,7 @@ import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatId;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.student.api.student.CefrLevel;
+import com.hydroyura.eta.student.api.student.StudentAlreadyExistsException;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
@@ -48,6 +49,28 @@ class LevelCbAwaitingStudentLevelTransitionTest {
         assertThat(chat.getState()).isEqualTo(ChatState.ACTIVE);
         assertThat(chat.getContext()).doesNotContainKey("pendingStudentName");
         assertThat(result).isInstanceOf(ActionResult.TextWithReplyKeyboard.class);
+    }
+
+    @Test
+    void shouldReturnEnterAnotherNameOnDuplicateStudentName() {
+        var findTeacher = mock(FindTeacher.class);
+        var createStudentWithDictionary = mock(CreateStudentWithDictionary.class);
+
+        var teacherId = TeacherId.generate();
+        when(findTeacher.findByTelegramChatId(1L)).thenReturn(Optional.of(teacherId));
+        when(createStudentWithDictionary.execute(any()))
+                .thenThrow(new StudentAlreadyExistsException("Иван"));
+
+        var transition = new LevelCbAwaitingStudentLevelTransition(findTeacher, createStudentWithDictionary);
+
+        var chat = Chat.ofDefaults(new ChatId(1L));
+        chat.getContext().put("pendingStudentName", "Иван");
+
+        var result = transition.transit(chat, new Action.Callback("level", "B1", 42));
+
+        assertThat(result).isInstanceOf(ActionResult.TextResponse.class);
+        assertThat(chat.getState()).isEqualTo(ChatState.AWAITING_STUDENT_NAME);
+        assertThat(chat.getContext()).doesNotContainKey("pendingStudentName");
     }
 
     @Test

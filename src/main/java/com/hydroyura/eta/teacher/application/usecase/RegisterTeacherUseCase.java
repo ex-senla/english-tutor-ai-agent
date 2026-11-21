@@ -10,9 +10,11 @@ import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class RegisterTeacherUseCase implements RegisterTeacher {
 
     private final TeacherRepository teacherRepository;

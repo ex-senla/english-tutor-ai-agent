@@ -10,7 +10,7 @@
 | 2 | **Добавление учеников** | ✅ done | кнопка `➕ Новый студент` или `/new` | Создаётся Student + Dictionary |
 | 3 | **Список учеников** | ✅ done | кнопка `👥 Мои студенты` или `/list` | Inline-кнопки, редактирование сообщения |
 | 4 | **Детали ученика** | ✅ done | кнопка `📋 Details` | Имя, CEFR-уровень, статистика словаря, признак активного урока; кнопки «Изменить уровень» / «Удалить» / «Назад» |
-| 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в InMemoryLessonRepository |
+| 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в PostgreSQL (LessonJpa) |
 | 6 | **Добавление слов на уроке** | ✅ done | в `IN_LESSON` просто отправьте слово → POS → AI-переводы/свой перевод | `IN_LESSON` — режим ввода; кнопка «➕ Добавить слово» и `/addword` удалены (#42) |
 | 7 | **Завершение урока** | ✅ done | кнопка `🏁 Завершить урок` | EndLesson, возврат в STUDENT_OPTIONS |
 | 8 | **Генерация упражнений** | ✅ done | кнопка `🎯 Exercise` | Выбор типа → выбор грамматической темы (дерево/поиск/«Своя тема») → выбор слов → генерация + PDF |
@@ -21,7 +21,7 @@
 | # | Компонент | Статус | Заметки |
 |---|-----------|--------|---------|
 | C1 | State machine: 23 состояния | ✅ done | Enum State, все 23 |
-| C2 | StateMachine entity + repository | ✅ done | StateMachineId, InMemoryStateMachineRepository |
+| C2 | Chat entity + repository | ✅ done | ChatId, ChatState, context (jsonb) — JPA (`ChatJpa`/`JpaChatRepository`) |
 | C3 | `EnglishTutorBot` | ✅ done | Обработка SendMessage / EditMessageText / DeleteMessage / ReplyKeyboardRemove |
 | C4 | `ActionHandler` | ✅ done | Центральный обработчик, switch по состояниям |
 | C5 | `Action` / `ActionResult` sealed types | ✅ done | Command, InputParam, Callback; TextResponse, TextWithInlineKeyboard, TextWithReplyKeyboard, EditMessageText, DeleteMessage |
@@ -34,23 +34,23 @@
 
 | # | Задача | Статус | Заметки |
 |---|--------|--------|---------|
-| I1 | JPA entities + репозитории | ❌ | Замена всех InMemory*Repository |
-| I2 | PostgreSQL + Flyway миграции | ❌ | |
+| I1 | JPA entities + репозитории | ✅ done | Все `InMemory*Repository` заменены JPA-адаптерами (`*Jpa` + `*DataRepository` + `Jpa*Repository`) |
+| I2 | PostgreSQL + Flyway миграции | ✅ done | `V1__init.sql` (12 таблиц), `ddl-auto: validate`, Testcontainers |
 | I3 | Spring AI интеграция | ✅ done | Реальные LLM-вызовы: `SpringAiExerciseGenerator` (генерация), `SpringAiTopicValidator` (валидация темы), `SpringAiWordTranslator` (POS+переводы), все с fallback |
-| I4 | `/debug` endpoint | ✅ done | DebugController, SnapshotProvider |
+| I4 | `/debug` endpoint | ✅ done | Удалён вместе с `DebugController`/`SnapshotProvider` при переходе на JPA |
 | I5 | E2E UI-тесты бота | ❌ | #50: полное end-to-end тестирование телеграм-бота через UI (подготовка к пайпланам) |
 
 ## Технический долг
 
 | # | Задача | Статус |
 |---|--------|--------|
-| D1 | `EtaApplicationTests` — восстановить | ❌ |
-| D2 | InMemoryDictionaryRepository → JPA | ❌ |
-| D3 | InMemoryStudentRepository → JPA | ❌ |
-| D4 | InMemoryTeacherRepository → JPA | ❌ |
-| D5 | InMemoryLessonRepository → JPA | ❌ |
-| D6 | InMemoryExerciseRepository → JPA | ❌ |
-| D7 | InMemoryStateMachineRepository → persistent | ❌ |
+| D1 | `EtaApplicationTests` — восстановить | ✅ done | Smoke `@SpringBootTest` + Testcontainers |
+| D2 | InMemoryDictionaryRepository → JPA | ✅ done | `JpaDictionaryRepository` |
+| D3 | InMemoryStudentRepository → JPA | ✅ done | `JpaStudentRepository` (+ `findAllActiveByIds`) |
+| D4 | InMemoryTeacherRepository → JPA | ✅ done | `JpaTeacherRepository` |
+| D5 | InMemoryLessonRepository → JPA | ✅ done | `JpaLessonRepository` |
+| D6 | InMemoryExerciseRepository → JPA | ✅ done | `JpaExerciseRepository` |
+| D7 | InMemoryStateMachineRepository → persistent | ✅ done | `JpaChatRepository` (Chat = персистентный контекст стейт-машины) |
 | D8 | Команды `/new` и `/list` вместо `/newstudent` и `/students` | ✅ done |
 | D9 | Уровень CEFR как входной параметр генерации упражнений (сейчас захардкожен `A2` в `SpringAiExerciseGenerator`) | ✅ done |
 

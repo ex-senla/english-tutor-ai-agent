@@ -8,7 +8,9 @@ import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public class CheckExerciseUseCase implements CheckExercise {
 
     private final ExerciseRepository repository;

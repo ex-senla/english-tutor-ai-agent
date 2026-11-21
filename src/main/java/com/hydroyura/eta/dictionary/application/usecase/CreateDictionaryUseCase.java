@@ -7,11 +7,13 @@ import com.hydroyura.eta.dictionary.domain.dictionary.Dictionary;
 import com.hydroyura.eta.dictionary.domain.dictionary.DictionaryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CreateDictionaryUseCase implements CreateDictionary {
 
     private final DictionaryRepository dictionaryRepository;

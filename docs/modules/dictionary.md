@@ -83,5 +83,8 @@ NEW, IN_PROGRESS, LEARNED
 ```
 
 ## Инфраструктура
-- `InMemoryDictionaryRepository` — `ConcurrentHashMap<DictionaryId, Dictionary>`
+- Persistence (`infrastructure.persistence`, JPA/PostgreSQL): `DictionaryJpa` + `WordInfoJpa`
+  (переводы — `@ElementCollection` → `word_info_translation`), `DictionaryDataRepository`
+  (Spring Data, `findWithWordInfos` с `LEFT JOIN FETCH` слов и переводов), `DictionaryJpaMapper`
+  (домен↔JPA, diff-sync) и `JpaDictionaryRepository` — адаптер порта `DictionaryRepository`.
 - `SpringAiWordTranslator` (`infrastructure.ai`, `@Component`) — адаптер порта `WordTranslator` на Spring AI `ChatClient`; читает `WordTranslationProperties` (`eta.dictionary.translation.variant-count`, default 3) и `WordInfoSpecificationProperties`, валидирует и дедуплицирует варианты, отбрасывает невалидные, при ошибке/пустом ответе AI возвращает пустой список. Метод `suggestPosAndTranslations` (промпт `word-pos-translations-system.txt`) определяет POS (`noun`/`verb`/`adjective`/`expression`) и переводы одним вызовом; неизвестный POS/пустой ответ/пустые переводы/сбой → `partOfSpeech == null`. Использует существующий bean `ChatClient` из `exercise.infrastructure.ai.AiConfig` (скрытая bean-связка `dictionary → exercise`, невидимая для Modulith-verify; перенос `AiConfig` — отдельная задача при третьем потребителе).

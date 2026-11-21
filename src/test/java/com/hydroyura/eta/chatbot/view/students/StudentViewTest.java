@@ -77,4 +77,20 @@ class StudentViewTest {
         assertThat(edit.text()).isEqualTo(Messages.STUDENT_NOT_FOUND_OR_DELETED);
         assertThat(edit.keyboard()).isNotEmpty();
     }
+
+    @Test
+    void studentsListMenuShouldContainNewStudentButton() {
+        var student = new StudentInfo(StudentId.generate(), "Bob");
+
+        var result = StudentView.studentsListMenu(List.of(student));
+        var keyboard = ((ActionResult.TextWithInlineKeyboard) result).keyboard();
+
+        var newStudentButton = keyboard.stream()
+                .flatMap(List::stream)
+                .filter(b -> b.text().equals(Buttons.NEW_STUDENT))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(newStudentButton.callbackData()).isEqualTo(Callbacks.NEW_STUDENT);
+    }
 }

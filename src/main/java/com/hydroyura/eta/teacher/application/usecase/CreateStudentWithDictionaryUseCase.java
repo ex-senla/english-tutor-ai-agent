@@ -4,6 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionaryCommand;
 import com.hydroyura.eta.student.api.student.CreateStudent;
 import com.hydroyura.eta.student.api.student.CreateStudentCommand;
+import com.hydroyura.eta.student.api.student.StudentAlreadyExistsException;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentQuery;
@@ -12,6 +13,7 @@ import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,12 +28,13 @@ public class CreateStudentWithDictionaryUseCase implements CreateStudentWithDict
     private final CreateStudent createStudent;
 
     @Override
+    @Transactional
     public StudentId execute(CreateStudentWithDictionaryCommand cmd) {
         var teacher = teacherRepository.findById(cmd.teacherId())
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found: " + cmd.teacherId()));
 
         if (studentQuery.existsByName(new StudentExistsByNameQuery(teacher.getStudentIds(), cmd.studentName()))) {
-            throw new IllegalArgumentException("Student '" + cmd.studentName() + "' already exists");
+            throw new StudentAlreadyExistsException(cmd.studentName());
         }
 
         var dictId = createDictionary.execute(new CreateDictionaryCommand(cmd.dictionaryName()));

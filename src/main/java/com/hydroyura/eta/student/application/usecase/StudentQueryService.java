@@ -15,11 +15,16 @@ import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StudentQueryService implements StudentQuery {
 
     private final StudentRepository studentRepository;
@@ -35,12 +40,9 @@ public class StudentQueryService implements StudentQuery {
 
     @Override
     public Optional<StudentId> findByNameIn(FindStudentByNameQuery query) {
-        return query.studentIds().stream()
-                .map(studentRepository::findById)
-                .flatMap(Optional::stream)
-                .filter(s -> !s.isDeleted())
+        return studentRepository.findAllActiveByIds(query.studentIds()).stream()
                 .filter(s -> s.getName().equalsIgnoreCase(query.name()))
-                .map(s -> s.getId())
+                .map(Student::getId)
                 .findFirst();
     }
 
@@ -53,10 +55,11 @@ public class StudentQueryService implements StudentQuery {
 
     @Override
     public List<StudentInfo> findStudentsByIds(Set<StudentId> ids) {
+        var byId = studentRepository.findAllActiveByIds(ids).stream()
+                .collect(Collectors.toMap(Student::getId, Function.identity()));
         return ids.stream()
-                .map(studentRepository::findById)
-                .flatMap(Optional::stream)
-                .filter(s -> !s.isDeleted())
+                .map(byId::get)
+                .filter(Objects::nonNull)
                 .map(s -> new StudentInfo(s.getId(), s.getName()))
                 .toList();
     }
@@ -64,10 +67,7 @@ public class StudentQueryService implements StudentQuery {
     @Override
     public List<StudentInfo> searchByNameFragment(SearchStudentsQuery query) {
         var fragment = query.fragment().toLowerCase();
-        return query.studentIds().stream()
-                .map(studentRepository::findById)
-                .flatMap(Optional::stream)
-                .filter(s -> !s.isDeleted())
+        return studentRepository.findAllActiveByIds(query.studentIds()).stream()
                 .filter(s -> s.getName().toLowerCase().contains(fragment))
                 .map(s -> new StudentInfo(s.getId(), s.getName()))
                 .sorted(Comparator.comparing(StudentInfo::name, String.CASE_INSENSITIVE_ORDER))

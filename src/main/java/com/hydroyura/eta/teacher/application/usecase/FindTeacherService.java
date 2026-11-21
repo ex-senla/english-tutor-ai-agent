@@ -7,11 +7,13 @@ import com.hydroyura.eta.teacher.api.teacher.TeacherId;
 import com.hydroyura.eta.teacher.domain.teacher.Teacher;
 import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FindTeacherService implements FindTeacher {
 
     private final TeacherRepository teacherRepository;

@@ -31,8 +31,9 @@ public class StudentView {
                 .map(s -> List.of(new ActionResult.InlineButton(s.name(), createCallbackData(Callbacks.STUDENT, s.id()
                         .value().toString()))))
                 .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK,
-                Callbacks.MAIN))));
+        keyboard.add(List.of(
+                new ActionResult.InlineButton(Buttons.NEW_STUDENT, createCallbackData(Callbacks.NEW_STUDENT)),
+                new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
 
         return new ActionResult.TextWithInlineKeyboard("Ваши ученики:", keyboard);
     }
@@ -154,8 +155,9 @@ public class StudentView {
                 .map(info -> List.of(new ActionResult.InlineButton(info.name(),
                         createCallbackData(Callbacks.STUDENT, info.id().value().toString()))))
                 .toList());
-        keyboard.add(List.of(new ActionResult.InlineButton(Buttons.BACK,
-                createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
+        keyboard.add(List.of(
+                new ActionResult.InlineButton(Buttons.NEW_STUDENT, createCallbackData(Callbacks.NEW_STUDENT)),
+                new ActionResult.InlineButton(Buttons.BACK, createCallbackData(Callbacks.BACK, Callbacks.MAIN))));
         return keyboard;
     }
 

@@ -34,6 +34,16 @@ public final class WordInfo {
 
     private Integer resetCount;
 
+    /**
+     * Восстанавливает {@link WordInfo} из персистентного состояния (без генерации ID и валидации).
+     */
+    public static WordInfo restore(WordInfoId id, Word word, Set<String> translations,
+            PartOfSpeech partOfSpeech, Integer targetRepetitions, Integer currentRepetitions,
+            Integer resetCount) {
+        return new WordInfo(id, word, Set.copyOf(translations), partOfSpeech, targetRepetitions,
+                currentRepetitions, resetCount);
+    }
+
     public WordStatus getStatus() {
         if (currentRepetitions == null || targetRepetitions == null) {
             return WordStatus.NEW;

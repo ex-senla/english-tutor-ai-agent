@@ -10,6 +10,7 @@ import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.student.api.student.FindStudentByNameQuery;
 import com.hydroyura.eta.student.api.student.SearchStudentsQuery;
+import com.hydroyura.eta.student.api.student.StudentAlreadyExistsException;
 import com.hydroyura.eta.student.api.student.StudentExistsByNameQuery;
 import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
@@ -129,7 +130,7 @@ class CreateStudentWithDictionaryUseCaseTest {
         var cmd = new CreateStudentWithDictionaryCommand(teacherId, "Иван", "Словарь", CefrLevel.A2);
 
         assertThatThrownBy(() -> useCase.execute(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(StudentAlreadyExistsException.class)
                 .hasMessageContaining("already exists");
     }
 
@@ -210,6 +211,14 @@ class CreateStudentWithDictionaryUseCaseTest {
         public boolean existsByNameInIds(Set<StudentId> ids, String name) {
             return ids.stream().map(store::get)
                     .anyMatch(s -> s != null && !s.isDeleted() && s.getName().equalsIgnoreCase(name));
+        }
+
+        @Override
+        public java.util.List<Student> findAllActiveByIds(Set<StudentId> ids) {
+            return ids.stream().map(store::get)
+                    .filter(java.util.Objects::nonNull)
+                    .filter(s -> !s.isDeleted())
+                    .toList();
         }
     }
 }

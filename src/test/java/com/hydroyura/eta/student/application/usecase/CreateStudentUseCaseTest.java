@@ -79,5 +79,13 @@ class CreateStudentUseCaseTest {
         public boolean existsByNameInIds(Set<StudentId> ids, String name) {
             return ids.stream().map(store::get).anyMatch(s -> s != null && s.getName().equalsIgnoreCase(name));
         }
+
+        @Override
+        public java.util.List<Student> findAllActiveByIds(Set<StudentId> ids) {
+            return ids.stream().map(store::get)
+                    .filter(java.util.Objects::nonNull)
+                    .filter(s -> !s.isDeleted())
+                    .toList();
+        }
     }
 }

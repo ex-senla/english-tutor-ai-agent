@@ -5,6 +5,7 @@ import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProp
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
 import com.hydroyura.eta.chatbot.application.statemachine.handler.Handler;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.NewStudentTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.StartCmdTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentListTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.DefaultCmdActiveTransition;
@@ -216,6 +217,8 @@ public class StateMachineConfig {
         stateMachine.onCommand(STUDENTS_LIST, Commands.NEW, newStudentTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.LIST, listCmdStudentsListTransition);
         stateMachine.onCommand(STUDENTS_LIST, Commands.HELP, listCmdStudentsListTransition);
+        stateMachine.onButton(STUDENTS_LIST, Buttons.NEW_STUDENT, newStudentTransition);
+        stateMachine.onCallback(STUDENTS_LIST, Callbacks.NEW_STUDENT, newStudentTransition);
 
         // STUDENT_OPTIONS
         stateMachine.onCallback(STUDENT_OPTIONS, Callbacks.ACTION, new ActionCbStudentOptionsTransition(startLesson,
@@ -323,12 +326,23 @@ public class StateMachineConfig {
                 new SelectionBackCbAwaitingExerciseWordSelectionTransition());
 
         registerCancelTransitions(stateMachine, studentQuery);
+        registerStartTransitions(stateMachine);
 
         if (!stateMachine.isReady()) {
             throw new RuntimeException();
         }
 
         return stateMachine;
+    }
+
+    private void registerStartTransitions(StateMachine stateMachine) {
+        var startTransition = new StartCmdTransition();
+        for (var state : ChatState.values()) {
+            if (state == ChatState.INITIAL || state == ChatState.ACTIVE) {
+                continue;
+            }
+            stateMachine.onCommand(state, Commands.START, startTransition);
+        }
     }
 
     private void registerCancelTransitions(StateMachine stateMachine, StudentQuery studentQuery) {

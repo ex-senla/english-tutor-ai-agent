@@ -1,6 +1,16 @@
 spring:
   application:
     name: eta
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/eta}
+    username: ${SPRING_DATASOURCE_USERNAME:eta}
+    password: ${SPRING_DATASOURCE_PASSWORD:eta}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
   ai:
     openai:
       api-key: ${AI_API_KEY}
@@ -32,7 +42,7 @@ eta:
     pagination:
       page-size: 8
   demo-students:
-    enabled: true
+    enabled: false
     student-count: 3
     min-words-per-student: 3
     max-words-per-student: 5

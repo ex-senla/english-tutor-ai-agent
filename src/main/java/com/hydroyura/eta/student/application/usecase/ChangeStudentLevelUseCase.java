@@ -6,9 +6,11 @@ import com.hydroyura.eta.student.domain.student.StudentRepository;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ChangeStudentLevelUseCase implements ChangeStudentLevel {
 
     private final StudentRepository studentRepository;

@@ -158,6 +158,14 @@ class DeleteStudentUseCaseTest {
             return ids.stream().map(store::get)
                     .anyMatch(s -> s != null && !s.isDeleted() && s.getName().equalsIgnoreCase(name));
         }
+
+        @Override
+        public java.util.List<Student> findAllActiveByIds(Set<StudentId> ids) {
+            return ids.stream().map(store::get)
+                    .filter(java.util.Objects::nonNull)
+                    .filter(s -> !s.isDeleted())
+                    .toList();
+        }
     }
 
     static class StubLessonRepository implements LessonRepository {

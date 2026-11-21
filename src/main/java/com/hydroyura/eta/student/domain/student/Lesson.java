@@ -51,6 +51,22 @@ public class Lesson {
         return lesson;
     }
 
+    /**
+     * Восстанавливает {@link Lesson} из персистентного состояния (без генерации ID и меток времени).
+     */
+    public static Lesson restore(LessonId id, StudentId studentId, String name, Set<WordInfoId> wordInfoIds,
+            LessonStatus status, Instant startedAt, Instant endedAt) {
+        var lesson = new Lesson();
+        lesson.id = id;
+        lesson.studentId = studentId;
+        lesson.name = name;
+        lesson.wordInfoIds = new HashSet<>(wordInfoIds);
+        lesson.status = status;
+        lesson.startedAt = startedAt;
+        lesson.endedAt = endedAt;
+        return lesson;
+    }
+
     public void addWord(WordInfoId wordInfoId) {
         Objects.requireNonNull(wordInfoId, "WordId must not be null");
         if (this.status != LessonStatus.ACTIVE) {

@@ -8,6 +8,7 @@ import com.hydroyura.eta.chatbot.domain.chat.ChatState;
 import com.hydroyura.eta.chatbot.view.menu.MenuView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.student.api.student.CefrLevel;
+import com.hydroyura.eta.student.api.student.StudentAlreadyExistsException;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionaryCommand;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
@@ -51,7 +52,7 @@ public class LevelCbAwaitingStudentLevelTransition implements Transition<Action.
             chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
             chat.updateState(ChatState.ACTIVE);
             return MenuView.activeMenuWithMessage(STUDENT_ADDED.formatted(name));
-        } catch (IllegalArgumentException e) {
+        } catch (StudentAlreadyExistsException e) {
             log.warn("Failed to create student '{}': {}", name, e.getMessage());
             chat.getContext().remove(PENDING_STUDENT_NAME.getValue());
             chat.updateState(ChatState.AWAITING_STUDENT_NAME);

@@ -11,10 +11,13 @@ import com.hydroyura.eta.exercise.application.topic.GrammarTopicCatalog;
 import com.hydroyura.eta.exercise.application.usecase.CheckExerciseUseCase;
 import com.hydroyura.eta.exercise.application.usecase.GenerateExerciseUseCase;
 import com.hydroyura.eta.exercise.application.usecase.ValidateCustomTopicUseCase;
+import com.hydroyura.eta.exercise.api.exercise.CheckExercise;
 import com.hydroyura.eta.exercise.domain.exercise.ExerciseRepository;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration
 @EnableConfigurationProperties({ExerciseGenerationProperties.class,
@@ -31,8 +34,15 @@ public class ExerciseModuleConfig {
             ExerciseGenerator generator,
             FindWords findWords,
             IncrementWordRepetitions incrementWordRepetitions,
-            GrammarTopicCatalog topicCatalog) {
-        return new GenerateExerciseUseCase(repository, generator, findWords, incrementWordRepetitions, topicCatalog);
+            GrammarTopicCatalog topicCatalog,
+            TransactionTemplate transactionTemplate) {
+        return new GenerateExerciseUseCase(repository, generator, findWords, incrementWordRepetitions, topicCatalog,
+                transactionTemplate);
+    }
+
+    @Bean
+    TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
+        return new TransactionTemplate(transactionManager);
     }
 
     @Bean
@@ -41,7 +51,7 @@ public class ExerciseModuleConfig {
     }
 
     @Bean
-    CheckExerciseUseCase checkExerciseUseCase(ExerciseRepository repository) {
+    CheckExercise checkExerciseUseCase(ExerciseRepository repository) {
         return new CheckExerciseUseCase(repository);
     }
 }

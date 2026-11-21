@@ -5,10 +5,12 @@ import com.hydroyura.eta.student.api.lesson.LessonId;
 import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.domain.student.LessonRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class FindActiveLessonService implements FindActiveLesson {
 
     private final LessonRepository lessonRepository;

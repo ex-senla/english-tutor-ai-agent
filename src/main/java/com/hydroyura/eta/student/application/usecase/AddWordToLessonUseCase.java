@@ -5,9 +5,11 @@ import com.hydroyura.eta.student.api.lesson.AddWordToLessonCommand;
 import com.hydroyura.eta.student.domain.student.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class AddWordToLessonUseCase implements AddWordToLesson {
 
     private final LessonRepository lessonRepository;

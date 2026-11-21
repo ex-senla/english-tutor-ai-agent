@@ -88,4 +88,8 @@
   `AiTopicValidationResponse{valid, canonicalName, matchedCatalogTopic, reason}`.
 - Ресурсы: `exercise/topics/grammar-topics.json` (каталог), `exercise/topics/prompts/<slug>.txt`
   (фрагменты промптов), `exercise/prompts/*-system.txt` (базовые промпты типов упражнения).
-- `InMemoryExerciseRepository` — `ConcurrentHashMap<ExerciseId, Exercise>`.
+- Persistence (`infrastructure.persistence`, JPA/PostgreSQL): `ExerciseJpa` (`expectedAnswers`/`items` —
+  jsonb через `@JdbcTypeCode(SqlTypes.JSON)` + Jackson в `ExerciseJpaMapper`, `wordInfoIds` —
+  `@ElementCollection` → `exercise_word_info`), `ExerciseDataRepository` (`JOIN FETCH wordInfoIds`) и
+  `JpaExerciseRepository`. Запись сгенерированного упражнения + инкременты повторений — атомарно в
+  `TransactionTemplate` (LLM-вызов вне транзакции).

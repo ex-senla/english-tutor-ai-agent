@@ -17,7 +17,7 @@ make reference with student.
 2. Spring Modulith 2.1.0
 3. JMolecules 2025.0.2
 4. Spring AI 2.0.0 (реальные LLM-вызовы: генерация, валидация темы, POS+переводы)
-5. PostgreSQL + Flyway (planned)
+5. PostgreSQL + Spring Data JPA + Flyway (Testcontainers для интеграционных/N+1-тестов)
 6. Telegram Bots 6.9.7.1
 7. OpenHTMLtoPDF + Thymeleaf (экспорт упражнений в PDF)
 
@@ -32,8 +32,7 @@ make reference with student.
 4. **Exercise** — генерация/проверка упражнений (Spring AI), каталог грамматических тем
 5. **Generator** — рендеринг упражнений в PDF (student sheet + teacher answers)
 6. **Chatbot** — Telegram бот, стейт-машина, команды, view-слой
-7. **Shared** — общие контракты: Specification, DomainException, SnapshotProvider
-8. **Debug** — временные REST-эндпоинты (удалить при переходе на JPA/PostgreSQL)
+7. **Shared** — общие контракты: Specification, DomainException
 
 ### Features
 1. Учитель регистрируется в боте (сохраняется chatId и имя учителя).

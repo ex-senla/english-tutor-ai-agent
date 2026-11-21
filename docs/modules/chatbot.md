@@ -149,8 +149,11 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 - `BotCommands` — публичные команды Telegram-меню; `BotInitializer` регистрирует их через
   `SetMyCommands` (ошибка — log warn, не ломает стартап)
 
-Персистентность: `InMemoryChatRepository` (+ `SnapshotProvider` для debug-эндпоинтов;
-план: PostgreSQL + Flyway).
+Персистентность (`infrastructure.persistence`, JPA/PostgreSQL): `ChatJpa` (`chat_id` BIGINT PK,
+`state` STRING, `context` jsonb), `ChatDataRepository`, `JpaChatRepository` (чистый `findById` без
+создания записи; get-or-create только в `ChatService`). Контекст сериализуется типизированным
+конвертером `ChatContextJson` (`{"key": {"t": тег, "v": значение}}`; null-значения пропускаются
+при записи, неизвестный тег при чтении — WARN + пропуск).
 
 ## Тесты
 
@@ -182,10 +185,10 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   даст NPE в рантайме
 - Опечатка в именах `AwatingExerciseAnswerHandler` / `AwatingExerciseTopicHandler` /
   `AwatingExerciseTypeHandler` (→ `Awaiting...`)
-- Поиск имени ученика: загрузка всех студентов учителя и фильтрация в Java (нужен `FindStudentById`)
+- Поиск имени ученика: batch-загрузка активных учеников (`findAllActiveByIds`) + фильтрация в Java
 - Контекст чата остаётся stringly-typed: `Map<String, Object>` + касты, несмотря на `ContextKey`
   (`StudentSupport` использует строку `"selectedStudentId"`)
 - `AWAITING_EXERCISE_ANSWER` недостижим (legacy-ветка интерактивных ответов) — решить судьбу
 - Ошибки `IllegalStateException` без обработки на уровне бота
-- `ChatService.getOrCreate` и `InMemoryChatRepository.findById` дублируют логику создания чата
+- `ChatRepository.findById` — чистый find; создание чата только в `ChatService` (запись — после обработки)
 - FIXME в `ExerciseCbAwaitingExerciseTypeTransition` (NPE-комментарий к lookup payload)

@@ -11,7 +11,10 @@ import com.hydroyura.eta.student.api.student.StudentId;
 import com.hydroyura.eta.student.api.student.StudentInfo;
 import com.hydroyura.eta.student.api.student.StudentQuery;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
+import com.hydroyura.eta.teacher.api.teacher.IdentifierType;
 import com.hydroyura.eta.teacher.api.teacher.TeacherId;
+import com.hydroyura.eta.teacher.domain.teacher.Teacher;
+import com.hydroyura.eta.teacher.domain.teacher.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,9 +44,12 @@ class DemoStudentsSeederTest {
 
     private TeacherId seededTeacherId;
 
+    private boolean existingName;
+
     @BeforeEach
     void setUp() {
         config = new StubConfig();
+        existingName = false;
 
         CreateStudentWithDictionary createStudentWithDictionary = cmd -> {
             seededTeacherId = cmd.teacherId();
@@ -54,11 +60,29 @@ class DemoStudentsSeederTest {
             return studentId;
         };
 
+        TeacherRepository teacherRepository = new TeacherRepository() {
+
+            @Override
+            public Teacher save(Teacher teacher) {
+                return teacher;
+            }
+
+            @Override
+            public Optional<Teacher> findById(TeacherId id) {
+                return Optional.of(Teacher.create(id, "demo"));
+            }
+
+            @Override
+            public Optional<Teacher> findByIdentifier(IdentifierType type, Object value) {
+                return Optional.empty();
+            }
+        };
+
         StudentQuery studentQuery = new StudentQuery() {
 
             @Override
             public boolean existsByName(StudentExistsByNameQuery query) {
-                return false;
+                return existingName;
             }
 
             @Override
@@ -99,7 +123,7 @@ class DemoStudentsSeederTest {
         };
 
         seeder = new DemoStudentsSeeder(config, createStudentWithDictionary, studentQuery, addWordToDictionary,
-                new Random(42));
+                teacherRepository, new Random(42));
     }
 
     @Test
@@ -168,6 +192,20 @@ class DemoStudentsSeederTest {
     void shouldNotCreateStudentsWhenCountIsZero() {
         config.enabled = true;
         config.studentCount = 0;
+
+        seeder.seed(TeacherId.generate());
+
+        assertThat(createdStudentNames).isEmpty();
+        assertThat(addedWords).isEmpty();
+    }
+
+    @Test
+    void shouldSkipStudentWhenNameAlreadyExists() {
+        config.enabled = true;
+        config.studentCount = 2;
+        config.minWordsPerStudent = 1;
+        config.maxWordsPerStudent = 1;
+        existingName = true;
 
         seeder.seed(TeacherId.generate());
 
