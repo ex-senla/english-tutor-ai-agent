@@ -1,0 +1,30 @@
+# Build output
+target/
+src/test/
+
+# VCS
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Docs and root config (not needed in image)
+docs/
+*.md
+Code_style.xml
+
+# Secrets and environment files (never in the image)
+.env
+.env.*
+
+# CI / workflow / agent tooling
+.github/
+.pi/
+openspec/
+
+# Maven wrapper jar is downloaded on demand (distributionType=only-script)
+.mvn/wrapper/maven-wrapper.jar

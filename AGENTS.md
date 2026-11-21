@@ -48,6 +48,18 @@ Local dev database: `docker compose up -d postgres` (credentials match the local
 Demo students seeding is **dev-only and off by default** (`eta.demo-students.enabled=false`);
 enable it locally via env `ETA_DEMO_STUDENTS_ENABLED=true`.
 
+## CI/CD & Releases
+
+- CI: GitHub Actions `.github/workflows/test-deploy.yml`. Triggers: `pull_request` → build
+  (`./mvnw -B verify`, merge gate, no deploy); `push` to `master` → build + deploy to test;
+  `workflow_dispatch` → manual re-deploy.
+- Test environment: Docker image `ghcr.io/ex-senla/english-tutor-ai-agent:<sha>` (built from
+  `Dockerfile`), pushed to GHCR, deployed over SSH to the test VPS via
+  `docker compose -f docker-compose.test.yml pull && up -d` (single long-polling instance).
+- Release policy (trunk-based, semver tags `vX.Y.Z` for prod, SHA tag for test, test→prod
+  criteria, rollback, secrets): `docs/release-policy.md`. Prod pipeline is **not** automated
+  (issue #46 covers only the test environment).
+
 ## Architecture
 
 Modular monolith + DDD. Root package: `com.hydroyura.eta`. One Maven module; each Spring Modulith
@@ -122,6 +134,9 @@ in `infrastructure` packages — the chatbot state machine is platform-agnostic.
   in Russian to match existing style.
 - `docs/roadmap.MD`, `docs/TODO.md`, `docs/chat-bot-state-machine.MD`,
   `docs/exercise-generation-flow.md` — planning and flow documentation.
+- `docs/release-policy.md` — release policy: branching, merge, versioning (prod tags / test SHA),
+  test→prod criteria, rollback, and the manual setup checklist (branch protection, Environment
+  `test`, VPS, test bot).
 
 ## Conventions
 

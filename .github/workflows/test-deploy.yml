@@ -1,0 +1,77 @@
+name: test-deploy
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: test-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '26'
+          cache: maven
+
+      - name: Verify
+        run: ./mvnw -B verify
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: test
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY_IMAGE: ghcr.io/ex-senla/english-tutor-ai-agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY_IMAGE }}:${{ github.sha }}
+
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.TEST_HOST }}
+          SSH_USER: ${{ secrets.TEST_USER }}
+          SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
+          FULL_IMAGE: ${{ env.REGISTRY_IMAGE }}:${{ github.sha }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
+            "cd /opt/eta-test && \
+             IMAGE_TAG='${FULL_IMAGE}' docker compose -f docker-compose.test.yml pull && \
+             IMAGE_TAG='${FULL_IMAGE}' docker compose -f docker-compose.test.yml up -d"

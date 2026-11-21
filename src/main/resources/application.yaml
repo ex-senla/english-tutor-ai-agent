@@ -50,7 +50,7 @@ eta:
 telegram:
   bot:
     token: ${TELEGRAM_BOT_TOKEN}
-    username: eta_tutor_bot
+    username: ${TELEGRAM_BOT_USERNAME:eta_tutor_bot}
 
 logging:
   level:
