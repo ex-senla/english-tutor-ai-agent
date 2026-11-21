@@ -1,5 +1,8 @@
 # Eta English tutor agent
 
+> Актуальные открытые задачи: https://github.com/ex-senla/english-tutor-ai-agent/issues
+> Состояние workflow: `.pi/agentcraft-state.md`
+
 ## Version 1.0.0
 
 This is application (AI agent) for helping English tutor in work. UI is implemented via telegram bot.
@@ -13,21 +16,24 @@ make reference with student.
 1. Spring Boot 4.1.0
 2. Spring Modulith 2.1.0
 3. JMolecules 2025.0.2
-4. Spring AI (planned)
+4. Spring AI 2.0.0 (реальные LLM-вызовы: генерация, валидация темы, POS+переводы)
 5. PostgreSQL + Flyway (planned)
 6. Telegram Bots 6.9.7.1
+7. OpenHTMLtoPDF + Thymeleaf (экспорт упражнений в PDF)
 
 ### Software architecture:
 1. Modular monolith
 2. Domain driven design
 
 ### Bounded contexts (DDD Modules)
-1. **Teacher** — учитель, управление учениками, оркестрация создания Student+Dictionary
-2. **Student** — ученик, уроки (Lesson как часть агрегата)
-3. **Dictionary** — словарь ученика
-4. **Exercise** — упражнения (скелет)
-5. **Chatbot** — Telegram бот, стейт-машина, команды
-6. **Shared** — общие контракты: Specification, DomainException
+1. **Teacher** — учитель, управление учениками, оркестрация создания Student+Dictionary, demo-seeder
+2. **Student** — ученик, уроки (Lesson как часть агрегата), CEFR-уровень
+3. **Dictionary** — словарь ученика, WordInfo агрегат (слово + переводы + POS + статус)
+4. **Exercise** — генерация/проверка упражнений (Spring AI), каталог грамматических тем
+5. **Generator** — рендеринг упражнений в PDF (student sheet + teacher answers)
+6. **Chatbot** — Telegram бот, стейт-машина, команды, view-слой
+7. **Shared** — общие контракты: Specification, DomainException, SnapshotProvider
+8. **Debug** — временные REST-эндпоинты (удалить при переходе на JPA/PostgreSQL)
 
 ### Features
 1. Учитель регистрируется в боте (сохраняется chatId и имя учителя).
@@ -37,9 +43,8 @@ make reference with student.
 5. Учитель может начать урок для конкретного ученика (выбор ученика через клик по кнопке).
 6. Учитель в рамках начатого урока добавляет слова ученику.
 7. Учитель завершает урок, в ответ получает список слов добавленных в рамках урока.
-8. Учитель вне урока, генерирует упражнения для ученика. Для упражнения надо ввести тему и тип (сразу два типа, вставить
-пропущенное слово, и выбрать вариант ответа). Для генерации упражнения берем все слова ученика в статусе на изучении 
-(выбор ученика через клик по кнопке).
+8. Учитель вне урока генерирует упражнения для ученика: тип (fill-in-the-blank / multiple choice) →
+грамматическая тема (каталог/поиск/своя тема) → выбор слов из словаря → генерация + PDF.
 
 ### ChatBot commands && callbacks
 
@@ -47,23 +52,29 @@ make reference with student.
 
 | # | Команда | Описание |
 |---|---------|----------|
-| 1 | `/register` | Регистрация учителя (ввод имени) |
-| 2 | `/new` | Добавление нового ученика (ошибка по уникальности имени) |
-| 3 | `/list` | Список учеников в виде inline-кнопок |
-| 4 | `/addword` | Добавить слово в активном уроке (трёхшаговый ввод: слово → часть речи → перевод) |
-| 5 | `/finishlesson` | Завершить активный урок |
-| 6 | `/help` | Описание бота, список доступных команд |
+| 1 | `/start` | Старт / приветствие |
+| 2 | `/register` | Регистрация учителя (ввод имени) |
+| 3 | `/new` | Добавление нового ученика (ошибка по уникальности имени) |
+| 4 | `/list` | Список учеников в виде inline-кнопок |
+| 5 | `/find` | Поиск ученика по имени |
+| 6 | `/finishlesson` | Завершить активный урок |
+| 7 | `/cancel` | Отмена текущего флоу, возврат в главное меню |
+| 8 | `/help` | Описание бота, список доступных команд |
 
 #### Callback'и (inline-кнопки)
 
-| # | Действие | Описание | Callback data |
-|---|----------|----------|---------------|
-| C1 | Выбор ученика | Клик по кнопке с именем ученика → меню действий | `student:<uuid>` |
-| C2 | Меню ученика | После выбора ученика: Start Lesson, Details, Exercise, Назад | (автоматически, S6) |
-| C3 | Start Lesson | Начать урок для выбранного ученика | `action:startlesson` |
-| C4 | Details | Показать карточку ученика (имя, статистика словаря, статус урока) | `action:details` |
-| C5 | Exercise | Сгенерировать упражнение (многоступенчатый ввод: тип → тема → ответ) | `action:exercise` |
-| C6 | Назад к списку | Вернуться от меню ученика к списку учеников | `action:back` |
-| C7 | Назад к меню | Вернуться от карточки ученика к меню | `details:back` |
-| C8 | Тип упражнения | FILL_IN_THE_BLANK или MULTIPLE_CHOICE | `exercise:FILL_IN_THE_BLANK` / `exercise:MULTIPLE_CHOICE` |
-| C9 | Часть речи | Выбор NOUN, VERB или ADJECTIVE (шаг 2 ввода слова) | `pos:NOUN`, `pos:VERB`, `pos:ADJECTIVE` |
+Callback data имеет формат `prefix:payload`. Основные префиксы (`Callbacks.java`):
+
+| Префикс | Назначение |
+|---------|-----------|
+| `student` | Выбор ученика → меню действий |
+| `action` | Действие в меню ученика: startlesson / details / dictionary / exercise / back |
+| `pos` / `poschange` | Выбор части речи (noun / verb / adjective / expression) |
+| `level` / `levelchange` | CEFR-уровень (A1–C2) / изменение уровня |
+| `studentdel` / `studentdelok` | Подтверждение удаления ученика |
+| `translation` | Выбор AI-перевода или «свой перевод» |
+| `topic` / `topicnav` / `topicsearch` / `topicpg` | Навигация по каталогу грам.тем (дерево/поиск/пагинация) |
+| `topicself` / `topicconfirm` / `topiccatalog` / `topicskip` | «Своя тема», подтверждение, возврат в каталог, пропуск |
+| `exword` / `exfilter` / `expg` / `exdone` / `excont` / `exback` / `exselback` | Выбор слов для упражнения (toggle/фильтр/пагинация/готово) |
+| `wdpg` / `wdreset` / `wdback` | Словарь: пагинация, сброс прогресса, назад |
+| `back` / `prev` / `next` / `main` | Универсальная навигация |

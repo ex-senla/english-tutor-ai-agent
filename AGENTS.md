@@ -7,6 +7,13 @@ Core v1 flow is implemented: registration, students (with CEFR level), lessons, 
 student details, AI exercise generation (fill-in-the-blank / multiple choice) with PDF export for
 student and teacher (see `docs/TODO.md` for remaining work).
 
+## Task tracking
+
+- **Open issues (single source of truth):** https://github.com/ex-senla/english-tutor-ai-agent/issues
+- Workflow position (AgentCraft): `.pi/agentcraft-state.md` — check and keep it in sync after any
+  work on an issue; when an issue is implemented/closed on GitHub, reflect that here and in
+  `docs/TODO.md`.
+
 ## Tech Stack
 
 - Java 26, Maven (wrapper included: `mvnw` / `mvnw.cmd`)

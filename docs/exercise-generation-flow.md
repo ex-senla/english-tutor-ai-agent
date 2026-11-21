@@ -43,7 +43,7 @@
      ├── findWords.findByDictionaryId(dictId) → Set<WordProjection>
      ├── Exercise.create(id, type, topic, wordInfoIds)
      ├── generator.generate(command, Set<WordData>) → ExerciseDto (content + expectedAnswer)
-     │     └── SpringAiExerciseGenerator (скелет, будет Spring AI)
+     │     └── SpringAiExerciseGenerator (Spring AI, ChatClient; с fallback)
      ├── exercise.setContent(dto.content())
      ├── exercise.setExpectedAnswer(dto.expectedAnswer())
      └── ExerciseRepository.save(exercise)
@@ -101,7 +101,7 @@
 | `CheckExerciseUseCase` | Находит Exercise, проверяет ответ, обновляет статус |
 | `ExerciseGenerator` | Порт: `generate(GenerateExerciseCommand, Set<WordData>) → ExerciseDto` |
 | `WordData` | Record: `value`, `translations`, `partOfSpeech` (для передачи в AI) |
-| `SpringAiExerciseGenerator` | Скелет адаптера. Сейчас выводит placeholder с использованными словами |
+| `SpringAiExerciseGenerator` | Реальный Spring AI-адаптер: системный промпт по типу + `{topicGuidance}`-фрагмент темы + словарный блок; при ошибке LLM — fallback |
 
 ### Chatbot
 | Компонент | Назначение |
@@ -171,8 +171,10 @@ sequenceDiagram
 
 ## Что осталось доделать
 
-1. **Spring AI интеграция** — заменить скелет `SpringAiExerciseGenerator` на реальный вызов LLM
-2. **Фильтр слов по статусу** — в roadmap упражнения генерируются только для слов в статусе `IN_PROGRESS`
-3. **Ограничить типы упражнений** — roadmap просит 2 типа: FILL_IN_THE_BLANK + MULTIPLE_CHOICE (сейчас 4)
-4. **Выбор студента** — сейчас берётся первый, нужно дать выбор (особенно в ACTIVE, где нет активного урока)
-5. **В IN_LESSON** — брать слова только из активного урока, а не из всего словаря
+> Все пункты ниже закрыты в последующих итерациях (актуальное состояние — `docs/TODO.md`):
+
+1. ✅ **Spring AI интеграция** — `SpringAiExerciseGenerator` теперь делает реальный LLM-вызов (`#49`)
+2. ✅ **Фильтр слов по статусу** — выбор слов с фильтром NEW/IN_PROGRESS/LEARNED/ALL (`#29`)
+3. ✅ **Ограничить типы упражнений** — оставлены 2 типа: FILL_IN_THE_BLANK + MULTIPLE_CHOICE
+4. ✅ **Выбор студента** — inline-кнопки, выбор конкретного ученика
+5. ✅ **В IN_LESSON** — слова добавляются в активный урок и привязываются к словарю ученика (`#42`)

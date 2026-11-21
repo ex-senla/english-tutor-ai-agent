@@ -1,5 +1,7 @@
 # TODO — v1.0.0
 
+> Open issues (single source of truth): https://github.com/ex-senla/english-tutor-ai-agent/issues
+
 ## Фичи релиза — бот
 
 | # | Фича | Статус | Как вызвать | Заметки |
@@ -7,18 +9,18 @@
 | 1 | **Регистрация учителя** | ✅ done | `/register` → ввод имени | |
 | 2 | **Добавление учеников** | ✅ done | кнопка `➕ Новый студент` или `/new` | Создаётся Student + Dictionary |
 | 3 | **Список учеников** | ✅ done | кнопка `👥 Мои студенты` или `/list` | Inline-кнопки, редактирование сообщения |
-| 4 | **Детали ученика** | ❌ stub | кнопка `📋 Details` | Показывает "Детали ученика (TODO)" |
+| 4 | **Детали ученика** | ✅ done | кнопка `📋 Details` | Имя, CEFR-уровень, статистика словаря, признак активного урока; кнопки «Изменить уровень» / «Удалить» / «Назад» |
 | 5 | **Начало урока** | ✅ done | кнопка `▶ Start Lesson` | Создаёт Lesson, сохраняет в InMemoryLessonRepository |
 | 6 | **Добавление слов на уроке** | ✅ done | в `IN_LESSON` просто отправьте слово → POS → AI-переводы/свой перевод | `IN_LESSON` — режим ввода; кнопка «➕ Добавить слово» и `/addword` удалены (#42) |
 | 7 | **Завершение урока** | ✅ done | кнопка `🏁 Завершить урок` | EndLesson, возврат в STUDENT_OPTIONS |
 | 8 | **Генерация упражнений** | ✅ done | кнопка `🎯 Exercise` | Выбор типа → выбор грамматической темы (дерево/поиск/«Своя тема») → выбор слов → генерация + PDF |
-| 9 | **Обработка дубляжа слова** | ❌ | добавление слова, которое уже есть в словаре | Сейчас бросает исключение, нужно переиспользовать существующее
+| 9 | **Обработка дубляжа слова** | 🟡 частично | добавление слова, которое уже есть в словаре | Бот ловит `WordAlreadyExistsException` и показывает «Слово уже есть в словаре» + переводы, но НЕ переиспользует/обновляет существующее слово |
 
 ## Chatbot — реализация v2
 
 | # | Компонент | Статус | Заметки |
 |---|-----------|--------|---------|
-| C1 | State machine: 18 состояний | ✅ done | Enum State, все 18 |
+| C1 | State machine: 23 состояния | ✅ done | Enum State, все 23 |
 | C2 | StateMachine entity + repository | ✅ done | StateMachineId, InMemoryStateMachineRepository |
 | C3 | `EnglishTutorBot` | ✅ done | Обработка SendMessage / EditMessageText / DeleteMessage / ReplyKeyboardRemove |
 | C4 | `ActionHandler` | ✅ done | Центральный обработчик, switch по состояниям |
@@ -34,8 +36,9 @@
 |---|--------|--------|---------|
 | I1 | JPA entities + репозитории | ❌ | Замена всех InMemory*Repository |
 | I2 | PostgreSQL + Flyway миграции | ❌ | |
-| I3 | Spring AI интеграция | ❌ | Замена скелета SpringAiExerciseGenerator на реальный LLM |
+| I3 | Spring AI интеграция | ✅ done | Реальные LLM-вызовы: `SpringAiExerciseGenerator` (генерация), `SpringAiTopicValidator` (валидация темы), `SpringAiWordTranslator` (POS+переводы), все с fallback |
 | I4 | `/debug` endpoint | ✅ done | DebugController, SnapshotProvider |
+| I5 | E2E UI-тесты бота | ❌ | #50: полное end-to-end тестирование телеграм-бота через UI (подготовка к пайпланам) |
 
 ## Технический долг
 
