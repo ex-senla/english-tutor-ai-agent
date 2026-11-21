@@ -40,16 +40,20 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
 
     private final StateMachine stateMachine;
 
+    private final ResponseSender responseSender;
+
     public EnglishTutorBot(@Value("${telegram.bot.token}") String botToken,
             @Value("${telegram.bot.username}") String botUsername,
             ChatService chatService, UpdateParser updateParser,
-            SendMessageConverter converter, StateMachine stateMachine) {
+            SendMessageConverter converter, StateMachine stateMachine,
+            ResponseSender responseSender) {
         super(botToken);
         this.botUsername = botUsername;
         this.chatService = chatService;
         this.updateParser = updateParser;
         this.converter = converter;
         this.stateMachine = stateMachine;
+        this.responseSender = responseSender;
     }
 
     @Override
@@ -99,7 +103,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
                     .chatId(chatId.toString())
                     .messageId(twk.cleanupMessageId())
                     .build();
-            execute(delete);
+            responseSender.delete(delete);
         }
 
         // 7. remove reply keyboard when leaving ACTIVE or IN_LESSON state
@@ -109,24 +113,25 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
                     .text("...")
                     .replyMarkup(ReplyKeyboardRemove.builder().removeKeyboard(true).build())
                     .build();
-            var removed = execute(remove);
-            execute(converter.buildDelete(chatId, removed.getMessageId()));
+            var removed = responseSender.send(remove);
+            responseSender.delete(converter.buildDelete(chatId, removed.getMessageId()));
         }
 
         // 8. send documents / send/edit/delete message
         if (result instanceof ActionResult.SendDocuments sendDocuments) {
             for (var doc : sendDocuments.documents()) {
-                execute(converter.convertDocument(doc, chatId));
+                responseSender.send(converter.convertDocument(doc, chatId));
             }
-            execute(converter.convertTextWithInlineKeyboard(sendDocuments.text(), sendDocuments.keyboard(), chatId));
+            responseSender.send(converter.convertTextWithInlineKeyboard(sendDocuments.text(), sendDocuments.keyboard(),
+                    chatId));
             return;
         }
         var response = converter.convert(result, chatId);
         switch (response) {
-            case SendMessage msg -> execute(msg);
-            case EditMessageText edit -> execute(edit);
-            case DeleteMessage delete -> execute(delete);
-            case SendDocument doc -> execute(doc);
+            case SendMessage msg -> responseSender.send(msg);
+            case EditMessageText edit -> responseSender.edit(edit);
+            case DeleteMessage delete -> responseSender.delete(delete);
+            case SendDocument doc -> responseSender.send(doc);
             default -> throw new IllegalStateException("Unexpected response type: " + response.getClass());
         }
     }
@@ -157,7 +162,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             return null;
         }
         try {
-            var sent = execute(SendMessage.builder()
+            var sent = responseSender.send(SendMessage.builder()
                     .chatId(chatId.toString())
                     .text(indicator)
                     .build());
@@ -189,7 +194,7 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             return;
         }
         try {
-            execute(DeleteMessage.builder()
+            responseSender.delete(DeleteMessage.builder()
                     .chatId(chatId.toString())
                     .messageId(messageId)
                     .build());

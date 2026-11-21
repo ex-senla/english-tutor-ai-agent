@@ -38,7 +38,7 @@
 | I2 | PostgreSQL + Flyway миграции | ✅ done | `V1__init.sql` (12 таблиц), `ddl-auto: validate`, Testcontainers |
 | I3 | Spring AI интеграция | ✅ done | Реальные LLM-вызовы: `SpringAiExerciseGenerator` (генерация), `SpringAiTopicValidator` (валидация темы), `SpringAiWordTranslator` (POS+переводы), все с fallback |
 | I4 | `/debug` endpoint | ✅ done | Удалён вместе с `DebugController`/`SnapshotProvider` при переходе на JPA |
-| I5 | E2E UI-тесты бота | ❌ | #50: полное end-to-end тестирование телеграм-бота через UI (подготовка к пайпланам) |
+| I5 | E2E UI-тесты бота | 🟡 частично | #50 часть 1: in-process `BotTester` + 6 E2E-классов (регистрация, ученики, /start-сброс, урок, генерация упражнения, smoke). Часть 2 (Cucumber/UI-транспорт) — отложена |
 
 ## Технический долг
 

@@ -140,7 +140,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   callback `exdone`/`excont` и «⏳ Проверяю тему…» для `AWAITING_CUSTOM_TOPIC` + Input
   (на шаге тематической темы `AWAITING_EXERCISE_THEMATIC_TOPIC` индикатор не отправляется) →
   `StateMachine.applyAction` → удаление индикатора → `ChatService.save` → удаление сообщения
-  из `cleanupMessageId` → `SendMessageConverter` → send/edit/delete. `SendDocuments` отправляется
+  из `cleanupMessageId` → `SendMessageConverter` → порт `ResponseSender` (send/edit/delete). `SendDocuments` отправляется
   батчем: документы по одному, затем текст с inline-клавиатурой. Удаляет reply-клавиатуру при
   выходе из `ACTIVE`/`IN_LESSON` (`shouldRemoveReplyKeyboard` по смене oldState→newState).
   Служебные update (`my_chat_member` — кик, смена статуса) пропускаются
@@ -148,6 +148,12 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
   `convertTextWithInlineKeyboard`; `SendDocuments` конвертером не разбирается — обрабатывается ботом)
 - `BotCommands` — публичные команды Telegram-меню; `BotInitializer` регистрирует их через
   `SetMyCommands` (ошибка — log warn, не ломает стартап)
+- `ResponseSender` — порт исходящих вызовов конвейера: `Message send(SendMessage)`,
+  `void send(SendDocument)`, `void edit(EditMessageText)`, `void delete(DeleteMessage)`, каждый
+  `throws TelegramApiException`. `EnglishTutorBot` отправляет все ответы конвейера только через порт.
+  Продакшн-адаптер `TelegramResponseSender` (`@Component`, `@ConditionalOnProperty(telegram.bot.enabled)`)
+  хранит `DefaultAbsSender` (бот через `@Lazy` — разрыв цикла бот↔порт↔бот) и делегирует в `execute(...)`
+  без изменения семантики; `SetMyCommands` в `BotInitializer` остаётся вне порта
 
 Персистентность (`infrastructure.persistence`, JPA/PostgreSQL): `ChatJpa` (`chat_id` BIGINT PK,
 `state` STRING, `context` jsonb), `ChatDataRepository`, `JpaChatRepository` (чистый `findById` без
@@ -165,6 +171,18 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 `awaitingexercisetopicconfirm/*`, `awaitingexercisethematictopic/*`), поиска (`studentsearch`), отмены (`cancel`, `StateMachineCancelTest`),
 `LevelCbAwaitingStudentLevelTransition`, `BackCb`/`LevelCb` из `awaitingstudentlevelchange`,
 `SendMessageConverterTest`, `BotCommandsTest`, `WordViewTest`, `TopicFlowTransitionTest`.
+
+In-process E2E (`src/test/java/.../chatbot/infrastructure/bot/e2e/`):
+- `BotE2eTestBase` — наследует `PostgresIntegrationTestBase`; `@DynamicPropertySource` задаёт
+  `telegram.bot.enabled=true` (реальный бин `EnglishTutorBot` и его коллабораторы) и
+  `telegrambots.enabled=false` (нет стартерных `TelegramBotsApi`/`TelegramBotInitializer`);
+  `@MockitoBean` на `BotInitializer`, `ResponseSender`, `WordTranslator`, `ExerciseGenerator`,
+  `CustomTopicValidator`; `@BeforeEach` очищает 12 таблиц
+- `BotTester` — фасад: `TestUpdates` (фабрика Update: текст/команда/reply-кнопка/callback),
+  `OutgoingCallsRecorder` (перехват исходящих вызовов в порядке вызова, синтетические `messageId`),
+  `BotDbInspector` (JDBC-чтение `chat` и таблиц в обход JPA-кэшей)
+- сценарии: `BotE2eContextTest` (smoke), `RegistrationE2ETest`, `AddStudentE2ETest`,
+  `StartCommandResetE2ETest`, `LessonWordE2ETest`, `ExerciseGenerationE2ETest`
 
 ## Зависимости
 ```java

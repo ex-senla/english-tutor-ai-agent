@@ -11,7 +11,6 @@ import com.hydroyura.eta.student.domain.student.LessonRepository;
 import com.hydroyura.eta.student.domain.student.LessonStatus;
 import com.hydroyura.eta.student.domain.student.Student;
 import com.hydroyura.eta.student.domain.student.StudentRepository;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

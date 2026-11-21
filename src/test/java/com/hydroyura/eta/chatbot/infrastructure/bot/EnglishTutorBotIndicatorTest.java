@@ -20,7 +20,7 @@ class EnglishTutorBotIndicatorTest {
     @BeforeEach
     void setUp() {
         bot = new EnglishTutorBot("test-token", "test-bot", mock(ChatService.class), mock(UpdateParser.class),
-                mock(SendMessageConverter.class), mock(StateMachine.class));
+                mock(SendMessageConverter.class), mock(StateMachine.class), mock(ResponseSender.class));
     }
 
     @Test

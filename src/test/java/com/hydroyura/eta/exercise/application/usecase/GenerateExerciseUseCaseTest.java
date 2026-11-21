@@ -47,7 +47,8 @@ class GenerateExerciseUseCaseTest {
 
     private static TransactionTemplate txTemplate() {
         var transactionManager = mock(PlatformTransactionManager.class);
-        when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(mock(TransactionStatus.class));
+        when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(mock(
+                TransactionStatus.class));
         return new TransactionTemplate(transactionManager);
     }
 
@@ -291,7 +292,8 @@ class GenerateExerciseUseCaseTest {
         var increment = mock(IncrementWordRepetitions.class);
 
         var transactionManager = mock(PlatformTransactionManager.class);
-        when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(mock(TransactionStatus.class));
+        when(transactionManager.getTransaction(any(TransactionDefinition.class))).thenReturn(mock(
+                TransactionStatus.class));
         var tx = new TransactionTemplate(transactionManager);
 
         var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG, tx);
