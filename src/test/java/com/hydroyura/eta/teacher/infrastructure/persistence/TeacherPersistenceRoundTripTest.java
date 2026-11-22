@@ -32,6 +32,25 @@ class TeacherPersistenceRoundTripTest extends PostgresIntegrationTestBase {
     }
 
     @Test
+    void shouldRoundTripOnboardingCompletedTrue() {
+        var teacher = Teacher.create(TeacherId.generate(), "John");
+        teacher.completeOnboarding();
+        repository.save(teacher);
+
+        var loaded = repository.findById(teacher.getId()).orElseThrow();
+        assertThat(loaded.isOnboardingCompleted()).isTrue();
+    }
+
+    @Test
+    void shouldRoundTripOnboardingCompletedFalse() {
+        var teacher = Teacher.create(TeacherId.generate(), "John");
+        repository.save(teacher);
+
+        var loaded = repository.findById(teacher.getId()).orElseThrow();
+        assertThat(loaded.isOnboardingCompleted()).isFalse();
+    }
+
+    @Test
     void shouldFindTeacherByIdentifier() {
         var teacher = Teacher.create(TeacherId.generate(), "John");
         teacher.getIdentifiers().put(IdentifierType.TELEGRAM, 789012L);

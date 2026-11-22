@@ -27,7 +27,7 @@
 | `AWAITING_EXERCISE_WORD_SELECTION` | Шаг выбора слов для упражнения |
 | `AWAITING_EXERCISE_ANSWER` | Ожидание ответа на упражнение (legacy, недостижим) |
 | `STUDENT_DICTIONARY` | Меню «Словарь» ученика |
-| `ACCOUNT` | Личный кабинет учителя (профиль, поддержка, подписки) |
+| `ACCOUNT` | Личный кабинет учителя (профиль, поддержка, подписки, справка) |
 | `SUPPORT` | Режим поддержки: текст уходит в диалог учителя с поддержкой |
 | `ADMIN_MENU` | Админ-панель: пункты «Учителя» и «Обращения» |
 | `ADMIN_TEACHERS` | Список всех учителей (для админа) |
@@ -139,7 +139,7 @@ AWAITING_POS
 | `exercise` | `fillintheblank`/`multiplechoice` | выбор типа упражнения |
 | `exword`/`exfilter`/`expg`/`exdone`/`excont`/`exback`/`exselback` | — | шаг выбора слов |
 | `wdpg`/`wdreset`/`wdback` | — | словарь |
-| `account` | `support`/`subs`/`back` | действия личного кабинета |
+| `account` | `support`/`subs`/`onboarding`/`back` | действия личного кабинета (в т.ч. повторный просмотр онбординг-справки) |
 | `support` | `back` | выход из режима поддержки |
 | `adm` | `teachers`/`threads`/`teacher:<id>`/`imp:<id>`/`thread:<id>`/`back:<target>` | навигация админ-панели |
 

@@ -6,6 +6,8 @@ import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
 import com.hydroyura.eta.chatbot.domain.chat.Chat;
 import com.hydroyura.eta.chatbot.domain.chat.ChatState;
+import com.hydroyura.eta.chatbot.view.Messages;
+import com.hydroyura.eta.teacher.api.teacher.CompleteOnboarding;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacherCommand;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +20,18 @@ public class InputAwaitingRegistrationNameTransition implements Transition<Actio
 
     private final RegisterTeacher registerTeacher;
 
+    private final CompleteOnboarding completeOnboarding;
+
     private final ActiveMenuSupport activeMenuSupport;
 
     @Override
     public ActionResult transit(Chat chat, Action.Input input) {
         String name = input.text();
-        registerTeacher.execute(new RegisterTeacherCommand(chat.getId().chatId(), name));
+        var teacherId = registerTeacher.execute(new RegisterTeacherCommand(chat.getId().chatId(), name));
         chat.getContext().put(TEACHER_NAME.getValue(), name);
         chat.updateState(ChatState.ACTIVE);
+        completeOnboarding.execute(teacherId);
         log.info("Teacher registered: chatId={}, name={}", chat.getId().chatId(), name);
-        return activeMenuSupport.render(chat);
+        return activeMenuSupport.renderWithMessage(chat, Messages.ONBOARDING_REVIEW);
     }
 }

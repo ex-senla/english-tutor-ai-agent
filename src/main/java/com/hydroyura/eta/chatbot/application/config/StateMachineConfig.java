@@ -14,6 +14,7 @@ import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupp
 import com.hydroyura.eta.chatbot.application.statemachine.transition.account.AccountBtnActiveTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.account.AccountCbTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.account.BackCbAccountTransition;
+import com.hydroyura.eta.chatbot.application.statemachine.transition.account.OnboardingCbAccountTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.account.SubscriptionsCbAccountTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.account.SupportCbAccountTransition;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.active.DefaultCmdActiveTransition;
@@ -120,6 +121,7 @@ import com.hydroyura.eta.support.api.support.AppendSupportMessage;
 import com.hydroyura.eta.support.api.support.FindSupportMessages;
 import com.hydroyura.eta.support.api.support.FindSupportThreads;
 import com.hydroyura.eta.support.api.support.OpenSupportThread;
+import com.hydroyura.eta.teacher.api.teacher.CompleteOnboarding;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
@@ -208,7 +210,8 @@ public class StateMachineConfig {
     public StateMachine stateMachine(Map<ChatState, Handler> chatStateHandlerMap, FindTeacher findTeacher,
             StudentQuery studentQuery, FindActiveLesson findActiveLesson, EndLesson endLesson, FindWords findWords,
             StartLesson startLesson, CreateStudentWithDictionary createStudentWithDictionary,
-            RegisterTeacher registerTeacher, AddWordToDictionary addWordToDictionary, AddWordToLesson addWordToLesson,
+            RegisterTeacher registerTeacher, CompleteOnboarding completeOnboarding,
+            AddWordToDictionary addWordToDictionary, AddWordToLesson addWordToLesson,
             ChangeStudentLevel changeStudentLevel, DeleteStudent deleteStudent,
             GenerateExercise generateExercise, CheckExercise checkExercise,
             GenerateExercisePdf generateExercisePdf, CheckWord checkWord, WordTranslator wordTranslator,
@@ -262,7 +265,7 @@ public class StateMachineConfig {
 
         // AWAITING_REGISTRATION_NAME
         stateMachine.onInput(AWAITING_REGISTRATION_NAME,
-                new InputAwaitingRegistrationNameTransition(registerTeacher, activeMenuSupport));
+                new InputAwaitingRegistrationNameTransition(registerTeacher, completeOnboarding, activeMenuSupport));
 
         // AWAITING_STUDENT_NAME
         stateMachine.onInput(AWAITING_STUDENT_NAME, new InputAwaitingStudentNameTransition());
@@ -389,9 +392,10 @@ public class StateMachineConfig {
         // ACCOUNT
         var supportCbAccount = new SupportCbAccountTransition(resolver, openSupportThread, findSupportMessages);
         var subscriptionsCbAccount = new SubscriptionsCbAccountTransition();
+        var onboardingCbAccount = new OnboardingCbAccountTransition();
         var backCbAccount = new BackCbAccountTransition(activeMenuSupport);
         stateMachine.onCallback(ACCOUNT, Callbacks.ACCOUNT,
-                new AccountCbTransition(supportCbAccount, subscriptionsCbAccount, backCbAccount));
+                new AccountCbTransition(supportCbAccount, subscriptionsCbAccount, onboardingCbAccount, backCbAccount));
 
         // SUPPORT
         stateMachine.onInput(SUPPORT, new InputSupportTransition(appendSupportMessage, findSupportMessages));

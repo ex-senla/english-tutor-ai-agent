@@ -14,12 +14,15 @@ public class AccountCbTransition implements Transition<Action.Callback> {
 
     private final SubscriptionsCbAccountTransition subscriptions;
 
+    private final OnboardingCbAccountTransition onboarding;
+
     private final BackCbAccountTransition back;
 
     public AccountCbTransition(SupportCbAccountTransition support, SubscriptionsCbAccountTransition subscriptions,
-            BackCbAccountTransition back) {
+            OnboardingCbAccountTransition onboarding, BackCbAccountTransition back) {
         this.support = support;
         this.subscriptions = subscriptions;
+        this.onboarding = onboarding;
         this.back = back;
     }
 
@@ -28,6 +31,7 @@ public class AccountCbTransition implements Transition<Action.Callback> {
         return switch (callback.payload()) {
             case Callbacks.SUPPORT -> support.transit(chat, callback);
             case Callbacks.SUBSCRIPTIONS -> subscriptions.transit(chat, callback);
+            case Callbacks.ONBOARDING -> onboarding.transit(chat, callback);
             case Callbacks.BACK -> back.transit(chat, callback);
             default -> new ActionResult.TextResponse(USE_BUTTONS_BELOW);
         };

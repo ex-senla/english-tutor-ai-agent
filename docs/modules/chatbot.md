@@ -69,6 +69,14 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 `StartLesson`, `AddWordToDictionary`, `GenerateExercise`, `GenerateExercisePdf`, ...),
 мутирует собственный агрегат `Chat` и возвращает `ActionResult`. Чужие репозитории не инжектятся.
 
+Завершение регистрации (`InputAwaitingRegistrationNameTransition`) вызывает `RegisterTeacher`,
+переводит чат в `ACTIVE`, вызывает порт `CompleteOnboarding` модуля teacher и возвращает одно
+сообщение — онбординг-обзор (`Messages.ONBOARDING_REVIEW`) + главное меню + reply-клавиатуру
+(`ActiveMenuSupport.renderWithMessage` → `MenuView.activeMenuWithMessage`). Повторный просмотр
+обзора — из личного кабинета: кнопка «📖 Справка» (payload `onboarding` → `account:onboarding`)
+роутится `AccountCbTransition` в `OnboardingCbAccountTransition` (`TextResponse`, состояние
+`ACCOUNT` и БД не меняются).
+
 Именование: `<Что><Триггер><Состояние>Transition`, триггеры: `Cmd` / `Inp` / `Cb` / `Btn`.
 Например `NewCmdActiveTransition`, `StudentListTransition`, `PosCbAwaitingPosTransition`.
 Пакеты по состояниям (`active/`, `initial/`, `studentslist/`, `studentsearch/`, `cancel/`,
@@ -121,7 +129,7 @@ Sealed-иерархия ответов: `TextResponse`, `TextWithInlineKeyboard`
 Словари констант — единый источник для рендера и парсинга:
 - `Buttons` — тексты кнопок + `REPLY_BUTTONS` (множество reply-кнопок для `UpdateParser`)
 - `Callbacks` — префиксы и payload колбэков (`"student"`, `"action"`, `"pos"`, `"level"`,
-  `"translation"`, `"own"`, ...)
+  `"translation"`, `"own"`, `"onboarding"`, ...)
 - `Commands` — команды (`"/register"`, `"/new"`, `"/find"`, `"/cancel"`, ...)
 - `Messages` — тексты сообщений
 - `util/ViewUtils.createCallbackData(...)` — сборка `"prefix:payload"`

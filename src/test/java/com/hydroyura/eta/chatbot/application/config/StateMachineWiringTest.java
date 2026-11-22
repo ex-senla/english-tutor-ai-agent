@@ -41,6 +41,7 @@ import com.hydroyura.eta.support.api.support.AppendSupportMessage;
 import com.hydroyura.eta.support.api.support.FindSupportMessages;
 import com.hydroyura.eta.support.api.support.FindSupportThreads;
 import com.hydroyura.eta.support.api.support.OpenSupportThread;
+import com.hydroyura.eta.teacher.api.teacher.CompleteOnboarding;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
@@ -84,6 +85,7 @@ class StateMachineWiringTest {
         var startLesson = mock(StartLesson.class);
         var createStudentWithDictionary = mock(CreateStudentWithDictionary.class);
         var registerTeacher = mock(RegisterTeacher.class);
+        var completeOnboarding = mock(CompleteOnboarding.class);
         var addWordToDictionary = mock(AddWordToDictionary.class);
         var addWordToLesson = mock(AddWordToLesson.class);
         var changeStudentLevel = mock(ChangeStudentLevel.class);
@@ -123,9 +125,9 @@ class StateMachineWiringTest {
                 ChatState.STUDENT_OPTIONS, sentinelHandler());
 
         stateMachine = new StateMachineConfig().stateMachine(handlers, findTeacher, studentQuery, findActiveLesson,
-                endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, addWordToDictionary,
-                addWordToLesson, changeStudentLevel, deleteStudent, generateExercise, checkExercise,
-                generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
+                endLesson, findWords, startLesson, createStudentWithDictionary, registerTeacher, completeOnboarding,
+                addWordToDictionary, addWordToLesson, changeStudentLevel, deleteStudent, generateExercise,
+                checkExercise, generateExercisePdf, checkWord, wordTranslator, resetWordLearning, exerciseTopics,
                 validateCustomTopic, new ChatbotSearchProperties(), new ChatbotPaginationProperties(),
                 teacherDirectory, openSupportThread, appendSupportMessage, findSupportThreads, findSupportMessages,
                 botNotifier);

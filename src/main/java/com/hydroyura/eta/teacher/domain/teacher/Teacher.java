@@ -22,6 +22,8 @@ public class Teacher {
 
     private boolean admin;
 
+    private boolean onboardingCompleted;
+
     private Identifiers identifiers;
 
     @Association
@@ -38,14 +40,20 @@ public class Teacher {
         teacher.id = id;
         teacher.name = name;
         teacher.admin = false;
+        teacher.onboardingCompleted = false;
         teacher.identifiers = new Identifiers();
         return teacher;
     }
 
-    public static Teacher reconstitute(TeacherId id, String name, boolean admin) {
+    public static Teacher reconstitute(TeacherId id, String name, boolean admin, boolean onboardingCompleted) {
         var teacher = create(id, name);
         teacher.admin = admin;
+        teacher.onboardingCompleted = onboardingCompleted;
         return teacher;
+    }
+
+    public void completeOnboarding() {
+        this.onboardingCompleted = true;
     }
 
     public void addStudent(StudentId studentId) {
@@ -59,5 +67,9 @@ public class Teacher {
 
     public boolean isAdmin() {
         return admin;
+    }
+
+    public boolean isOnboardingCompleted() {
+        return onboardingCompleted;
     }
 }

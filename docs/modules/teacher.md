@@ -5,9 +5,14 @@
 ## Составляющие
 
 ### Teacher (@Entity)
-- `id` (@Identity, TeacherId), `name`, `admin` (DB-managed), `identifiers` (Identifiers), `studentIds` (@Association Set<StudentId>).
-- Статические фабрики: `Teacher.create(id, name)` (admin=false) и `Teacher.reconstitute(id, name, admin)`.
-- Методы: `addStudent(StudentId)`, `getStudentIds()` (unmodifiable set), `isAdmin()`. Мутатора флага нет — назначение роли только SQL.
+- `id` (@Identity, TeacherId), `name`, `admin` (DB-managed), `onboardingCompleted` (domain-managed),
+  `identifiers` (Identifiers), `studentIds` (@Association Set<StudentId>).
+- Статические фабрики: `Teacher.create(id, name)` (admin=false, onboardingCompleted=false) и
+  `Teacher.reconstitute(id, name, admin, onboardingCompleted)`.
+- Методы: `addStudent(StudentId)`, `getStudentIds()` (unmodifiable set), `isAdmin()`,
+  `completeOnboarding()` (выставляет `true`, идемпотентен), `isOnboardingCompleted()`.
+  Мутатора флага `admin` нет — назначение роли только SQL; `onboardingCompleted` меняется только
+  доменным методом `completeOnboarding()`.
 
 ### Identifiers (Value Object)
 - Key-value хранилище идентификаторов преподавателя: `Map<IdentifierType, Object>`.
@@ -22,6 +27,7 @@
 | Интерфейс | Метод |
 |-----------|-------|
 | `RegisterTeacher` | `TeacherId execute(RegisterTeacherCommand)` |
+| `CompleteOnboarding` | `void execute(TeacherId)` |
 | `CreateStudentWithDictionary` | `StudentId execute(CreateStudentWithDictionaryCommand)` |
 | `FindTeacher` | `findByTelegramChatId(Long) → Optional<TeacherId>`<br>`getStudentIds(Long chatId) → Set<StudentId>` |
 | `TeacherDirectory` | `findById(TeacherId)`, `findAll()`, `findTelegramChatId(TeacherId)`, `getStudentIds(TeacherId)` — лёгкие read-проекции без загрузки коллекций (без N+1) |
@@ -37,6 +43,7 @@
 | Use Case | Статус |
 |----------|--------|
 | `RegisterTeacher` | ✅ |
+| `CompleteOnboarding` | ✅ |
 | `CreateStudentWithDictionary` | ✅ |
 | `FindTeacherService` | ✅ |
 

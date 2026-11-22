@@ -115,6 +115,8 @@ public final class Callbacks {
     // ---- account / support / admin - payload ----
     public static final String SUBSCRIPTIONS = "subs";
 
+    public static final String ONBOARDING = "onboarding";
+
     public static final String TEACHERS = "teachers";
 
     public static final String THREADS = "threads";
