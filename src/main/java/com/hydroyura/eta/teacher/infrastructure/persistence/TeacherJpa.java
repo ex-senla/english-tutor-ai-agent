@@ -34,6 +34,9 @@ public class TeacherJpa {
     @Column(name = "admin", nullable = false)
     boolean admin;
 
+    @Column(name = "onboarding_completed", nullable = false)
+    boolean onboardingCompleted;
+
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<TeacherIdentifierJpa> identifiers = new HashSet<>();
 

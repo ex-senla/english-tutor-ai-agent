@@ -27,6 +27,7 @@ public final class AccountView {
         return List.of(
                 List.of(button("💬 Поддержка", Callbacks.SUPPORT)),
                 List.of(button("💳 Подписки", Callbacks.SUBSCRIPTIONS)),
+                List.of(button("📖 Справка", Callbacks.ONBOARDING)),
                 List.of(button("🔙 Назад", Callbacks.BACK)));
     }
 

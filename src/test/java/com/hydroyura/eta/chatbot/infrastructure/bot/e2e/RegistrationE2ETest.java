@@ -4,6 +4,7 @@ import com.hydroyura.eta.chatbot.view.Buttons;
 import org.junit.jupiter.api.Test;
 
 import static com.hydroyura.eta.chatbot.view.Messages.ENTER_YOUR_NAME;
+import static com.hydroyura.eta.chatbot.view.Messages.ONBOARDING_REVIEW;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RegistrationE2ETest extends BotE2eTestBase {
@@ -37,5 +38,45 @@ class RegistrationE2ETest extends BotE2eTestBase {
         var identifiers = botTester.rows("teacher_identifier");
         assertThat(identifiers).hasSize(1);
         assertThat(identifiers.get(0).get("identifier_value")).isEqualTo(CHAT_ID.toString());
+    }
+
+    @Test
+    void shouldShowOnboardingReviewExactlyOnceAfterNameAndPersistFlag() {
+        botTester.command("/register");
+        botTester.reset();
+
+        botTester.text("Иван");
+
+        assertThat(botTester.chatState()).isEqualTo("ACTIVE");
+        assertThat(botTester.messages()).hasSize(1);
+        var message = botTester.lastMessage();
+        assertThat(message.text()).contains(ONBOARDING_REVIEW);
+        assertThat(message.keyboard()).isEqualTo(KeyboardKind.REPLY);
+        assertThat(message.replyButtons()).contains(Buttons.NEW_STUDENT, Buttons.LIST_STUDENT, Buttons.FIND_STUDENT,
+                Buttons.ACCOUNT);
+
+        var teachers = botTester.rows("teacher");
+        assertThat(teachers).hasSize(1);
+        assertThat(teachers.get(0).get("onboarding_completed")).isEqualTo(true);
+    }
+
+    @Test
+    void shouldNotRepeatOnboardingReviewOnStartAndHelp() {
+        register();
+
+        botTester.reset();
+        botTester.command("/start");
+        assertThat(botTester.chatState()).isEqualTo("ACTIVE");
+        assertThat(botTester.lastMessage().text()).doesNotContain(ONBOARDING_REVIEW);
+
+        botTester.reset();
+        botTester.command("/help");
+        assertThat(botTester.chatState()).isEqualTo("ACTIVE");
+        assertThat(botTester.lastMessage().text()).doesNotContain(ONBOARDING_REVIEW);
+    }
+
+    private void register() {
+        botTester.command("/register");
+        botTester.text("Иван");
     }
 }

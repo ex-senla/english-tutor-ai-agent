@@ -19,6 +19,7 @@ final class TeacherJpaMapper {
 
     void sync(TeacherJpa entity, Teacher domain) {
         entity.name = domain.getName();
+        entity.onboardingCompleted = domain.isOnboardingCompleted();
         entity.getStudentIds().clear();
         domain.getStudentIds().forEach(id -> entity.getStudentIds().add(id.value()));
         syncIdentifiers(entity, domain.getIdentifiers().asMap());
@@ -45,7 +46,8 @@ final class TeacherJpaMapper {
     }
 
     Teacher toDomain(TeacherJpa entity) {
-        var teacher = Teacher.reconstitute(new TeacherId(entity.getId()), entity.getName(), entity.isAdmin());
+        var teacher = Teacher.reconstitute(new TeacherId(entity.getId()), entity.getName(), entity.isAdmin(),
+                entity.isOnboardingCompleted());
         entity.getStudentIds().forEach(id -> teacher.addStudent(new StudentId(id)));
         for (var identifier : entity.getIdentifiers()) {
             var type = identifier.getId().getIdentifierType();

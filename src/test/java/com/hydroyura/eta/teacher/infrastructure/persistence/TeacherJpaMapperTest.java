@@ -14,7 +14,7 @@ class TeacherJpaMapperTest {
 
     @Test
     void syncShouldNotTouchAdminFlag() {
-        var teacher = Teacher.reconstitute(TeacherId.generate(), "John", false);
+        var teacher = Teacher.reconstitute(TeacherId.generate(), "John", false, false);
         teacher.addStudent(StudentId.generate());
 
         var entity = new TeacherJpa();
@@ -39,5 +39,33 @@ class TeacherJpaMapperTest {
         assertThat(teacher.isAdmin()).isTrue();
         assertThat(teacher.getStudentIds()).hasSize(1);
         assertThat((Long) teacher.getIdentifiers().get(IdentifierType.TELEGRAM)).isNull();
+    }
+
+    @Test
+    void syncShouldWriteOnboardingCompletedFromDomain() {
+        var teacher = Teacher.create(TeacherId.generate(), "John");
+        teacher.completeOnboarding();
+
+        var entity = new TeacherJpa();
+        entity.id = teacher.getId().value();
+        entity.onboardingCompleted = false;
+
+        mapper.sync(entity, teacher);
+
+        assertThat(entity.isOnboardingCompleted()).isTrue();
+    }
+
+    @Test
+    void toDomainShouldRoundTripOnboardingCompletedBothValues() {
+        assertThat(mapper.toDomain(entity(false)).isOnboardingCompleted()).isFalse();
+        assertThat(mapper.toDomain(entity(true)).isOnboardingCompleted()).isTrue();
+    }
+
+    private TeacherJpa entity(boolean onboardingCompleted) {
+        var entity = new TeacherJpa();
+        entity.id = TeacherId.generate().value();
+        entity.name = "John";
+        entity.onboardingCompleted = onboardingCompleted;
+        return entity;
     }
 }

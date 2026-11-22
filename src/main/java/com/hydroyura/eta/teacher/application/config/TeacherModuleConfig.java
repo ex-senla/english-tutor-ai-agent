@@ -4,6 +4,7 @@ import com.hydroyura.eta.dictionary.api.dictionary.AddWordToDictionary;
 import com.hydroyura.eta.dictionary.api.dictionary.CreateDictionary;
 import com.hydroyura.eta.student.api.student.CreateStudent;
 import com.hydroyura.eta.student.api.student.StudentQuery;
+import com.hydroyura.eta.teacher.api.teacher.CompleteOnboarding;
 import com.hydroyura.eta.teacher.api.teacher.CreateStudentWithDictionary;
 import com.hydroyura.eta.teacher.api.teacher.FindTeacher;
 import com.hydroyura.eta.teacher.api.teacher.RegisterTeacher;
@@ -11,6 +12,7 @@ import com.hydroyura.eta.teacher.api.teacher.TeacherDirectory;
 import com.hydroyura.eta.teacher.application.config.properties.DemoStudentsSpringProperties;
 import com.hydroyura.eta.teacher.application.demo.DemoStudentsConfig;
 import com.hydroyura.eta.teacher.application.demo.DemoStudentsSeeder;
+import com.hydroyura.eta.teacher.application.usecase.CompleteOnboardingUseCase;
 import com.hydroyura.eta.teacher.application.usecase.CreateStudentWithDictionaryUseCase;
 import com.hydroyura.eta.teacher.application.usecase.FindTeacherService;
 import com.hydroyura.eta.teacher.application.usecase.RegisterTeacherUseCase;
@@ -33,6 +35,11 @@ public class TeacherModuleConfig {
     @Bean
     FindTeacher findTeacher(TeacherRepository repository) {
         return new FindTeacherService(repository);
+    }
+
+    @Bean
+    CompleteOnboarding completeOnboarding(TeacherRepository repository) {
+        return new CompleteOnboardingUseCase(repository);
     }
 
     @Bean
