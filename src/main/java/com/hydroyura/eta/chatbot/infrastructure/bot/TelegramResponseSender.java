@@ -3,6 +3,7 @@ package com.hydroyura.eta.chatbot.infrastructure.bot;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -47,5 +48,12 @@ public class TelegramResponseSender implements ResponseSender {
     @Override
     public void delete(DeleteMessage delete) throws TelegramApiException {
         botProvider.getObject().execute(delete);
+    }
+
+    @Override
+    public void answerCallbackQuery(String callbackQueryId) throws TelegramApiException {
+        botProvider.getObject().execute(AnswerCallbackQuery.builder()
+                .callbackQueryId(callbackQueryId)
+                .build());
     }
 }

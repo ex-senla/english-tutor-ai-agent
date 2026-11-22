@@ -72,7 +72,12 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
             return;
         }
 
-        // 0. get chatId
+        // 0. acknowledge callback query to dismiss the button loading state (issue #41)
+        if (update.hasCallbackQuery()) {
+            answerCallbackQuery(update.getCallbackQuery());
+        }
+
+        // 0.1 get chatId
         var chatId = extractChatId(update);
         // 1. get chat
         var chat = chatService.getOrCreate(chatId);
@@ -139,6 +144,22 @@ public class EnglishTutorBot extends TelegramLongPollingBot {
     private static boolean isFromStateWithReplyKeyboard(ChatState oldState, ChatState newState) {
         return (oldState == ChatState.ACTIVE && newState != ChatState.ACTIVE)
                 || (oldState == ChatState.IN_LESSON && newState != ChatState.IN_LESSON);
+    }
+
+    /**
+     * Отвечает на callback query, чтобы клиент Telegram убрал индикатор загрузки с нажатой
+     * inline-кнопки. Отказ при ответе не должен ломать основной конвейер обработки Update.
+     */
+    private void answerCallbackQuery(org.telegram.telegrambots.meta.api.objects.CallbackQuery callbackQuery) {
+        var queryId = callbackQuery.getId();
+        if (queryId == null || queryId.isBlank()) {
+            return;
+        }
+        try {
+            responseSender.answerCallbackQuery(queryId);
+        } catch (Exception e) {
+            log.warn("Failed to answer callback query {}: {}", queryId, e.getMessage());
+        }
     }
 
     private Long extractChatId(Update update) {

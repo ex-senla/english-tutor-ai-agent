@@ -23,4 +23,11 @@ public interface ResponseSender {
     void edit(EditMessageText edit) throws TelegramApiException;
 
     void delete(DeleteMessage delete) throws TelegramApiException;
+
+    /**
+     * Отвечает на callback query, чтобы клиент Telegram убрал индикатор загрузки с нажатой
+     * inline-кнопки. Без этого нажатая кнопка остаётся подсвеченной, пока клиент не получит
+     * ответ (см. issue #41).
+     */
+    void answerCallbackQuery(String callbackQueryId) throws TelegramApiException;
 }
