@@ -21,6 +21,10 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest(properties = {
         "telegram.bot.enabled=false",
         "telegram.bot.token=test-token",
+        "telegram.bot.username=eta_tutor_bot",
+        "spring.datasource.url=jdbc:postgresql://localhost:5432/eta-test",
+        "spring.datasource.username=eta",
+        "spring.datasource.password=eta",
         "spring.ai.openai.api-key=test",
         "spring.ai.openai.base-url=http://localhost:8080",
         "spring.ai.openai.chat.model=test-model",
