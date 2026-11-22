@@ -178,12 +178,27 @@ In-process E2E (`src/test/java/.../chatbot/infrastructure/bot/e2e/`):
   `telegram.bot.enabled=true` (реальный бин `EnglishTutorBot` и его коллабораторы) и
   `telegrambots.enabled=false` (нет стартерных `TelegramBotsApi`/`TelegramBotInitializer`);
   `@MockitoBean` на `BotInitializer`, `ResponseSender`, `WordTranslator`, `ExerciseGenerator`,
-  `CustomTopicValidator`; `@BeforeEach` очищает 12 таблиц
+  `CustomTopicValidator`; `@BeforeEach` очищает 14 таблиц (общий перечень `E2eTestTables`)
 - `BotTester` — фасад: `TestUpdates` (фабрика Update: текст/команда/reply-кнопка/callback),
   `OutgoingCallsRecorder` (перехват исходящих вызовов в порядке вызова, синтетические `messageId`),
   `BotDbInspector` (JDBC-чтение `chat` и таблиц в обход JPA-кэшей)
 - сценарии: `BotE2eContextTest` (smoke), `RegistrationE2ETest`, `AddStudentE2ETest`,
   `StartCommandResetE2ETest`, `LessonWordE2ETest`, `ExerciseGenerationE2ETest`
+
+Cucumber/BDD-слой поверх in-process E2E (`src/test/java/.../chatbot/infrastructure/bot/e2e/cucumber/`
+и `src/test/resources/features/`):
+- `BotE2eCucumberConfig` — `@CucumberContextConfiguration` + `@SpringBootTest`; зеркалит конфигурацию
+  `BotE2eTestBase` (реальный `EnglishTutorBot`, `telegram.bot.enabled=true`, `telegrambots.enabled=false`,
+  `@MockitoBean` на 5 портов/адаптеров) с eager static `PostgreSQLContainer("postgres:17-alpine")` и
+  `@DynamicPropertySource` (datasource из контейнера) — JUnit-расширения в cucumber-прогоне не используются
+- `BotE2eCucumberTest` — `@Suite` + `@IncludeEngines("cucumber")` + `@SelectClasspathResource("features")`,
+  glue `chatbot/infrastructure/bot/e2e/cucumber`, отчёты JSON+HTML в `target/cucumber-reports/`
+- `CucumberScenarioState` (singleton) + `CucumberE2eHooks` (`@Before`: `Mockito.reset` пяти моков →
+  очистка таблиц через `E2eTestTables` → свежий `OutgoingCallsRecorder`/`BotTester` с chatId `777L`,
+  ассерт непересоздания контекста)
+- 4 русских `.feature`-сценария (AC-1…AC-5): регистрация, добавление ученика, урок + слово,
+  генерация упражнения; step definitions делегируют `BotTester`/`BotDbInspector` и не дублируют логику
+  прогона/ассертов; LLM-моки конфигурируются внутри сценариев
 
 ## Зависимости
 ```java
