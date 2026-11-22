@@ -41,7 +41,7 @@
 | I2 | PostgreSQL + Flyway миграции | ✅ done | `V1__init.sql` (12 таблиц), `ddl-auto: validate`, Testcontainers |
 | I3 | Spring AI интеграция | ✅ done | Реальные LLM-вызовы: `SpringAiExerciseGenerator` (генерация), `SpringAiTopicValidator` (валидация темы), `SpringAiWordTranslator` (POS+переводы), все с fallback |
 | I4 | `/debug` endpoint | ✅ done | Удалён вместе с `DebugController`/`SnapshotProvider` при переходе на JPA |
-| I5 | E2E UI-тесты бота | 🟡 частично | #50 часть 1: in-process `BotTester` + 6 E2E-классов (регистрация, ученики, /start-сброс, урок, генерация упражнения, smoke). Часть 2 (Cucumber/UI-транспорт) — отложена |
+| I5 | E2E UI-тесты бота | ✅ done | #50 часть 1: in-process `BotTester` + 7 JUnit E2E-классов (регистрация, ученики, /start-сброс, урок, генерация упражнения, admin/support, smoke). Часть 2: Cucumber/BDD-слой (`features/*.feature` на русском + step definitions, тот же in-process конвейер, отчёты JSON+HTML в `target/cucumber-reports/`) |
 | I6 | Релизная политика + тест-пайплайн (#46) | 🟡 in progress | `docs/release-policy.md`, `Dockerfile`, `.dockerignore`, `docker-compose.test.yml`, `.env.test.example`, `.github/workflows/test-deploy.yml`, `telegram.bot.username` env-дефолт |
 
 ## Технический долг

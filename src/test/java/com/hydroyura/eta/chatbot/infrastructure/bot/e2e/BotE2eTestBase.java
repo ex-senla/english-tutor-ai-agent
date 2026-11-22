@@ -58,20 +58,9 @@ public abstract class BotE2eTestBase extends PostgresIntegrationTestBase {
 
     @BeforeEach
     void cleanDatabase() throws Exception {
-        jdbcTemplate.execute("DELETE FROM exercise_word_info");
-        jdbcTemplate.execute("DELETE FROM word_info_translation");
-        jdbcTemplate.execute("DELETE FROM word_info");
-        jdbcTemplate.execute("DELETE FROM lesson_word_info");
-        jdbcTemplate.execute("DELETE FROM lesson");
-        jdbcTemplate.execute("DELETE FROM student");
-        jdbcTemplate.execute("DELETE FROM teacher_identifier");
-        jdbcTemplate.execute("DELETE FROM teacher_student");
-        jdbcTemplate.execute("DELETE FROM teacher");
-        jdbcTemplate.execute("DELETE FROM dictionary");
-        jdbcTemplate.execute("DELETE FROM exercise");
-        jdbcTemplate.execute("DELETE FROM support_message");
-        jdbcTemplate.execute("DELETE FROM support_thread");
-        jdbcTemplate.execute("DELETE FROM chat");
+        for (String table : E2eTestTables.ALL) {
+            jdbcTemplate.execute("DELETE FROM " + table);
+        }
 
         outgoingCallsRecorder = new OutgoingCallsRecorder();
         outgoingCallsRecorder.install(responseSender);
