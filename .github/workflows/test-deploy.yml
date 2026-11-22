@@ -72,6 +72,4 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
           ssh -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
-            "cd /opt/eta-test && \
-             IMAGE_TAG='${FULL_IMAGE}' docker compose -f docker-compose.test.yml pull && \
-             IMAGE_TAG='${FULL_IMAGE}' docker compose -f docker-compose.test.yml up -d"
+            "sudo /usr/local/bin/eta-deploy.sh '${FULL_IMAGE}'"

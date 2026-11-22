@@ -2,9 +2,9 @@ spring:
   application:
     name: eta
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/eta}
-    username: ${SPRING_DATASOURCE_USERNAME:eta}
-    password: ${SPRING_DATASOURCE_PASSWORD:eta}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -50,7 +50,7 @@ eta:
 telegram:
   bot:
     token: ${TELEGRAM_BOT_TOKEN}
-    username: ${TELEGRAM_BOT_USERNAME:eta_tutor_bot}
+    username: ${TELEGRAM_BOT_USERNAME}
 
 logging:
   level:
