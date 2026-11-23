@@ -72,4 +72,11 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
           ssh -o StrictHostKeyChecking=accept-new "$SSH_USER@$SSH_HOST" \
-            "sudo /usr/local/bin/eta-deploy.sh '${FULL_IMAGE}'"
+            "rm -rf ~/eta-sync && mkdir -p ~/eta-sync"
+          scp -r docker-compose.test.yml observability "$SSH_USER@$SSH_HOST":eta-sync/
+          ssh "$SSH_USER@$SSH_HOST" "
+            sudo rsync -a --delete ~/eta-sync/observability/ /opt/eta-test/observability/
+            sudo rsync -a ~/eta-sync/docker-compose.test.yml /opt/eta-test/docker-compose.test.yml
+            rm -rf ~/eta-sync
+            sudo /usr/local/bin/eta-deploy.sh '${FULL_IMAGE}'
+          "
