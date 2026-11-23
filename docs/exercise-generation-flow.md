@@ -15,6 +15,16 @@
 > только из грамматической темы). Ниже — прежнее описание низкоуровневых компонентов
 > генерации.
 
+## Обработка ошибки генерации
+
+При недоступности AI (сеть/таймаут/5xx) или невалидном/пустом ответе
+`SpringAiExerciseGenerator.generate()` бросает `ExerciseGenerationException`
+(наследник `DomainException`, причина AI — в `cause`); fallback-упражнение не создаётся,
+и `GenerateExerciseUseCase` ничего не сохраняет в БД. В chatbot флоу
+`GenerateCbAwaitingExerciseWordSelectionTransition` ловит исключение локально: сбрасывает чат
+к `STUDENT_OPTIONS` (удаляя ключи флоу генерации) и отвечает конфигурируемым сообщением
+`eta.chatbot.exercise-generation.error-message` с клавиатурой опций ученика.
+
 ## Полный цикл: от команды до ответа
 
 ### Фаза 1: Генерация
@@ -43,7 +53,7 @@
      ├── findWords.findByDictionaryId(dictId) → Set<WordProjection>
      ├── Exercise.create(id, type, topic, wordInfoIds)
      ├── generator.generate(command, Set<WordData>) → ExerciseDto (content + expectedAnswer)
-     │     └── SpringAiExerciseGenerator (Spring AI, ChatClient; с fallback)
+     │     └── SpringAiExerciseGenerator (Spring AI, ChatClient)
      ├── exercise.setContent(dto.content())
      ├── exercise.setExpectedAnswer(dto.expectedAnswer())
      └── ExerciseRepository.save(exercise)
@@ -101,7 +111,7 @@
 | `CheckExerciseUseCase` | Находит Exercise, проверяет ответ, обновляет статус |
 | `ExerciseGenerator` | Порт: `generate(GenerateExerciseCommand, Set<WordData>) → ExerciseDto` |
 | `WordData` | Record: `value`, `translations`, `partOfSpeech` (для передачи в AI) |
-| `SpringAiExerciseGenerator` | Реальный Spring AI-адаптер: системный промпт по типу + `{topicGuidance}`-фрагмент темы + словарный блок; при ошибке LLM — fallback |
+| `SpringAiExerciseGenerator` | Реальный Spring AI-адаптер: системный промпт по типу + `{topicGuidance}`-фрагмент темы + словарный блок; при ошибке/невалидном ответе бросает `ExerciseGenerationException` |
 
 ### Chatbot
 | Компонент | Назначение |

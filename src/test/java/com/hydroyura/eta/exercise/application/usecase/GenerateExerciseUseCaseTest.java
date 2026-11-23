@@ -11,6 +11,7 @@ import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.CustomTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseGenerationException;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
@@ -33,9 +34,12 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class GenerateExerciseUseCaseTest {
@@ -306,6 +310,26 @@ class GenerateExerciseUseCaseTest {
         order.verify(repository).save(any());
         order.verify(increment).execute(any(), any());
         order.verify(transactionManager).commit(any());
+    }
+
+    @Test
+    void shouldNotSaveOrIncrementWhenGeneratorThrows() {
+        var dictId = DictionaryId.generate();
+        var findWords = new StubFindWords(Set.of());
+        var generator = mock(ExerciseGenerator.class);
+        when(generator.generate(any(), any())).thenThrow(new ExerciseGenerationException("AI down"));
+        var repository = mock(ExerciseRepository.class);
+        var increment = mock(IncrementWordRepetitions.class);
+
+        var useCase = new GenerateExerciseUseCase(repository, generator, findWords, increment, CATALOG, TX);
+
+        assertThatThrownBy(() -> useCase.execute(new GenerateExerciseCommand(ExerciseType.FILL_IN_THE_BLANK,
+                new CatalogTopic("present-simple"), null, dictId, "A2", Set.of())))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessage("AI down");
+
+        verify(repository, never()).save(any());
+        verify(increment, never()).execute(any(), any());
     }
 
     private static ExerciseDto exerciseDto(List<ExerciseItem> items) {

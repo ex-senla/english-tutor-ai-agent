@@ -41,6 +41,8 @@ eta:
       suggestions-limit: 10
     pagination:
       page-size: 8
+    exercise-generation:
+      error-message: "⚠️ Не удалось сгенерировать упражнение. Попробуйте, пожалуйста, ещё раз немного позже."
   demo-students:
     enabled: false
     student-count: 3

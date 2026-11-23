@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotExerciseGenerationProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.StudentSupport;
 import com.hydroyura.eta.chatbot.application.statemachine.transition.Transition;
 import com.hydroyura.eta.chatbot.domain.action.Action;
@@ -10,6 +11,8 @@ import com.hydroyura.eta.chatbot.view.exercise.ExerciseWordSelectionView;
 import com.hydroyura.eta.chatbot.view.students.StudentView;
 import com.hydroyura.eta.dictionary.api.word.WordInfoId;
 import com.hydroyura.eta.dictionary.api.word.WordProjection;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseGenerationException;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExercise;
@@ -43,6 +46,8 @@ public class GenerateCbAwaitingExerciseWordSelectionTransition implements Transi
 
     private final GenerateExercisePdf generateExercisePdf;
 
+    private final ChatbotExerciseGenerationProperties properties;
+
     @Override
     public ActionResult transit(Chat chat, Action.Callback callback) {
         var selected = support.selectedWordIds(chat);
@@ -62,13 +67,14 @@ public class GenerateCbAwaitingExerciseWordSelectionTransition implements Transi
         var dictionaryId = support.dictionaryId(chat);
         var cefrLevel = support.cefrLevel(chat);
 
-        var exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, topic, thematicTopic,
-                dictionaryId, cefrLevel.code(), wordIds));
-
-        var vocabulary = withWords ? support.selectedWords(chat) : List.<WordProjection>of();
-        var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
-
+        ExerciseDto exercise = null;
         try {
+            exercise = generateExercise.execute(new GenerateExerciseCommand(exerciseType, topic, thematicTopic,
+                    dictionaryId, cefrLevel.code(), wordIds));
+
+            var vocabulary = withWords ? support.selectedWords(chat) : List.<WordProjection>of();
+            var studentName = (String) chat.getContext().getOrDefault(SELECTED_STUDENT_NAME.getValue(), "?");
+
             var bundle = generateExercisePdf.execute(new GenerateExercisePdfCommand(exercise, vocabulary, studentName,
                     cefrLevel.code()));
             log.info("Exercise {} rendered to PDF (exercise + answers)", exercise.id());
@@ -78,6 +84,10 @@ public class GenerateCbAwaitingExerciseWordSelectionTransition implements Transi
                             "Упражнение"),
                     new ActionResult.SendDocument(bundle.answers().fileName(), bundle.answers().content(), "Ответы")
             ), "Ученик: " + studentName, StudentView.optionsKeyboard());
+        } catch (ExerciseGenerationException e) {
+            log.warn("Exercise generation failed: {}", e.getMessage());
+            reset(chat);
+            return new ActionResult.TextWithInlineKeyboard(properties.getErrorMessage(), StudentView.optionsKeyboard());
         } catch (PdfRenderException e) {
             log.warn("PDF render failed for exercise {}: {}", exercise.id(), e.getMessage());
             reset(chat);

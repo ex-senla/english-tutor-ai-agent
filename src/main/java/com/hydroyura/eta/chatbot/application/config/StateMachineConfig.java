@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.config;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotExerciseGenerationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
 import com.hydroyura.eta.chatbot.application.notification.BotNotifier;
@@ -191,7 +192,8 @@ import static com.hydroyura.eta.chatbot.view.Messages.WELCOME;
 
 @Configuration
 @EnableConfigurationProperties({ChatbotSearchProperties.class,
-        ChatbotPaginationProperties.class})
+        ChatbotPaginationProperties.class,
+        ChatbotExerciseGenerationProperties.class})
 public class StateMachineConfig {
 
     @Bean
@@ -218,6 +220,7 @@ public class StateMachineConfig {
             ResetWordLearning resetWordLearning, ExerciseTopics exerciseTopics, ValidateCustomTopic validateCustomTopic,
             ChatbotSearchProperties chatbotSearchProperties,
             ChatbotPaginationProperties chatbotPaginationProperties,
+            ChatbotExerciseGenerationProperties chatbotExerciseGenerationProperties,
             TeacherDirectory teacherDirectory,
             OpenSupportThread openSupportThread, AppendSupportMessage appendSupportMessage,
             FindSupportThreads findSupportThreads, FindSupportMessages findSupportMessages,
@@ -380,10 +383,10 @@ public class StateMachineConfig {
                 new PageCbAwaitingExerciseWordSelectionTransition(exerciseWordSelectionSupport));
         stateMachine.onCallback(AWAITING_EXERCISE_WORD_SELECTION, Callbacks.EXERCISE_WORD_DONE,
                 new GenerateCbAwaitingExerciseWordSelectionTransition(true, exerciseWordSelectionSupport,
-                        generateExercise, generateExercisePdf));
+                        generateExercise, generateExercisePdf, chatbotExerciseGenerationProperties));
         stateMachine.onCallback(AWAITING_EXERCISE_WORD_SELECTION, Callbacks.EXERCISE_WORD_CONTINUE,
                 new GenerateCbAwaitingExerciseWordSelectionTransition(false, exerciseWordSelectionSupport,
-                        generateExercise, generateExercisePdf));
+                        generateExercise, generateExercisePdf, chatbotExerciseGenerationProperties));
         stateMachine.onCallback(AWAITING_EXERCISE_WORD_SELECTION, Callbacks.EXERCISE_WORD_ALERT_BACK,
                 new AlertBackCbAwaitingExerciseWordSelectionTransition(exerciseWordSelectionSupport));
         stateMachine.onCallback(AWAITING_EXERCISE_WORD_SELECTION, Callbacks.EXERCISE_WORD_SELECTION_BACK,
