@@ -77,6 +77,9 @@
 
 - [ ] Linux VPS с публичным SSH, установить Docker и Compose v2.
 - [ ] Установить `rsync` (используется деплой-агентом для синхронизации конфигов на VPS).
+- [ ] Дать SSH-деплой-пользователю (`TEST_USER`) sudo-право на `rsync`, иначе синхронизация
+      конфигов молча падает (CI покажет success): файл `/etc/sudoers.d/eta-sync` —
+      `<test_user> ALL=(root) NOPASSWD: /usr/bin/rsync` (chmod 440).
 - [ ] Создать каталог `/opt/eta-test`. `docker-compose.test.yml` и каталог `observability/`
       синхронизируются деплой-агентом (scp + rsync) при каждом деплое — вручную обновлять
       compose-файл/конфиги мониторинга не нужно.
