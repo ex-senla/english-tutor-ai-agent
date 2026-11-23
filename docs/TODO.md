@@ -44,6 +44,7 @@
 | I4 | `/debug` endpoint | ✅ done | Удалён вместе с `DebugController`/`SnapshotProvider` при переходе на JPA |
 | I5 | E2E UI-тесты бота | ✅ done | #50 часть 1: in-process `BotTester` + 7 JUnit E2E-классов (регистрация, ученики, /start-сброс, урок, генерация упражнения, admin/support, smoke). Часть 2: Cucumber/BDD-слой (`features/*.feature` на русском + step definitions, тот же in-process конвейер, отчёты JSON+HTML в `target/cucumber-reports/`) |
 | I6 | Релизная политика + тест-пайплайн (#46) | 🟡 in progress | `docs/release-policy.md`, `Dockerfile`, `.dockerignore`, `docker-compose.test.yml`, `.env.test.example`, `.github/workflows/test-deploy.yml`, `telegram.bot.username` env-дефолт |
+| I7 | Observability (#56) | 🟡 in progress | `/actuator/prometheus` (Micrometer Prometheus), Prometheus + Grafana в `docker-compose.test.yml` (loopback 9090/3000 + SSH-туннель), конфиги `observability/` (prometheus.yml, provisioning, базовый дашборд JVM/Tomcat/HikariCP), агентская синхронизация конфигов в деплое |
 
 ## Технический долг
 
