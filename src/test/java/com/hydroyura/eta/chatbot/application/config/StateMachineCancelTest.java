@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.config;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotExerciseGenerationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotSearchProperties;
 import com.hydroyura.eta.chatbot.application.statemachine.StateMachine;
@@ -119,7 +120,8 @@ class StateMachineCancelTest {
                 completeOnboarding, addWordToDictionary, addWordToLesson, changeStudentLevel, deleteStudent,
                 generateExercise, checkExercise, generateExercisePdf, checkWord, wordTranslator, resetWordLearning,
                 exerciseTopics, validateCustomTopic, new ChatbotSearchProperties(),
-                new ChatbotPaginationProperties(), teacherDirectory, openSupportThread, appendSupportMessage,
+                new ChatbotPaginationProperties(), new ChatbotExerciseGenerationProperties(), teacherDirectory,
+                openSupportThread, appendSupportMessage,
                 findSupportThreads, findSupportMessages, botNotifier);
     }
 

@@ -3,6 +3,7 @@ package com.hydroyura.eta.exercise.infrastructure.ai;
 import com.hydroyura.eta.dictionary.api.dictionary.DictionaryId;
 import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.CustomTopic;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseGenerationException;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
 import com.hydroyura.eta.exercise.api.exercise.GenerateExerciseCommand;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -107,23 +109,87 @@ class SpringAiExerciseGeneratorTest {
     }
 
     @Test
-    void shouldReturnFallbackWhenChatClientThrows() {
-        when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
+    void shouldThrowWhenChatClientThrows() {
+        var cause = new RuntimeException("AI down");
+        when(chatClient.prompt()).thenThrow(cause);
 
-        var dto = generator.generate(command(), words());
-
-        assertThat(dto.content()).contains("(AI service unavailable — using fallback)");
-        assertThat(dto.expectedAnswers()).containsExactly("(fallback)");
-        assertThat(dto.topic()).isEqualTo("Tenses and Aspects › Present › Present Simple");
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasCause(cause)
+                .hasMessageContaining("FILL_IN_THE_BLANK")
+                .hasMessageContaining("Present Simple");
     }
 
     @Test
-    void shouldReturnFallbackWhenResponseInvalid() {
+    void shouldThrowWhenResponseInvalid() {
         stubResponse(new AiExerciseResponse(List.of(new AiExerciseItem("   ", List.of(), ""))));
 
-        var dto = generator.generate(command(), words());
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK")
+                .hasMessageContaining("Present Simple");
+    }
 
-        assertThat(dto.content()).contains("(AI service unavailable — using fallback)");
+    @Test
+    void shouldThrowWhenResponseIsNull() {
+        stubResponse(null);
+
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK");
+    }
+
+    @Test
+    void shouldThrowWhenResponseItemsEmpty() {
+        stubResponse(new AiExerciseResponse(List.of()));
+
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK");
+    }
+
+    @Test
+    void shouldThrowWhenCorrectAnswerBlank() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("I ___ home yesterday.", List.of(), "   "))));
+
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK")
+                .hasMessageContaining("Present Simple");
+    }
+
+    @Test
+    void shouldThrowWhenFillInTheBlankHasOptions() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("I ___ home yesterday.", List.of("went"), "went"))));
+
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK")
+                .hasMessageContaining("Present Simple");
+    }
+
+    @Test
+    void shouldThrowWhenMultipleChoiceHasWrongOptionCount() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("I ___ home yesterday.", List.of("go", "went", "gone"), "went"))));
+
+        assertThatThrownBy(() -> generator.generate(multipleChoiceCommand(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("MULTIPLE_CHOICE")
+                .hasMessageContaining("Present Simple");
+    }
+
+    @Test
+    void shouldThrowWhenMultipleChoiceAnswerNotInOptions() {
+        stubResponse(new AiExerciseResponse(List.of(
+                new AiExerciseItem("I ___ home yesterday.", List.of("go", "went", "gone", "going"), "came"))));
+
+        assertThatThrownBy(() -> generator.generate(multipleChoiceCommand(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasMessageContaining("MULTIPLE_CHOICE")
+                .hasMessageContaining("Present Simple");
     }
 
     @Test
@@ -140,13 +206,13 @@ class SpringAiExerciseGeneratorTest {
     }
 
     @Test
-    void shouldReturnFallbackWhenWordsEmptyAndChatClientThrows() {
+    void shouldThrowWhenWordsEmptyAndChatClientThrows() {
         when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
 
-        var dto = generator.generate(command(), Set.of());
-
-        assertThat(dto.content()).contains("(AI service unavailable — using fallback)");
-        assertThat(dto.expectedAnswers()).containsExactly("(fallback)");
+        assertThatThrownBy(() -> generator.generate(command(), Set.of()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasCauseInstanceOf(RuntimeException.class)
+                .hasMessageContaining("FILL_IN_THE_BLANK");
     }
 
     @Test
@@ -179,24 +245,21 @@ class SpringAiExerciseGeneratorTest {
     }
 
     @Test
-    void shouldReturnFallbackWithGeneralTopicWhenThematicTopicPresent() {
+    void shouldThrowWithGeneralTopicWhenThematicTopicPresent() {
         when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
 
-        var dto = generator.generate(thematicCommand(), words());
-
-        assertThat(dto.content()).contains("Grammar topic: Tenses and Aspects › Present › Present Simple");
-        assertThat(dto.content()).contains("General topic: Travel");
-        assertThat(dto.thematicTopic()).isEqualTo("Travel");
+        assertThatThrownBy(() -> generator.generate(thematicCommand(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasCauseInstanceOf(RuntimeException.class);
     }
 
     @Test
-    void shouldReturnFallbackWithoutGeneralTopicWhenThematicTopicAbsent() {
+    void shouldThrowWithoutGeneralTopicWhenThematicTopicAbsent() {
         when(chatClient.prompt()).thenThrow(new RuntimeException("AI down"));
 
-        var dto = generator.generate(command(), words());
-
-        assertThat(dto.content()).doesNotContain("General topic");
-        assertThat(dto.thematicTopic()).isNull();
+        assertThatThrownBy(() -> generator.generate(command(), words()))
+                .isInstanceOf(ExerciseGenerationException.class)
+                .hasCauseInstanceOf(RuntimeException.class);
     }
 
     private void stubResponse(AiExerciseResponse response) {

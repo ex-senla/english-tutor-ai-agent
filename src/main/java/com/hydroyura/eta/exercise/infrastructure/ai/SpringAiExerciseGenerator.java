@@ -2,6 +2,7 @@ package com.hydroyura.eta.exercise.infrastructure.ai;
 
 import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseGenerationException;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseTopic;
@@ -80,12 +81,14 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
                     .entity(AiExerciseResponse.class);
         } catch (Exception e) {
             log.error("AI exercise generation failed for type={}, topic={}", command.type(), displayTopic, e);
-            return fallbackExercise(command, displayTopic, words);
+            throw new ExerciseGenerationException(
+                    "AI exercise generation failed for type=" + command.type() + ", topic=" + displayTopic, e);
         }
 
         if (!isValid(response, command.type())) {
             log.warn("AI returned null/invalid response for type={}, topic={}", command.type(), displayTopic);
-            return fallbackExercise(command, displayTopic, words);
+            throw new ExerciseGenerationException(
+                    "AI returned null/invalid response for type=" + command.type() + ", topic=" + displayTopic);
         }
 
         var content = buildContent(response.items());
@@ -202,33 +205,4 @@ public class SpringAiExerciseGenerator implements ExerciseGenerator {
         return sb.toString();
     }
 
-    private ExerciseDto fallbackExercise(GenerateExerciseCommand command, String displayTopic, Set<WordData> words) {
-        var wordList = words.stream()
-                .map(w -> w.value() + " [" + String.join(", ", w.translations()) + "]")
-                .collect(Collectors.joining("\n  "));
-
-        var generalTopicLine = hasThematicTopic(command)
-                ? "\nGeneral topic: " + command.thematicTopic()
-                : "";
-
-        var placeholder = """
-                Exercise: %s
-                Grammar topic: %s%s
-                Words used:
-                  %s
-
-                (AI service unavailable — using fallback)
-                """.formatted(command.type(), displayTopic, generalTopicLine, wordList);
-
-        return new ExerciseDto(
-                ExerciseId.generate(),
-                command.type(),
-                displayTopic,
-                command.thematicTopic(),
-                placeholder,
-                List.of("(fallback)"),
-                List.of(),
-                ExerciseStatus.GENERATED
-        );
-    }
 }

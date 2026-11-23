@@ -86,3 +86,4 @@
 - [x] #49 Каталог грамматических тем: `GrammarTopicCatalog` (JSON-ресурс), выбор темы (дерево/поиск/«Своя тема»), промпт-фрагменты по slug через `{topicGuidance}`, отображение пути темы в PDF
 - [x] #39 LLM-валидация «Своей темы»: `ValidateCustomTopicUseCase`, анти-галлюцинации по активному каталогу, экран подтверждения, fail-open
 - [x] #40 One-shot POS+переводы: `PartOfSpeech.EXPRESSION`, `WordTranslator.suggestPosAndTranslations`, экран подтверждения, fallback на ручное меню из 4 кнопок
+- [x] #54 Ошибка генерации: fallback-упражнение удалено — при сбое/невалидном ответе AI генератор бросает `ExerciseGenerationException`, ничего не сохраняет в БД, бот сбрасывает чат к опциям ученика и показывает конфигурируемое сообщение

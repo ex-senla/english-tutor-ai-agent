@@ -56,7 +56,7 @@
   (`generator.GenerateExercisePdfUseCase`).
 - Использованные выбранные слова получают `currentRepetitions +1` через порт
   `IncrementWordRepetitions` (дедуп через `Set<WordInfoId>` — ровно +1 за упражнение).
-  Fallback-упражнение (items пуст) инкрементов не даёт.
+  При ошибке генерации (`ExerciseGenerationException`) запись упражнения и инкременты не выполняются.
 
 ### CheckExerciseUseCase
 - Проверка ответа по `CheckExerciseCommand`.
@@ -80,8 +80,8 @@
   slug через плейсхолдер `{topicGuidance}` (отсутствующий/пустой фрагмент → WARN + базовый
   промпт), user-сообщение «Grammar topic: …» + словарный блок; при непустой тематике добавляется
   строка «General topic: <тематика>» сразу после «Grammar topic:» (при null/blank — отсутствует);
-  при ошибке/невалидном ответе AI возвращает fallback-упражнение с пустыми `items`, в котором
-  при заданной тематике также присутствует «General topic: …».
+  при ошибке AI или невалидном/пустом ответе бросает `ExerciseGenerationException`
+  (исходная причина AI — в `cause`), ничего не сохраняя.
 - `SpringAiTopicValidator` (`infrastructure.ai`, `@Component`) — адаптер порта
   `CustomTopicValidator`; промпт `exercise/prompts/topic-validation-system.txt`,
   user-сообщение со списком активных тем каталога (slug + name), структурированный вердикт

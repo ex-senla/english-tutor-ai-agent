@@ -1,5 +1,6 @@
 package com.hydroyura.eta.chatbot.application.statemachine.transition.awaitingexercisewordselection;
 
+import com.hydroyura.eta.chatbot.application.config.properties.ChatbotExerciseGenerationProperties;
 import com.hydroyura.eta.chatbot.application.config.properties.ChatbotPaginationProperties;
 import com.hydroyura.eta.chatbot.domain.action.Action;
 import com.hydroyura.eta.chatbot.domain.action.ActionResult;
@@ -14,6 +15,7 @@ import com.hydroyura.eta.dictionary.api.word.WordProjection;
 import com.hydroyura.eta.dictionary.api.word.WordStatus;
 import com.hydroyura.eta.exercise.api.exercise.CatalogTopic;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseDto;
+import com.hydroyura.eta.exercise.api.exercise.ExerciseGenerationException;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseId;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseItem;
 import com.hydroyura.eta.exercise.api.exercise.ExerciseType;
@@ -133,7 +135,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
         var generateExercisePdf = mock(GenerateExercisePdf.class);
 
         var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(true, support, generateExercise,
-                generateExercisePdf);
+                generateExercisePdf, new ChatbotExerciseGenerationProperties());
         var chat = chatWithSelection(Set.of());
 
         var result = transition.transit(chat, new Action.Callback("exdone", "", 1));
@@ -158,7 +160,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
                 new ExercisePdfDocument("answers_animals.pdf", new byte[]{2})));
 
         var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(true, support, generateExercise,
-                generateExercisePdf);
+                generateExercisePdf, new ChatbotExerciseGenerationProperties());
         var chat = chatWithSelection(Set.of(appleId.value().toString()));
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
         chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
@@ -190,7 +192,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
                 new ExercisePdfDocument("answers_animals.pdf", new byte[]{2})));
 
         var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(false, support, generateExercise,
-                generateExercisePdf);
+                generateExercisePdf, new ChatbotExerciseGenerationProperties());
         var chat = chatWithSelection(Set.of());
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
         chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
@@ -235,7 +237,7 @@ class AwaitingExerciseWordSelectionTransitionTest {
         when(generateExercisePdf.execute(any())).thenThrow(new PdfRenderException("boom"));
 
         var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(true, support, generateExercise,
-                generateExercisePdf);
+                generateExercisePdf, new ChatbotExerciseGenerationProperties());
         var chat = chatWithSelection(Set.of(appleId.value().toString()));
         chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
         chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
@@ -249,6 +251,88 @@ class AwaitingExerciseWordSelectionTransitionTest {
         assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
                 EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
                 SELECTION_PAGE.getValue());
+    }
+
+    @Test
+    void shouldReturnErrorMessageAndResetFlowOnGenerationFailureWithWords() {
+        var generateExercise = mock(GenerateExercise.class);
+        var generateExercisePdf = mock(GenerateExercisePdf.class);
+        var properties = new ChatbotExerciseGenerationProperties();
+        properties.setErrorMessage("Генерация не удалась");
+
+        var appleId = WordInfoId.generate();
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
+        when(generateExercise.execute(any())).thenThrow(new ExerciseGenerationException("AI down"));
+
+        var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(true, support, generateExercise,
+                generateExercisePdf, properties);
+        var chat = chatWithSelection(Set.of(appleId.value().toString()));
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+        chat.getContext().put(EXERCISE_THEMATIC_TOPIC.getValue(), "Travel");
+
+        var result = transition.transit(chat, new Action.Callback("exdone", "", 1));
+
+        assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
+        assertThat(((ActionResult.TextWithInlineKeyboard) result).text()).isEqualTo("Генерация не удалась");
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
+        assertThat(chat.getContext()).containsEntry(SELECTED_STUDENT_ID.getValue(), studentId.value().toString());
+        assertThat(chat.getContext()).containsEntry(SELECTED_STUDENT_NAME.getValue(), "Anna");
+        verifyNoInteractions(generateExercisePdf);
+    }
+
+    @Test
+    void shouldReturnErrorMessageAndResetFlowOnGenerationFailureWithoutWords() {
+        var generateExercise = mock(GenerateExercise.class);
+        var generateExercisePdf = mock(GenerateExercisePdf.class);
+        var properties = new ChatbotExerciseGenerationProperties();
+        properties.setErrorMessage("Генерация не удалась");
+
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
+        when(generateExercise.execute(any())).thenThrow(new ExerciseGenerationException("AI down"));
+
+        var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(false, support, generateExercise,
+                generateExercisePdf, properties);
+        var chat = chatWithSelection(Set.of());
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+
+        var result = transition.transit(chat, new Action.Callback("excont", "", 1));
+
+        assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
+        assertThat(((ActionResult.TextWithInlineKeyboard) result).text()).isEqualTo("Генерация не удалась");
+        assertThat(chat.getState()).isEqualTo(ChatState.STUDENT_OPTIONS);
+        assertThat(chat.getContext()).doesNotContainKeys(EXERCISE_TYPE.getValue(), EXERCISE_TOPIC.getValue(),
+                EXERCISE_THEMATIC_TOPIC.getValue(), WORD_SELECTION.getValue(), WORD_FILTER.getValue(),
+                SELECTION_PAGE.getValue());
+        assertThat(chat.getContext()).containsEntry(SELECTED_STUDENT_ID.getValue(), studentId.value().toString());
+        assertThat(chat.getContext()).containsEntry(SELECTED_STUDENT_NAME.getValue(), "Anna");
+        verifyNoInteractions(generateExercisePdf);
+    }
+
+    @Test
+    void shouldUseDefaultErrorMessageOnGenerationFailure() {
+        var generateExercise = mock(GenerateExercise.class);
+        var generateExercisePdf = mock(GenerateExercisePdf.class);
+        var properties = new ChatbotExerciseGenerationProperties();
+
+        when(studentQuery.getCefrLevel(studentId)).thenReturn(Optional.of(CefrLevel.B1));
+        when(generateExercise.execute(any())).thenThrow(new ExerciseGenerationException("AI down"));
+
+        var transition = new GenerateCbAwaitingExerciseWordSelectionTransition(false, support, generateExercise,
+                generateExercisePdf, properties);
+        var chat = chatWithSelection(Set.of());
+        chat.getContext().put(EXERCISE_TYPE.getValue(), ExerciseType.FILL_IN_THE_BLANK);
+        chat.getContext().put(EXERCISE_TOPIC.getValue(), new CatalogTopic("present-simple"));
+
+        var result = transition.transit(chat, new Action.Callback("excont", "", 1));
+
+        assertThat(result).isInstanceOf(ActionResult.TextWithInlineKeyboard.class);
+        assertThat(((ActionResult.TextWithInlineKeyboard) result).text())
+                .isEqualTo("⚠️ Не удалось сгенерировать упражнение. Попробуйте, пожалуйста, ещё раз немного позже.");
     }
 
     private Chat chatWithSelection(Set<String> selection) {
